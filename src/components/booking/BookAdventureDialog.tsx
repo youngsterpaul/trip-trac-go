@@ -1,0 +1,336 @@
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
+
+interface Facility {
+  name: string;
+  price: number;
+}
+
+interface Activity {
+  name: string;
+  price: number;
+}
+
+interface AdventurePlace {
+  id: string;
+  name: string;
+  facilities: Facility[];
+  activities: Activity[];
+}
+
+interface SelectedFacility extends Facility {
+  startDate: string;
+  endDate: string;
+}
+
+interface SelectedActivity extends Activity {
+  people: number;
+}
+
+interface Props {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  place: AdventurePlace;
+}
+
+export const BookAdventureDialog = ({ open, onOpenChange, place }: Props) => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [step, setStep] = useState(1);
+  const [selectedFacilities, setSelectedFacilities] = useState<SelectedFacility[]>([]);
+  const [selectedActivities, setSelectedActivities] = useState<SelectedActivity[]>([]);
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [paymentPhone, setPaymentPhone] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const toggleFacility = (facility: Facility, checked: boolean) => {
+    if (checked) {
+      setSelectedFacilities([...selectedFacilities, { ...facility, startDate: "", endDate: "" }]);
+    } else {
+      setSelectedFacilities(selectedFacilities.filter(f => f.name !== facility.name));
+    }
+  };
+
+  const toggleActivity = (activity: Activity, checked: boolean) => {
+    if (checked) {
+      setSelectedActivities([...selectedActivities, { ...activity, people: 1 }]);
+    } else {
+      setSelectedActivities(selectedActivities.filter(a => a.name !== activity.name));
+    }
+  };
+
+  const updateFacilityDates = (name: string, field: 'startDate' | 'endDate', value: string) => {
+    setSelectedFacilities(selectedFacilities.map(f => 
+      f.name === name ? { ...f, [field]: value } : f
+    ));
+  };
+
+  const updateActivityPeople = (name: string, people: number) => {
+    setSelectedActivities(selectedActivities.map(a => 
+      a.name === name ? { ...a, people } : a
+    ));
+  };
+
+  const calculateTotal = () => {
+    const facilitiesTotal = selectedFacilities.reduce((total, facility) => {
+      if (!facility.startDate || !facility.endDate) return total;
+      const days = Math.ceil((new Date(facility.endDate).getTime() - new Date(facility.startDate).getTime()) / (1000 * 60 * 60 * 24));
+      return total + (facility.price * Math.max(days, 1));
+    }, 0);
+
+    const activitiesTotal = selectedActivities.reduce((total, activity) => {
+      return total + (activity.price * activity.people);
+    }, 0);
+
+    return facilitiesTotal + activitiesTotal;
+  };
+
+  const handleStepOne = () => {
+    if (selectedFacilities.length === 0 && selectedActivities.length === 0) {
+      toast({
+        title: "Make a selection",
+        description: "Please select at least one facility or activity",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const incompleteFacilities = selectedFacilities.some(f => !f.startDate || !f.endDate);
+    if (incompleteFacilities) {
+      toast({
+        title: "Missing dates",
+        description: "Please enter dates for all selected facilities",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setStep(2);
+  };
+
+  const handleBooking = async () => {
+    if (!user) {
+      toast({
+        title: "Login required",
+        description: "Please login to complete your booking",
+        variant: "destructive",
+      });
+      navigate("/auth");
+      return;
+    }
+
+    if (!paymentMethod) {
+      toast({
+        title: "Select payment method",
+        description: "Please choose how you'd like to pay",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.from("bookings").insert({
+        user_id: user.id,
+        booking_type: "adventure_place",
+        item_id: place.id,
+        total_amount: calculateTotal(),
+        payment_method: paymentMethod,
+        payment_phone: paymentPhone || null,
+        booking_details: {
+          place_name: place.name,
+          facilities: selectedFacilities,
+          activities: selectedActivities,
+        },
+      } as any);
+
+      if (error) throw error;
+
+      toast({
+        title: "Booking successful!",
+        description: "Your adventure has been booked. Check your email for confirmation.",
+      });
+
+      onOpenChange(false);
+      navigate("/bookings");
+    } catch (error) {
+      console.error("Booking error:", error);
+      toast({
+        title: "Booking failed",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Book {place.name}</DialogTitle>
+        </DialogHeader>
+
+        {step === 1 ? (
+          <div className="space-y-4">
+            {place.facilities && place.facilities.length > 0 && (
+              <div>
+                <Label>Select Facilities</Label>
+                <div className="space-y-3 mt-2">
+                  {place.facilities.map((facility) => (
+                    <div key={facility.name} className="border rounded-lg p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Checkbox
+                          id={`facility-${facility.name}`}
+                          checked={selectedFacilities.some(f => f.name === facility.name)}
+                          onCheckedChange={(checked) => toggleFacility(facility, checked as boolean)}
+                        />
+                        <label htmlFor={`facility-${facility.name}`} className="flex-1 cursor-pointer">
+                          <div className="font-medium">{facility.name}</div>
+                          <div className="text-sm text-muted-foreground">${facility.price}/day</div>
+                        </label>
+                      </div>
+                      
+                      {selectedFacilities.some(f => f.name === facility.name) && (
+                        <div className="grid grid-cols-2 gap-2 mt-2 pl-6">
+                          <div>
+                            <Label className="text-xs">Start Date</Label>
+                            <Input
+                              type="date"
+                              value={selectedFacilities.find(f => f.name === facility.name)?.startDate || ""}
+                              onChange={(e) => updateFacilityDates(facility.name, 'startDate', e.target.value)}
+                              min={new Date().toISOString().split('T')[0]}
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs">End Date</Label>
+                            <Input
+                              type="date"
+                              value={selectedFacilities.find(f => f.name === facility.name)?.endDate || ""}
+                              onChange={(e) => updateFacilityDates(facility.name, 'endDate', e.target.value)}
+                              min={selectedFacilities.find(f => f.name === facility.name)?.startDate || new Date().toISOString().split('T')[0]}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {place.activities && place.activities.length > 0 && (
+              <div>
+                <Label>Select Activities</Label>
+                <div className="space-y-3 mt-2">
+                  {place.activities.map((activity) => (
+                    <div key={activity.name} className="border rounded-lg p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Checkbox
+                          id={`activity-${activity.name}`}
+                          checked={selectedActivities.some(a => a.name === activity.name)}
+                          onCheckedChange={(checked) => toggleActivity(activity, checked as boolean)}
+                        />
+                        <label htmlFor={`activity-${activity.name}`} className="flex-1 cursor-pointer">
+                          <div className="font-medium">{activity.name}</div>
+                          <div className="text-sm text-muted-foreground">${activity.price}/person</div>
+                        </label>
+                      </div>
+                      
+                      {selectedActivities.some(a => a.name === activity.name) && (
+                        <div className="pl-6 mt-2">
+                          <Label className="text-xs">Number of People</Label>
+                          <Input
+                            type="number"
+                            min="1"
+                            value={selectedActivities.find(a => a.name === activity.name)?.people || 1}
+                            onChange={(e) => updateActivityPeople(activity.name, parseInt(e.target.value) || 1)}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="bg-secondary p-4 rounded-lg">
+              <div className="flex justify-between font-semibold">
+                <span>Total Amount:</span>
+                <span>${calculateTotal().toFixed(2)}</span>
+              </div>
+            </div>
+
+            <Button onClick={handleStepOne} className="w-full">
+              Continue to Payment
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="bg-secondary p-4 rounded-lg">
+              <div className="flex justify-between font-semibold text-lg">
+                <span>Total to Pay:</span>
+                <span>${calculateTotal().toFixed(2)}</span>
+              </div>
+            </div>
+
+            <div>
+              <Label>Select Payment Method</Label>
+              <div className="grid grid-cols-3 gap-2 mt-2">
+                <Button
+                  variant={paymentMethod === "mpesa" ? "default" : "outline"}
+                  onClick={() => setPaymentMethod("mpesa")}
+                >
+                  M-Pesa
+                </Button>
+                <Button
+                  variant={paymentMethod === "airtel" ? "default" : "outline"}
+                  onClick={() => setPaymentMethod("airtel")}
+                >
+                  Airtel
+                </Button>
+                <Button
+                  variant={paymentMethod === "card" ? "default" : "outline"}
+                  onClick={() => setPaymentMethod("card")}
+                >
+                  Card
+                </Button>
+              </div>
+            </div>
+
+            {(paymentMethod === "mpesa" || paymentMethod === "airtel") && (
+              <div>
+                <Label htmlFor="paymentPhone">Phone Number</Label>
+                <Input
+                  id="paymentPhone"
+                  value={paymentPhone}
+                  onChange={(e) => setPaymentPhone(e.target.value)}
+                  placeholder="+1234567890"
+                />
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
+                Back
+              </Button>
+              <Button onClick={handleBooking} disabled={loading} className="flex-1">
+                {loading ? "Processing..." : "Complete Booking"}
+              </Button>
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+};

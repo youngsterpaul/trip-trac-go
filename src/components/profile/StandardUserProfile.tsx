@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -7,15 +7,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Upload } from "lucide-react";
 
 export const StandardUserProfile = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [name, setName] = useState("");
-  const [gender, setGender] = useState("");
+  const [gender, setGender] = useState<string>("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [profilePicture, setProfilePicture] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (user) {
@@ -42,52 +45,115 @@ export const StandardUserProfile = () => {
     }
   };
 
-  const handleUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
 
-    setLoading(true);
-
-    const { error } = await supabase
-      .from("profiles")
-      .update({
-        name,
-        gender: gender as any,
-        phone_number: phoneNumber,
-        profile_picture_url: profilePicture,
-      })
-      .eq("id", user.id);
-
-    if (error) {
+    // Validate file size (5MB limit)
+    if (file.size > 5242880) {
       toast({
-        title: "Update failed",
-        description: error.message,
+        title: "File too large",
+        description: "Please select an image under 5MB",
         variant: "destructive",
       });
-    } else {
-      toast({ title: "Profile updated successfully!" });
+      return;
     }
 
-    setLoading(false);
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+      // Upload to storage
+      const { error: uploadError } = await supabase.storage
+        .from('profile-images')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('profile-images')
+        .getPublicUrl(fileName);
+
+      setProfilePicture(publicUrl);
+      
+      toast({
+        title: "Success",
+        description: "Profile picture uploaded successfully",
+      });
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast({
+        title: "Error",
+        description: "Failed to upload profile picture",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          name,
+          gender: gender as any,
+          phone_number: phoneNumber,
+          profile_picture_url: profilePicture,
+        })
+        .eq("id", user?.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Profile updated successfully",
+      });
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update profile",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <form onSubmit={handleUpdate} className="space-y-6">
-      <div className="flex justify-center">
-        <Avatar className="h-24 w-24">
+      <div className="flex items-center gap-4">
+        <Avatar className="h-20 w-20">
           <AvatarImage src={profilePicture} />
-          <AvatarFallback>{name.charAt(0)}</AvatarFallback>
+          <AvatarFallback>{name.charAt(0).toUpperCase()}</AvatarFallback>
         </Avatar>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="profilePicture">Profile Picture URL</Label>
-        <Input
-          id="profilePicture"
-          value={profilePicture}
-          onChange={(e) => setProfilePicture(e.target.value)}
-          placeholder="https://example.com/image.jpg"
-        />
+        <div className="flex-1">
+          <Label>Profile Picture</Label>
+          <Input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={handleImageUpload}
+            className="hidden"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="w-full"
+          >
+            <Upload className="mr-2 h-4 w-4" />
+            {uploading ? "Uploading..." : "Upload Photo"}
+          </Button>
+        </div>
       </div>
 
       <div className="space-y-2">

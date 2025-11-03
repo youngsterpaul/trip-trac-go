@@ -16,34 +16,100 @@ export type Database = {
     Tables: {
       adventure_places: {
         Row: {
+          activities: Json | null
           country: string
           created_at: string
           description: string | null
+          email: string | null
+          entry_fee: number | null
+          entry_fee_type: string | null
+          facilities: Json | null
           id: string
           image_url: string
+          images: string[] | null
           location: string
           name: string
+          phone_numbers: string[] | null
           place: string
         }
         Insert: {
+          activities?: Json | null
           country: string
           created_at?: string
           description?: string | null
+          email?: string | null
+          entry_fee?: number | null
+          entry_fee_type?: string | null
+          facilities?: Json | null
           id?: string
           image_url: string
+          images?: string[] | null
           location: string
           name: string
+          phone_numbers?: string[] | null
           place: string
         }
         Update: {
+          activities?: Json | null
           country?: string
           created_at?: string
           description?: string | null
+          email?: string | null
+          entry_fee?: number | null
+          entry_fee_type?: string | null
+          facilities?: Json | null
           id?: string
           image_url?: string
+          images?: string[] | null
           location?: string
           name?: string
+          phone_numbers?: string[] | null
           place?: string
+        }
+        Relationships: []
+      }
+      bookings: {
+        Row: {
+          booking_details: Json
+          booking_type: string
+          created_at: string
+          id: string
+          item_id: string
+          payment_method: string | null
+          payment_phone: string | null
+          payment_status: string | null
+          status: string
+          total_amount: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          booking_details: Json
+          booking_type: string
+          created_at?: string
+          id?: string
+          item_id: string
+          payment_method?: string | null
+          payment_phone?: string | null
+          payment_status?: string | null
+          status?: string
+          total_amount: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          booking_details?: Json
+          booking_type?: string
+          created_at?: string
+          id?: string
+          item_id?: string
+          payment_method?: string | null
+          payment_phone?: string | null
+          payment_status?: string | null
+          status?: string
+          total_amount?: number
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -79,40 +145,64 @@ export type Database = {
       }
       events: {
         Row: {
+          available_tickets: number | null
           country: string
           created_at: string
           date: string
           description: string | null
+          email: string | null
           id: string
           image_url: string
+          images: string[] | null
           location: string
           name: string
+          phone_number: string | null
           place: string
           price: number
+          price_child: number | null
+          price_regular: number | null
+          price_vip: number | null
+          price_vvip: number | null
         }
         Insert: {
+          available_tickets?: number | null
           country: string
           created_at?: string
           date: string
           description?: string | null
+          email?: string | null
           id?: string
           image_url: string
+          images?: string[] | null
           location: string
           name: string
+          phone_number?: string | null
           place: string
           price: number
+          price_child?: number | null
+          price_regular?: number | null
+          price_vip?: number | null
+          price_vvip?: number | null
         }
         Update: {
+          available_tickets?: number | null
           country?: string
           created_at?: string
           date?: string
           description?: string | null
+          email?: string | null
           id?: string
           image_url?: string
+          images?: string[] | null
           location?: string
           name?: string
+          phone_number?: string | null
           place?: string
           price?: number
+          price_child?: number | null
+          price_regular?: number | null
+          price_vip?: number | null
+          price_vvip?: number | null
         }
         Relationships: []
       }
@@ -122,10 +212,14 @@ export type Database = {
           country: string
           created_at: string
           description: string | null
+          email: string | null
+          facilities: Json | null
           id: string
           image_url: string
+          images: string[] | null
           location: string
           name: string
+          phone_numbers: string[] | null
           place: string
         }
         Insert: {
@@ -133,10 +227,14 @@ export type Database = {
           country: string
           created_at?: string
           description?: string | null
+          email?: string | null
+          facilities?: Json | null
           id?: string
           image_url: string
+          images?: string[] | null
           location: string
           name: string
+          phone_numbers?: string[] | null
           place: string
         }
         Update: {
@@ -144,10 +242,14 @@ export type Database = {
           country?: string
           created_at?: string
           description?: string | null
+          email?: string | null
+          facilities?: Json | null
           id?: string
           image_url?: string
+          images?: string[] | null
           location?: string
           name?: string
+          phone_numbers?: string[] | null
           place?: string
         }
         Relationships: []
@@ -208,40 +310,55 @@ export type Database = {
       }
       trips: {
         Row: {
+          available_tickets: number | null
           country: string
           created_at: string
           date: string
           description: string | null
+          email: string | null
           id: string
           image_url: string
+          images: string[] | null
           location: string
           name: string
+          phone_number: string | null
           place: string
           price: number
+          price_child: number | null
         }
         Insert: {
+          available_tickets?: number | null
           country: string
           created_at?: string
           date: string
           description?: string | null
+          email?: string | null
           id?: string
           image_url: string
+          images?: string[] | null
           location: string
           name: string
+          phone_number?: string | null
           place: string
           price: number
+          price_child?: number | null
         }
         Update: {
+          available_tickets?: number | null
           country?: string
           created_at?: string
           date?: string
           description?: string | null
+          email?: string | null
           id?: string
           image_url?: string
+          images?: string[] | null
           location?: string
           name?: string
+          phone_number?: string | null
           place?: string
           price?: number
+          price_child?: number | null
         }
         Relationships: []
       }
