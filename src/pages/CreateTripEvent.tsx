@@ -30,10 +30,25 @@ const CreateTripEvent = () => {
     price: "",
     price_child: "",
     available_tickets: "",
-    image_url: "",
     email: "",
-    phone_number: ""
+    phone_number: "",
+    map_link: "",
+    date_type: "fixed"
   });
+  
+  const [galleryImages, setGalleryImages] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
+
+  const handleImageUpload = async (files: FileList | null) => {
+    if (!files) return;
+    
+    const newFiles = Array.from(files).slice(0, 5 - galleryImages.length);
+    setGalleryImages(prev => [...prev, ...newFiles].slice(0, 5));
+  };
+
+  const removeImage = (index: number) => {
+    setGalleryImages(prev => prev.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,18 +64,48 @@ const CreateTripEvent = () => {
     }
 
     setLoading(true);
+    setUploading(true);
 
     try {
+      // Upload gallery images
+      const uploadedUrls: string[] = [];
+      for (const file of galleryImages) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${user.id}/${Math.random()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('user-content-images')
+          .upload(fileName, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('user-content-images')
+          .getPublicUrl(fileName);
+          
+        uploadedUrls.push(publicUrl);
+      }
+
       const table = isTrip ? "trips" : "events";
+      const insertData: any = {
+        ...formData,
+        image_url: uploadedUrls[0] || "",
+        gallery_images: uploadedUrls,
+        price: parseFloat(formData.price),
+        price_child: parseFloat(formData.price_child) || 0,
+        available_tickets: parseInt(formData.available_tickets) || 0,
+        map_link: formData.map_link || null,
+        created_by: user.id
+      };
+
+      // Only add date_type for trips
+      if (isTrip) {
+        insertData.date_type = formData.date_type;
+      }
+
       const { error } = await supabase
         .from(table)
-        .insert([{
-          ...formData,
-          price: parseFloat(formData.price),
-          price_child: parseFloat(formData.price_child) || 0,
-          available_tickets: parseInt(formData.available_tickets) || 0,
-          created_by: user.id
-        }]);
+        .insert([insertData]);
 
       if (error) throw error;
 
@@ -78,6 +123,7 @@ const CreateTripEvent = () => {
       });
     } finally {
       setLoading(false);
+      setUploading(false);
     }
   };
 
@@ -155,19 +201,38 @@ const CreateTripEvent = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="date">Date *</Label>
+                <Label htmlFor="date">{isTrip && formData.date_type === 'fixed' ? 'Fixed Date *' : 'Date *'}</Label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="date"
                     type="date"
-                    required
+                    required={!isTrip || formData.date_type === 'fixed'}
                     className="pl-10"
                     value={formData.date}
                     onChange={(e) => setFormData({...formData, date: e.target.value})}
+                    disabled={isTrip && formData.date_type === 'custom'}
                   />
                 </div>
               </div>
+
+              {isTrip && (
+                <div className="space-y-2">
+                  <Label htmlFor="date_type">Date Type *</Label>
+                  <select
+                    id="date_type"
+                    className="w-full px-3 py-2 border rounded-md"
+                    value={formData.date_type}
+                    onChange={(e) => setFormData({...formData, date_type: e.target.value})}
+                  >
+                    <option value="fixed">Fixed Date</option>
+                    <option value="custom">Custom Date (User chooses)</option>
+                  </select>
+                  <p className="text-sm text-muted-foreground">
+                    {formData.date_type === 'fixed' ? 'Trip will occur on a specific date' : 'Users can choose their preferred date'}
+                  </p>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="price">Price (Adult) *</Label>
@@ -252,23 +317,53 @@ const CreateTripEvent = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="image_url">Main Image URL *</Label>
-              <div className="relative">
-                <Upload className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="image_url"
-                  required
-                  className="pl-10"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData({...formData, image_url: e.target.value})}
-                  placeholder="https://example.com/image.jpg"
-                />
-              </div>
+              <Label htmlFor="map_link">Map Location Link</Label>
+              <Input
+                id="map_link"
+                value={formData.map_link}
+                onChange={(e) => setFormData({...formData, map_link: e.target.value})}
+                placeholder="https://maps.google.com/..."
+              />
+              <p className="text-sm text-muted-foreground">Add Google Maps or other map link</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Gallery Images (Max 5) *</Label>
+              <Input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => handleImageUpload(e.target.files)}
+                disabled={galleryImages.length >= 5}
+              />
+              <p className="text-sm text-muted-foreground">
+                {galleryImages.length}/5 images selected
+              </p>
+              {galleryImages.length > 0 && (
+                <div className="grid grid-cols-5 gap-2">
+                  {galleryImages.map((file, index) => (
+                    <div key={index} className="relative">
+                      <img 
+                        src={URL.createObjectURL(file)} 
+                        alt={`Preview ${index + 1}`}
+                        className="w-full h-20 object-cover rounded"
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="destructive"
+                        className="absolute top-0 right-0 h-6 w-6 p-0"
+                        onClick={() => removeImage(index)}
+                      >×</Button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="flex gap-4 pt-4">
-              <Button type="submit" disabled={loading} className="flex-1">
-                {loading ? "Submitting..." : "Submit for Approval"}
+              <Button type="submit" disabled={loading || uploading || galleryImages.length === 0} className="flex-1">
+                {uploading ? "Uploading Images..." : loading ? "Submitting..." : "Submit for Approval"}
               </Button>
               <Button type="button" variant="outline" onClick={() => navigate(-1)}>
                 Cancel

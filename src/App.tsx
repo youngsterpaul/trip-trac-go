@@ -22,6 +22,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import CreateTripEvent from "./pages/CreateTripEvent";
 import CreateHotel from "./pages/CreateHotel";
 import CreateAdventure from "./pages/CreateAdventure";
+import ProfileEdit from "./pages/ProfileEdit";
+import MyContent from "./pages/MyContent";
 
 const queryClient = new QueryClient();
 
@@ -47,9 +49,11 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/create/trip-event" element={<CreateTripEvent />} />
-            <Route path="/create/hotel" element={<CreateHotel />} />
-            <Route path="/create/adventure" element={<CreateAdventure />} />
+        <Route path="/create/trip-event" element={<CreateTripEvent />} />
+        <Route path="/create/hotel" element={<CreateHotel />} />
+        <Route path="/create/adventure" element={<CreateAdventure />} />
+        <Route path="/profile/edit" element={<ProfileEdit />} />
+        <Route path="/my-content" element={<MyContent />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

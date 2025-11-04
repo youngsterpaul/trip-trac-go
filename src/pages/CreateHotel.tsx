@@ -11,13 +11,14 @@ import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { MapPin, Upload, Mail, Phone } from "lucide-react";
+import { MapPin, Mail, Phone } from "lucide-react";
 
 const CreateHotel = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -25,11 +26,33 @@ const CreateHotel = () => {
     location: "",
     place: "",
     country: "",
-    image_url: "",
     email: "",
     phone_numbers: "",
-    facilities: ""
+    map_link: "",
+    amenities: ""
   });
+  
+  const [facilities, setFacilities] = useState<Array<{name: string, price: string}>>([{name: "", price: ""}]);
+  const [galleryImages, setGalleryImages] = useState<File[]>([]);
+
+  const handleImageUpload = async (files: FileList | null) => {
+    if (!files) return;
+    
+    const newFiles = Array.from(files).slice(0, 5 - galleryImages.length);
+    setGalleryImages(prev => [...prev, ...newFiles].slice(0, 5));
+  };
+
+  const removeImage = (index: number) => {
+    setGalleryImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const addFacility = () => {
+    setFacilities([...facilities, {name: "", price: ""}]);
+  };
+
+  const removeFacility = (index: number) => {
+    setFacilities(facilities.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,16 +68,41 @@ const CreateHotel = () => {
     }
 
     setLoading(true);
+    setUploading(true);
 
     try {
+      // Upload gallery images
+      const uploadedUrls: string[] = [];
+      for (const file of galleryImages) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${user.id}/${Math.random()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('user-content-images')
+          .upload(fileName, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('user-content-images')
+          .getPublicUrl(fileName);
+          
+        uploadedUrls.push(publicUrl);
+      }
+
       const phoneArray = formData.phone_numbers
         .split(',')
         .map(p => p.trim())
         .filter(p => p);
 
-      const facilitiesArray = formData.facilities
-        ? formData.facilities.split(',').map(f => ({ name: f.trim() }))
-        : [];
+      const amenitiesArray = formData.amenities
+        .split(',')
+        .map(a => a.trim())
+        .filter(a => a);
+
+      const facilitiesArray = facilities
+        .filter(f => f.name.trim())
+        .map(f => ({ name: f.name.trim(), price: parseFloat(f.price) || 0 }));
 
       const { error } = await supabase
         .from("hotels")
@@ -64,10 +112,13 @@ const CreateHotel = () => {
           location: formData.location,
           place: formData.place,
           country: formData.country,
-          image_url: formData.image_url,
+          image_url: uploadedUrls[0] || "",
+          gallery_images: uploadedUrls,
+          map_link: formData.map_link || null,
           email: formData.email || null,
           phone_numbers: phoneArray.length > 0 ? phoneArray : null,
           facilities: facilitiesArray.length > 0 ? facilitiesArray : null,
+          amenities: amenitiesArray.length > 0 ? amenitiesArray : null,
           created_by: user.id
         }]);
 
@@ -75,7 +126,7 @@ const CreateHotel = () => {
 
       toast({
         title: "Success!",
-        description: "Your hotel has been submitted for approval.",
+        description: "Your hotel has been submitted for verification.",
       });
 
       navigate("/profile");
@@ -87,6 +138,7 @@ const CreateHotel = () => {
       });
     } finally {
       setLoading(false);
+      setUploading(false);
     }
   };
 
@@ -191,29 +243,37 @@ const CreateHotel = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="facilities">Facilities</Label>
+              <Label>Gallery Images (Max 5) *</Label>
               <Input
-                id="facilities"
-                value={formData.facilities}
-                onChange={(e) => setFormData({...formData, facilities: e.target.value})}
-                placeholder="WiFi, Pool, Gym, Restaurant"
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => handleImageUpload(e.target.files)}
+                disabled={galleryImages.length >= 5}
               />
-              <p className="text-sm text-muted-foreground">Separate facilities with commas</p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="image_url">Main Image URL *</Label>
-              <div className="relative">
-                <Upload className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="image_url"
-                  required
-                  className="pl-10"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData({...formData, image_url: e.target.value})}
-                  placeholder="https://example.com/image.jpg"
-                />
-              </div>
+              <p className="text-sm text-muted-foreground">
+                {galleryImages.length}/5 images selected
+              </p>
+              {galleryImages.length > 0 && (
+                <div className="grid grid-cols-5 gap-2">
+                  {galleryImages.map((file, index) => (
+                    <div key={index} className="relative">
+                      <img 
+                        src={URL.createObjectURL(file)} 
+                        alt={`Preview ${index + 1}`}
+                        className="w-full h-20 object-cover rounded"
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="destructive"
+                        className="absolute top-0 right-0 h-6 w-6 p-0"
+                        onClick={() => removeImage(index)}
+                      >×</Button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="flex gap-4 pt-4">

@@ -27,10 +27,12 @@ export type Database = {
           entry_fee: number | null
           entry_fee_type: string | null
           facilities: Json | null
+          gallery_images: string[] | null
           id: string
           image_url: string
           images: string[] | null
           location: string
+          map_link: string | null
           name: string
           phone_numbers: string[] | null
           place: string
@@ -47,10 +49,12 @@ export type Database = {
           entry_fee?: number | null
           entry_fee_type?: string | null
           facilities?: Json | null
+          gallery_images?: string[] | null
           id?: string
           image_url: string
           images?: string[] | null
           location: string
+          map_link?: string | null
           name: string
           phone_numbers?: string[] | null
           place: string
@@ -67,10 +71,12 @@ export type Database = {
           entry_fee?: number | null
           entry_fee_type?: string | null
           facilities?: Json | null
+          gallery_images?: string[] | null
           id?: string
           image_url?: string
           images?: string[] | null
           location?: string
+          map_link?: string | null
           name?: string
           phone_numbers?: string[] | null
           place?: string
@@ -91,6 +97,7 @@ export type Database = {
           payment_method: string | null
           payment_phone: string | null
           payment_status: string | null
+          slots_booked: number | null
           status: string
           total_amount: number
           updated_at: string
@@ -109,6 +116,7 @@ export type Database = {
           payment_method?: string | null
           payment_phone?: string | null
           payment_status?: string | null
+          slots_booked?: number | null
           status?: string
           total_amount: number
           updated_at?: string
@@ -127,6 +135,7 @@ export type Database = {
           payment_method?: string | null
           payment_phone?: string | null
           payment_status?: string | null
+          slots_booked?: number | null
           status?: string
           total_amount?: number
           updated_at?: string
@@ -145,10 +154,12 @@ export type Database = {
           date: string
           description: string | null
           email: string | null
+          gallery_images: string[] | null
           id: string
           image_url: string
           images: string[] | null
           location: string
+          map_link: string | null
           name: string
           phone_number: string | null
           place: string
@@ -168,10 +179,12 @@ export type Database = {
           date: string
           description?: string | null
           email?: string | null
+          gallery_images?: string[] | null
           id?: string
           image_url: string
           images?: string[] | null
           location: string
+          map_link?: string | null
           name: string
           phone_number?: string | null
           place: string
@@ -191,10 +204,12 @@ export type Database = {
           date?: string
           description?: string | null
           email?: string | null
+          gallery_images?: string[] | null
           id?: string
           image_url?: string
           images?: string[] | null
           location?: string
+          map_link?: string | null
           name?: string
           phone_number?: string | null
           place?: string
@@ -217,10 +232,12 @@ export type Database = {
           description: string | null
           email: string | null
           facilities: Json | null
+          gallery_images: string[] | null
           id: string
           image_url: string
           images: string[] | null
           location: string
+          map_link: string | null
           name: string
           phone_numbers: string[] | null
           place: string
@@ -235,10 +252,12 @@ export type Database = {
           description?: string | null
           email?: string | null
           facilities?: Json | null
+          gallery_images?: string[] | null
           id?: string
           image_url: string
           images?: string[] | null
           location: string
+          map_link?: string | null
           name: string
           phone_numbers?: string[] | null
           place: string
@@ -253,10 +272,12 @@ export type Database = {
           description?: string | null
           email?: string | null
           facilities?: Json | null
+          gallery_images?: string[] | null
           id?: string
           image_url?: string
           images?: string[] | null
           location?: string
+          map_link?: string | null
           name?: string
           phone_numbers?: string[] | null
           place?: string
@@ -326,12 +347,15 @@ export type Database = {
           created_at: string
           created_by: string | null
           date: string
+          date_type: string | null
           description: string | null
           email: string | null
+          gallery_images: string[] | null
           id: string
           image_url: string
           images: string[] | null
           location: string
+          map_link: string | null
           name: string
           phone_number: string | null
           place: string
@@ -346,12 +370,15 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           date: string
+          date_type?: string | null
           description?: string | null
           email?: string | null
+          gallery_images?: string[] | null
           id?: string
           image_url: string
           images?: string[] | null
           location: string
+          map_link?: string | null
           name: string
           phone_number?: string | null
           place: string
@@ -366,12 +393,15 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           date?: string
+          date_type?: string | null
           description?: string | null
           email?: string | null
+          gallery_images?: string[] | null
           id?: string
           image_url?: string
           images?: string[] | null
           location?: string
+          map_link?: string | null
           name?: string
           phone_number?: string | null
           place?: string

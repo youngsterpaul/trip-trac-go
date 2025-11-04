@@ -1,16 +1,27 @@
-import { Home, Ticket, Heart, Phone, Info, Video } from "lucide-react";
+import { Home, Ticket, Heart, Phone, Info, Video, Plus, Edit, Package } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 interface NavigationDrawerProps {
   onClose: () => void;
 }
 
 export const NavigationDrawer = ({ onClose }: NavigationDrawerProps) => {
+  const { user } = useAuth();
+  
   const navItems = [
     { icon: Home, label: "Home", path: "/" },
     { icon: Ticket, label: "My Bookings", path: "/bookings" },
     { icon: Video, label: "Vlog", path: "/vlog" },
-    { icon: Heart, label: "Saved", path: "/saved" },
+    ...(user ? [{ icon: Heart, label: "Saved", path: "/saved" }] : []),
+    ...(user ? [{ icon: Package, label: "My Content", path: "/my-content" }] : []),
     { icon: Phone, label: "Contact", path: "/contact" },
     { icon: Info, label: "About", path: "/about" },
   ];
@@ -33,6 +44,51 @@ export const NavigationDrawer = ({ onClose }: NavigationDrawerProps) => {
 
       <nav className="flex-1 p-4">
         <ul className="space-y-2">
+          {user && (
+            <li className="mb-4">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="default" className="w-full flex items-center justify-center gap-2">
+                    <Plus className="h-4 w-4" />
+                    Create
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-56">
+                  <DropdownMenuItem asChild>
+                    <Link to="/create/trip-event" onClick={onClose} className="cursor-pointer">
+                      Trip & Event
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/create/hotel" onClick={onClose} className="cursor-pointer">
+                      Hotel & Accommodation
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/create/adventure" onClick={onClose} className="cursor-pointer">
+                      Place to Adventure
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </li>
+          )}
+          
+          {user && (
+            <li>
+              <Link
+                to="/profile/edit"
+                onClick={onClose}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-primary/10 transition-all duration-200 group"
+              >
+                <Edit className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                <span className="font-medium group-hover:text-primary transition-colors">
+                  Edit Profile
+                </span>
+              </Link>
+            </li>
+          )}
+          
           {navItems.map((item) => (
             <li key={item.path}>
               <Link

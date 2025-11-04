@@ -31,9 +31,40 @@ const CreateAdventure = () => {
     phone_numbers: "",
     entry_fee_type: "free",
     entry_fee: "",
-    activities: "",
-    facilities: ""
+    map_link: ""
   });
+  
+  const [facilities, setFacilities] = useState<Array<{name: string, price: string}>>([{name: "", price: ""}]);
+  const [activities, setActivities] = useState<Array<{name: string, price: string}>>([{name: "", price: ""}]);
+  const [galleryImages, setGalleryImages] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
+
+  const handleImageUpload = async (files: FileList | null) => {
+    if (!files) return;
+    
+    const newFiles = Array.from(files).slice(0, 5 - galleryImages.length);
+    setGalleryImages(prev => [...prev, ...newFiles].slice(0, 5));
+  };
+
+  const removeImage = (index: number) => {
+    setGalleryImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const addFacility = () => {
+    setFacilities([...facilities, {name: "", price: ""}]);
+  };
+
+  const removeFacility = (index: number) => {
+    setFacilities(facilities.filter((_, i) => i !== index));
+  };
+
+  const addActivity = () => {
+    setActivities([...activities, {name: "", price: ""}]);
+  };
+
+  const removeActivity = (index: number) => {
+    setActivities(activities.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,20 +80,40 @@ const CreateAdventure = () => {
     }
 
     setLoading(true);
+    setUploading(true);
 
     try {
+      // Upload gallery images
+      const uploadedUrls: string[] = [];
+      for (const file of galleryImages) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${user.id}/${Math.random()}.${fileExt}`;
+        
+        const { error: uploadError, data } = await supabase.storage
+          .from('user-content-images')
+          .upload(fileName, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('user-content-images')
+          .getPublicUrl(fileName);
+          
+        uploadedUrls.push(publicUrl);
+      }
+
       const phoneArray = formData.phone_numbers
         .split(',')
         .map(p => p.trim())
         .filter(p => p);
 
-      const activitiesArray = formData.activities
-        ? formData.activities.split(',').map(a => ({ name: a.trim() }))
-        : [];
+      const activitiesArray = activities
+        .filter(a => a.name.trim())
+        .map(a => ({ name: a.name.trim(), price: parseFloat(a.price) || 0 }));
 
-      const facilitiesArray = formData.facilities
-        ? formData.facilities.split(',').map(f => ({ name: f.trim() }))
-        : [];
+      const facilitiesArray = facilities
+        .filter(f => f.name.trim())
+        .map(f => ({ name: f.name.trim(), price: parseFloat(f.price) || 0 }));
 
       const { error } = await supabase
         .from("adventure_places")
@@ -72,7 +123,9 @@ const CreateAdventure = () => {
           location: formData.location,
           place: formData.place,
           country: formData.country,
-          image_url: formData.image_url,
+          image_url: uploadedUrls[0] || formData.image_url,
+          gallery_images: uploadedUrls,
+          map_link: formData.map_link || null,
           email: formData.email || null,
           phone_numbers: phoneArray.length > 0 ? phoneArray : null,
           entry_fee_type: formData.entry_fee_type,
@@ -98,6 +151,7 @@ const CreateAdventure = () => {
       });
     } finally {
       setLoading(false);
+      setUploading(false);
     }
   };
 
@@ -240,45 +294,125 @@ const CreateAdventure = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="activities">Activities</Label>
+              <Label htmlFor="map_link">Map Location Link</Label>
               <Input
-                id="activities"
-                value={formData.activities}
-                onChange={(e) => setFormData({...formData, activities: e.target.value})}
-                placeholder="Hiking, Climbing, Swimming, Photography"
+                id="map_link"
+                value={formData.map_link}
+                onChange={(e) => setFormData({...formData, map_link: e.target.value})}
+                placeholder="https://maps.google.com/..."
               />
-              <p className="text-sm text-muted-foreground">Separate activities with commas</p>
+              <p className="text-sm text-muted-foreground">Add Google Maps or other map link</p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="facilities">Facilities</Label>
-              <Input
-                id="facilities"
-                value={formData.facilities}
-                onChange={(e) => setFormData({...formData, facilities: e.target.value})}
-                placeholder="Parking, Restrooms, Guide Services, Equipment Rental"
-              />
-              <p className="text-sm text-muted-foreground">Separate facilities with commas</p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="image_url">Main Image URL *</Label>
-              <div className="relative">
-                <Upload className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="image_url"
-                  required
-                  className="pl-10"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData({...formData, image_url: e.target.value})}
-                  placeholder="https://example.com/image.jpg"
-                />
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <Label>Activities (with prices)</Label>
+                <Button type="button" size="sm" onClick={addActivity}>Add Activity</Button>
               </div>
+              {activities.map((activity, index) => (
+                <div key={index} className="grid grid-cols-2 gap-2">
+                  <Input
+                    placeholder="Activity name"
+                    value={activity.name}
+                    onChange={(e) => {
+                      const newActivities = [...activities];
+                      newActivities[index].name = e.target.value;
+                      setActivities(newActivities);
+                    }}
+                  />
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="Price"
+                      value={activity.price}
+                      onChange={(e) => {
+                        const newActivities = [...activities];
+                        newActivities[index].price = e.target.value;
+                        setActivities(newActivities);
+                      }}
+                    />
+                    {activities.length > 1 && (
+                      <Button type="button" size="sm" variant="destructive" onClick={() => removeActivity(index)}>×</Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <Label>Facilities (with prices)</Label>
+                <Button type="button" size="sm" onClick={addFacility}>Add Facility</Button>
+              </div>
+              {facilities.map((facility, index) => (
+                <div key={index} className="grid grid-cols-2 gap-2">
+                  <Input
+                    placeholder="Facility name"
+                    value={facility.name}
+                    onChange={(e) => {
+                      const newFacilities = [...facilities];
+                      newFacilities[index].name = e.target.value;
+                      setFacilities(newFacilities);
+                    }}
+                  />
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="Price"
+                      value={facility.price}
+                      onChange={(e) => {
+                        const newFacilities = [...facilities];
+                        newFacilities[index].price = e.target.value;
+                        setFacilities(newFacilities);
+                      }}
+                    />
+                    {facilities.length > 1 && (
+                      <Button type="button" size="sm" variant="destructive" onClick={() => removeFacility(index)}>×</Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-2">
+              <Label>Gallery Images (Max 5) *</Label>
+              <Input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => handleImageUpload(e.target.files)}
+                disabled={galleryImages.length >= 5}
+              />
+              <p className="text-sm text-muted-foreground">
+                {galleryImages.length}/5 images selected
+              </p>
+              {galleryImages.length > 0 && (
+                <div className="grid grid-cols-5 gap-2">
+                  {galleryImages.map((file, index) => (
+                    <div key={index} className="relative">
+                      <img 
+                        src={URL.createObjectURL(file)} 
+                        alt={`Preview ${index + 1}`}
+                        className="w-full h-20 object-cover rounded"
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="destructive"
+                        className="absolute top-0 right-0 h-6 w-6 p-0"
+                        onClick={() => removeImage(index)}
+                      >×</Button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="flex gap-4 pt-4">
-              <Button type="submit" disabled={loading} className="flex-1">
-                {loading ? "Submitting..." : "Submit for Verification"}
+              <Button type="submit" disabled={loading || uploading || galleryImages.length === 0} className="flex-1">
+                {uploading ? "Uploading Images..." : loading ? "Submitting..." : "Submit for Verification"}
               </Button>
               <Button type="button" variant="outline" onClick={() => navigate(-1)}>
                 Cancel
