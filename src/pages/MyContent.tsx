@@ -4,10 +4,12 @@ import { Footer } from "@/components/Footer";
 import { MobileBottomBar } from "@/components/MobileBottomBar";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { Edit } from "lucide-react";
 
 const MyContent = () => {
   const { user } = useAuth();
@@ -123,6 +125,12 @@ const MyContent = () => {
                         </Badge>
                       </p>
                       <p className="text-sm"><span className="font-medium">Total Bookings:</span> {item.bookings?.length || 0}</p>
+                    </div>
+                    <div className="mt-4">
+                      <Button onClick={() => navigate(`/edit-listing/${item.type}/${item.id}`)}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit Listing
+                      </Button>
                     </div>
                   </div>
                 </Card>

@@ -24,6 +24,7 @@ import CreateHotel from "./pages/CreateHotel";
 import CreateAdventure from "./pages/CreateAdventure";
 import ProfileEdit from "./pages/ProfileEdit";
 import MyContent from "./pages/MyContent";
+import EditListing from "./pages/EditListing";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +55,7 @@ const App = () => (
         <Route path="/create/adventure" element={<CreateAdventure />} />
         <Route path="/profile/edit" element={<ProfileEdit />} />
         <Route path="/my-content" element={<MyContent />} />
+        <Route path="/edit-listing/:type/:id" element={<EditListing />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

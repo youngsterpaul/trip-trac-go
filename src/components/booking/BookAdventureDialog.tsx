@@ -51,6 +51,11 @@ export const BookAdventureDialog = ({ open, onOpenChange, place }: Props) => {
   const [paymentMethod, setPaymentMethod] = useState("");
   const [paymentPhone, setPaymentPhone] = useState("");
   const [loading, setLoading] = useState(false);
+  
+  // Guest booking fields
+  const [guestName, setGuestName] = useState("");
+  const [guestEmail, setGuestEmail] = useState("");
+  const [guestPhone, setGuestPhone] = useState("");
 
   const toggleFacility = (facility: Facility, checked: boolean) => {
     if (checked) {
@@ -118,14 +123,16 @@ export const BookAdventureDialog = ({ open, onOpenChange, place }: Props) => {
   };
 
   const handleBooking = async () => {
+    // Validate guest fields if not logged in
     if (!user) {
-      toast({
-        title: "Login required",
-        description: "Please login to complete your booking",
-        variant: "destructive",
-      });
-      navigate("/auth");
-      return;
+      if (!guestName || !guestEmail || !guestPhone) {
+        toast({
+          title: "Guest information required",
+          description: "Please provide your name, email, and phone number",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     if (!paymentMethod) {
@@ -140,12 +147,16 @@ export const BookAdventureDialog = ({ open, onOpenChange, place }: Props) => {
     setLoading(true);
     try {
       const { error } = await supabase.from("bookings").insert({
-        user_id: user.id,
+        user_id: user?.id || null,
         booking_type: "adventure_place",
         item_id: place.id,
         total_amount: calculateTotal(),
         payment_method: paymentMethod,
         payment_phone: paymentPhone || null,
+        is_guest_booking: !user,
+        guest_name: !user ? guestName : null,
+        guest_email: !user ? guestEmail : null,
+        guest_phone: !user ? guestPhone : null,
         booking_details: {
           place_name: place.name,
           facilities: selectedFacilities,
@@ -283,6 +294,43 @@ export const BookAdventureDialog = ({ open, onOpenChange, place }: Props) => {
                 <span>${calculateTotal().toFixed(2)}</span>
               </div>
             </div>
+
+            {!user && (
+              <div className="space-y-3 border-b pb-4">
+                <h3 className="font-semibold">Guest Information</h3>
+                <div>
+                  <Label htmlFor="guestName">Full Name *</Label>
+                  <Input
+                    id="guestName"
+                    value={guestName}
+                    onChange={(e) => setGuestName(e.target.value)}
+                    placeholder="Enter your full name"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="guestEmail">Email Address *</Label>
+                  <Input
+                    id="guestEmail"
+                    type="email"
+                    value={guestEmail}
+                    onChange={(e) => setGuestEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="guestPhone">Phone Number *</Label>
+                  <Input
+                    id="guestPhone"
+                    value={guestPhone}
+                    onChange={(e) => setGuestPhone(e.target.value)}
+                    placeholder="+1234567890"
+                    required
+                  />
+                </div>
+              </div>
+            )}
 
             <div>
               <Label>Select Payment Method</Label>

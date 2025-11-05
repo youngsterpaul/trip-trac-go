@@ -132,15 +132,24 @@ const AdminDashboard = () => {
   const handleRemove = async (itemId: string, itemType: string) => {
     const tableName = itemType === "adventure" ? "adventure_places" : `${itemType}s`;
     
+    // Check current status to toggle
+    const { data: current } = await supabase
+      .from(tableName as any)
+      .select("approval_status")
+      .eq("id", itemId)
+      .single();
+    
+    const newStatus = (current as any)?.approval_status === "approved" ? "removed" : "approved";
+    
     const { error } = await supabase
       .from(tableName as any)
-      .update({ approval_status: "removed" })
+      .update({ approval_status: newStatus })
       .eq("id", itemId);
 
     if (error) {
-      toast.error("Failed to remove listing");
+      toast.error(`Failed to ${newStatus === "removed" ? "remove" : "restore"} listing`);
     } else {
-      toast.success("Listing removed from public view");
+      toast.success(newStatus === "removed" ? "Listing removed from public view" : "Listing restored to public");
       fetchApprovedListings();
     }
   };

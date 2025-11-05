@@ -20,24 +20,42 @@ export const ApprovedTab = ({ approvedListings, handleRemove, handleDelete }: an
               <div className="flex items-center gap-3">
                 <h3 className="text-xl font-semibold">{item.name}</h3>
                 <Badge>{item.type}</Badge>
+                <Badge variant={
+                  item.approval_status === 'approved' ? 'default' :
+                  item.approval_status === 'removed' ? 'secondary' :
+                  'destructive'
+                }>
+                  {item.approval_status}
+                </Badge>
               </div>
               <p className="text-sm">
                 <span className="font-medium">Location:</span> {item.location}, {item.place}, {item.country}
               </p>
               
               <div className="flex gap-2 mt-4">
-                <Button 
-                  onClick={() => handleRemove(item.id, item.type)}
-                  variant="outline"
-                >
-                  Remove from Public
-                </Button>
-                <Button 
-                  onClick={() => handleDelete(item.id, item.type)}
-                  variant="destructive"
-                >
-                  Delete Permanently
-                </Button>
+                {item.approval_status === 'approved' ? (
+                  <>
+                    <Button 
+                      onClick={() => handleRemove(item.id, item.type)}
+                      variant="outline"
+                    >
+                      Remove from Public
+                    </Button>
+                    <Button 
+                      onClick={() => handleDelete(item.id, item.type)}
+                      variant="destructive"
+                    >
+                      Delete Permanently
+                    </Button>
+                  </>
+                ) : (
+                  <Button 
+                    onClick={() => handleRemove(item.id, item.type)}
+                    variant="default"
+                  >
+                    Restore to Public
+                  </Button>
+                )}
               </div>
             </div>
           </div>

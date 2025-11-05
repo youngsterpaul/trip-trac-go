@@ -20,6 +20,25 @@ export const SignupForm = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const validatePassword = (pwd: string): { valid: boolean; message?: string } => {
+    if (pwd.length < 8) {
+      return { valid: false, message: "Password must be at least 8 characters long" };
+    }
+    if (!/[A-Z]/.test(pwd)) {
+      return { valid: false, message: "Password must contain at least one uppercase letter" };
+    }
+    if (!/[a-z]/.test(pwd)) {
+      return { valid: false, message: "Password must contain at least one lowercase letter" };
+    }
+    if (!/[0-9]/.test(pwd)) {
+      return { valid: false, message: "Password must contain at least one number" };
+    }
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pwd)) {
+      return { valid: false, message: "Password must contain at least one special character" };
+    }
+    return { valid: true };
+  };
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -27,6 +46,16 @@ export const SignupForm = () => {
       toast({
         title: "Passwords don't match",
         description: "Please make sure your passwords match.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.valid) {
+      toast({
+        title: "Weak password",
+        description: passwordValidation.message,
         variant: "destructive",
       });
       return;
