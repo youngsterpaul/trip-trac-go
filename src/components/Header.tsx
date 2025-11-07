@@ -101,16 +101,16 @@ export const Header = () => {
             <Ticket className="h-4 w-4" />
             My Bookings
           </Link>
-          <Link to="/vlog" className="flex items-center gap-2 font-bold hover:text-primary transition-colors">
-            <Video className="h-4 w-4" />
-            Vlog
-          </Link>
           {user && (
             <Link to="/saved" className="flex items-center gap-2 font-bold hover:text-primary transition-colors">
               <Heart className="h-4 w-4" />
               Saved
             </Link>
           )}
+          <Link to="/vlog" className="flex items-center gap-2 font-bold hover:text-primary transition-colors">
+            <Video className="h-4 w-4" />
+            Vlog
+          </Link>
         </nav>
 
         <DropdownMenu>
