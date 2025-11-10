@@ -22,17 +22,29 @@ export const SearchBarWithSuggestions = ({ value, onChange, onSubmit }: SearchBa
   const [suggestions, setSuggestions] = useState<SearchResult[]>([]);
   const navigate = useNavigate();
 
+  // 1. MODIFIED useEffect dependency and logic
   useEffect(() => {
-    if (value.trim().length >= 2) {
+    // Fetch suggestions if the value has at least 2 chars OR if the suggestions panel is currently visible
+    if (value.trim().length >= 2 || showSuggestions) {
       fetchSuggestions();
     } else {
       setSuggestions([]);
     }
-  }, [value]);
+  }, [value, showSuggestions]); // Added showSuggestions to dependencies
 
+  // 2. MODIFIED fetchSuggestions to handle empty query
   const fetchSuggestions = async () => {
-    const query = `%${value.toLowerCase()}%`;
+    // If query is empty, use a placeholder that matches everything (or fetch popular/recent items)
+    // For simplicity, we'll use a wildcard query that typically matches everything
+    const queryValue = value.trim();
+    const query = queryValue.length >= 2 ? `%${queryValue.toLowerCase()}%` : `%%`; // Use '%%' to match everything if search is empty
+    const isFullQuery = queryValue.length >= 2;
     const results: SearchResult[] = [];
+
+    // Construct the OR condition dynamically
+    const orCondition = isFullQuery ? 
+        `name.ilike.${query},location.ilike.${query},country.ilike.${query}` : 
+        `name.ilike.${query}`; // Only search name if empty to reduce load, or use a specific list logic
 
     try {
       const [trips, events, hotels, places] = await Promise.all([
@@ -40,26 +52,26 @@ export const SearchBarWithSuggestions = ({ value, onChange, onSubmit }: SearchBa
           .from("trips")
           .select("id, name, image_url")
           .eq("approval_status", "approved")
-          .or(`name.ilike.${query},location.ilike.${query},country.ilike.${query}`)
-          .limit(3),
+          .or(orCondition)
+          .limit(isFullQuery ? 3 : 2), // Limit results differently for empty vs specific search
         supabase
           .from("events")
           .select("id, name, image_url")
           .eq("approval_status", "approved")
-          .or(`name.ilike.${query},location.ilike.${query},country.ilike.${query}`)
-          .limit(3),
+          .or(orCondition)
+          .limit(isFullQuery ? 3 : 2),
         supabase
           .from("hotels")
           .select("id, name, image_url")
           .eq("approval_status", "approved")
-          .or(`name.ilike.${query},location.ilike.${query},country.ilike.${query}`)
-          .limit(3),
+          .or(orCondition)
+          .limit(isFullQuery ? 3 : 2),
         supabase
           .from("adventure_places")
           .select("id, name, image_url")
           .eq("approval_status", "approved")
-          .or(`name.ilike.${query},location.ilike.${query},country.ilike.${query}`)
-          .limit(3),
+          .or(orCondition)
+          .limit(isFullQuery ? 3 : 2),
       ]);
 
       if (trips.data) {
@@ -100,9 +112,8 @@ export const SearchBarWithSuggestions = ({ value, onChange, onSubmit }: SearchBa
       case "event":
         return "Event";
       case "hotel":
-        return "Hotel";
       case "adventure":
-        return "Adventure Place";
+        return type.charAt(0).toUpperCase() + type.slice(1).replace('_', ' ');
       default:
         return type;
     }
@@ -117,6 +128,7 @@ export const SearchBarWithSuggestions = ({ value, onChange, onSubmit }: SearchBa
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyPress={handleKeyPress}
+        // 3. Keep onFocus to immediately set showSuggestions to true
         onFocus={() => setShowSuggestions(true)}
         onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
         className="pl-10 md:pl-12 pr-3 md:pr-4 h-10 md:h-14 text-sm md:text-lg rounded-xl md:rounded-2xl border-2 focus-visible:border-primary shadow-md"
