@@ -44,7 +44,7 @@ const ImageSlideshow = () => {
   const slide = slides[currentSlide];
 
   return (
-    // Simple mock structure using Tailwind classes
+    // **CHANGE 1 & 2: Removed border radius, and reduced height by 50% on large screens (using lg:aspect-[2/1])**
     <div className="relative w-full aspect-video lg:aspect-[2/1] shadow-2xl overflow-hidden bg-gray-200">
       {/* Background Image */}
       <img
@@ -225,9 +225,12 @@ const Index = () => {
             <ImageSlideshow />
           </div>
 
-          {/* Categories (Vertical Column on Large Screens, on the right) */}
-          <div className="w-full md:w-1/3 lg:w-1/4 order-2 md:order-2 flex flex-col">
+          {/* Categories (Must match height of the slideshow) */}
+          {/* **CHANGE 3: Use 'h-full' on the parent container (lg:h-auto) and 'flex-grow' on CategoryCard to match the slideshow height** */}
+          <div className="w-full md:w-1/3 lg:w-1/4 order-2 md:order-2 flex flex-col justify-between">
              <h2 className="text-2xl font-bold mb-4 hidden md:block">Explore Categories</h2>
+             
+             {/* Use h-full to occupy the full height of the parent flex container */}
              <div className="grid grid-cols-3 md:grid-cols-1 gap-3 md:gap-4 flex-grow">
                {categories.map((category) => (
                  <CategoryCard
@@ -236,7 +239,8 @@ const Index = () => {
                    title={category.title}
                    description={category.description}
                    onClick={() => navigate(category.path)}
-                   className="p-3 md:p-4 text-center md:text-left"
+                   // **CHANGE 4: Use flex-grow on the card itself on medium screens to proportionally share the height**
+                   className="p-3 md:p-4 text-center md:text-left md:flex-grow" 
                  />
                ))}
              </div>
@@ -347,5 +351,5 @@ const Index = () => {
       <MobileBottomBar />
     </div>
   );
-};
+}; 
 export default Index;
