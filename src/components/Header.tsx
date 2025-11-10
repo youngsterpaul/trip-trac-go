@@ -68,14 +68,14 @@ export const Header = () => {
   }, [user]);
 
   return (
-    // 1. Changed background to orange-500 and text to white
-    <header className="sticky top-0 z-50 w-full border-b bg-orange-500 text-white">
+    // 1. Changed background to blue-900 (deep navy) and text to white
+    <header className="sticky top-0 z-50 w-full border-b bg-blue-900 text-white">
       <div className="container flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-3">
           <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
             <SheetTrigger asChild>
-              {/* 2. Adjusted Menu button to be white/orange-600 on hover */}
-              <Button variant="ghost" size="icon" className="text-white hover:bg-orange-600">
+              {/* 2. Adjusted Menu button to be white/blue-800 on hover */}
+              <Button variant="ghost" size="icon" className="text-white hover:bg-blue-800">
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
@@ -85,34 +85,34 @@ export const Header = () => {
           </Sheet>
           
           <Link to="/" className="flex items-center gap-2">
-            {/* 3. Changed logo background and text to solid white (or use a contrasting color) */}
-            <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center text-orange-500 font-bold text-lg">
+            {/* 3. Changed logo background to white and text to blue-900 (navy) */}
+            <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center text-blue-900 font-bold text-lg">
               T
             </div>
-            {/* 4. Removed gradient text for TripTrac name and set to white */}
+            {/* 4. Set TripTrac name to white */}
             <span className="font-bold text-base md:text-lg text-white">
               TripTrac
             </span>
           </Link>
         </div>
 
-        {/* 5. Updated navigation links for white text and orange hover */}
+        {/* 5. Updated navigation links for white text and blue-200 hover */}
         <nav className="hidden md:flex items-center gap-6">
-          <Link to="/" className="flex items-center gap-2 font-bold hover:text-orange-200 transition-colors">
+          <Link to="/" className="flex items-center gap-2 font-bold hover:text-blue-200 transition-colors">
             <Home className="h-4 w-4" />
             Home
           </Link>
-          <Link to="/bookings" className="flex items-center gap-2 font-bold hover:text-orange-200 transition-colors">
+          <Link to="/bookings" className="flex items-center gap-2 font-bold hover:text-blue-200 transition-colors">
             <Ticket className="h-4 w-4" />
             My Bookings
           </Link>
           {user && (
-            <Link to="/saved" className="flex items-center gap-2 font-bold hover:text-orange-200 transition-colors">
+            <Link to="/saved" className="flex items-center gap-2 font-bold hover:text-blue-200 transition-colors">
               <Heart className="h-4 w-4" />
               Saved
             </Link>
           )}
-          <Link to="/vlog" className="flex items-center gap-2 font-bold hover:text-orange-200 transition-colors">
+          <Link to="/vlog" className="flex items-center gap-2 font-bold hover:text-blue-200 transition-colors">
             <Video className="h-4 w-4" />
             Vlog
           </Link>
@@ -121,20 +121,19 @@ export const Header = () => {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             {/* 6. Adjusted user name display color and hover */}
-            <Button variant="ghost" className="flex items-center gap-2 h-auto px-2 text-white hover:bg-orange-600">
+            <Button variant="ghost" className="flex items-center gap-2 h-auto px-2 text-white hover:bg-blue-800">
               <span className="hidden md:inline text-sm font-medium">
                 {userName || user?.user_metadata?.name || user?.email || "Guest"}
               </span>
               <Avatar className="h-8 w-8">
                 <AvatarImage src={profilePicture || user?.user_metadata?.profile_picture_url} />
-                {/* Avatar Fallback kept its original style which should be fine */}
-                <AvatarFallback className="bg-white text-orange-500 text-xs"> 
+                {/* Avatar Fallback now uses blue-900 text color */}
+                <AvatarFallback className="bg-white text-blue-900 text-xs"> 
                   {userName?.[0]?.toUpperCase() || user?.user_metadata?.name?.charAt(0) || user?.email?.charAt(0) || "G"}
                 </AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
-          {/* Dropdown Menu Content styling remains default (white background) for accessibility */}
           <DropdownMenuContent align="end" className="w-48 bg-popover">
             {user ? (
               <>
@@ -165,4 +164,4 @@ export const Header = () => {
       </div>
     </header>
   );
-}; 
+};
