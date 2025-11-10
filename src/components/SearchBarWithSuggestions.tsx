@@ -166,5 +166,4 @@ export const SearchBarWithSuggestions = ({ value, onChange, onSubmit }: SearchBa
       )}
     </div>
   );
-  
 };
