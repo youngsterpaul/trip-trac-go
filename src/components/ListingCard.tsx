@@ -63,7 +63,8 @@ export const ListingCard = ({
   };
 
   // Function to format the date as 'Month Day, Year'
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return "";
     const options: Intl.DateTimeFormatOptions = { 
       year: 'numeric', 
       month: 'short', 
@@ -84,26 +85,32 @@ export const ListingCard = ({
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
         />
         
+        {/* Top Overlay for Name and Location */}
+        <div className="absolute inset-x-0 top-0 p-3 bg-gradient-to-b from-black/60 to-transparent text-white">
+          <h3 className="font-bold text-lg mb-0 line-clamp-1">{name}</h3>
+          <p className="text-sm line-clamp-1">{location}, {country}</p>
+        </div>
+
         {/* Category Badge - now with rgba black background */}
-        <div className="absolute top-3 left-3">
+        <div className="absolute top-3 left-3 mt-14"> {/* Adjusted margin-top to clear name/location overlay */}
           <Badge className="bg-[rgba(0,0,0,0.6)] text-white backdrop-blur">
             {type}
           </Badge>
         </div>
         
+        {/* Save Button - no background, red heart when saved */}
         <Button
           variant="ghost"
           size="icon"
           onClick={handleSave}
           className={cn(
-            "absolute top-3 right-3 h-9 w-9 rounded-full bg-background/80 backdrop-blur hover:bg-background transition-all",
-            saved && "bg-primary/20 hover:bg-primary/30"
+            "absolute top-3 right-3 h-9 w-9 rounded-full transition-all", // Removed bg-background/80
           )}
         >
           <Heart
             className={cn(
               "h-5 w-5 transition-all",
-              saved ? "fill-primary text-primary" : "text-muted-foreground"
+              saved ? "fill-red-500 text-red-500" : "text-white" // Changed to red-500
             )}
           />
         </Button>
@@ -125,19 +132,8 @@ export const ListingCard = ({
         )}
       </div>
       
-      <div className="p-4">
-        <h3 className="font-bold text-lg mb-2 line-clamp-1">{name}</h3>
-        
-        <div className="space-y-1 text-sm text-muted-foreground mb-3">
-          <p className="line-clamp-1">{location}</p>
-          <p className="font-medium text-foreground">{country}</p>
-        </div>
-
-        {/* Removed price and date from here as they are now on the image overlay */}
-        <div className="flex items-center justify-between pt-2 border-t">
-          {/* You can add other elements here if needed, or remove the div if it's no longer necessary */}
-        </div>
-        
+      {/* Removed name and location from here as they are now in the top overlay */}
+      <div className="p-4 hidden"> 
         {amenities && amenities.length > 0 && (
           <div className="hidden md:flex flex-wrap gap-1 mt-2">
             {amenities.slice(0, 4).map((amenity, index) => (
