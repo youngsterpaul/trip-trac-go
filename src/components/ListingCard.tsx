@@ -87,8 +87,8 @@ export const ListingCard = ({
         
         {/* Top Overlay for Name and Location */}
         <div className="absolute inset-x-0 top-0 p-3 pb-8 bg-gradient-to-b from-black/60 to-transparent text-white">
-          <h3 className="font-bold text-xl mb-0 line-clamp-1">{name}</h3>
-          <p className="text-sm line-clamp-1">{location}, {country}</p>
+          <h3 className="font-bold text-lg mb-0 line-clamp-1">{name}</h3> 
+          <p className="text-xs line-clamp-1">{location}, {country}</p> 
         </div>
 
         {/* Save Button - no background, red heart when saved */}
@@ -97,12 +97,12 @@ export const ListingCard = ({
           size="icon"
           onClick={handleSave}
           className={cn(
-            "absolute top-3 right-3 h-9 w-9 rounded-full transition-all z-10",
+            "absolute top-3 right-3 h-8 w-8 rounded-full transition-all z-10", // Reduced size slightly
           )}
         >
           <Heart
             className={cn(
-              "h-5 w-5 transition-all",
+              "h-4 w-4 transition-all", // Reduced size slightly
               saved ? "fill-red-500 text-red-500" : "text-white"
             )}
           />
@@ -114,25 +114,23 @@ export const ListingCard = ({
             {/* Price and Date on the left (combined for space) */}
             <div className="flex flex-col items-start space-y-1">
                 {price !== undefined && (
-                <p className="font-bold text-xl text-white">
+                <p className="font-bold text-lg text-white"> 
                     ${price}
                 </p>
                 )}
                 {date && (
-                <p className="font-bold text-sm text-white/90">
+                <p className="font-bold text-xs text-white/90"> 
                     {formatDate(date)}
                 </p>
                 )}
             </div>
 
             {/* Category Badge - now at bottom-right with red background */}
-            <Badge className="bg-red-600 text-white backdrop-blur">
+            <Badge className="bg-red-600 text-white backdrop-blur text-xs"> 
                 {type}
             </Badge>
         </div>
       </div>
-    
-      {/* Removed the entire section below the image as requested */}
     </Card>
   );
 };
