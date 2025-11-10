@@ -22,38 +22,38 @@ export const SearchBarWithSuggestions = ({ value, onChange, onSubmit }: SearchBa
   const [suggestions, setSuggestions] = useState<SearchResult[]>([]);
   const navigate = useNavigate();
 
-  // 1. MODIFIED useEffect dependency and logic
+  // Effect to fetch suggestions when the value changes or the search bar is focused
   useEffect(() => {
-    // Fetch suggestions if the value has at least 2 chars OR if the suggestions panel is currently visible
-    if (value.trim().length >= 2 || showSuggestions) {
+    // Only fetch if value is 2+ chars OR if the suggestions panel is currently visible (onFocus/tap)
+    if (value.trim().length >= 2 || (showSuggestions && value.trim().length === 0)) {
       fetchSuggestions();
-    } else {
+    } else if (value.trim().length < 2) {
+      // Clear suggestions if the search text is too short
       setSuggestions([]);
     }
-  }, [value, showSuggestions]); // Added showSuggestions to dependencies
+  }, [value, showSuggestions]);
 
-  // 2. MODIFIED fetchSuggestions to handle empty query
   const fetchSuggestions = async () => {
-    // If query is empty, use a placeholder that matches everything (or fetch popular/recent items)
-    // For simplicity, we'll use a wildcard query that typically matches everything
     const queryValue = value.trim();
-    const query = queryValue.length >= 2 ? `%${queryValue.toLowerCase()}%` : `%%`; // Use '%%' to match everything if search is empty
+    // Use '%%' to fetch a broad popular list when the search input is empty but focused
+    const query = queryValue.length >= 2 ? `%${queryValue.toLowerCase()}%` : `%%`;
     const isFullQuery = queryValue.length >= 2;
     const results: SearchResult[] = [];
 
-    // Construct the OR condition dynamically
-    const orCondition = isFullQuery ? 
-        `name.ilike.${query},location.ilike.${query},country.ilike.${query}` : 
-        `name.ilike.${query}`; // Only search name if empty to reduce load, or use a specific list logic
+    // Prioritize name search for a popular/focused view to reduce database load
+    const orCondition = isFullQuery ?
+        `name.ilike.${query},location.ilike.${query},country.ilike.${query}` :
+        `name.ilike.${query}`;
 
     try {
+      // Fetch concurrently from all four tables
       const [trips, events, hotels, places] = await Promise.all([
         supabase
           .from("trips")
           .select("id, name, image_url")
           .eq("approval_status", "approved")
           .or(orCondition)
-          .limit(isFullQuery ? 3 : 2), // Limit results differently for empty vs specific search
+          .limit(isFullQuery ? 3 : 2), // Limit results
         supabase
           .from("events")
           .select("id, name, image_url")
@@ -74,6 +74,7 @@ export const SearchBarWithSuggestions = ({ value, onChange, onSubmit }: SearchBa
           .limit(isFullQuery ? 3 : 2),
       ]);
 
+      // Consolidate results and assign type
       if (trips.data) {
         results.push(...trips.data.map((item) => ({ ...item, type: "trip" as const })));
       }
@@ -87,7 +88,7 @@ export const SearchBarWithSuggestions = ({ value, onChange, onSubmit }: SearchBa
         results.push(...places.data.map((item) => ({ ...item, type: "adventure" as const })));
       }
 
-      setSuggestions(results.slice(0, 10));
+      setSuggestions(results.slice(0, 10)); // Max 10 combined suggestions
     } catch (error) {
       console.error("Error fetching suggestions:", error);
     }
@@ -102,6 +103,7 @@ export const SearchBarWithSuggestions = ({ value, onChange, onSubmit }: SearchBa
 
   const handleSuggestionClick = (result: SearchResult) => {
     setShowSuggestions(false);
+    // Navigates to the detail page using the item's type and ID, e.g., /trip/abc-123
     navigate(`/${result.type}/${result.id}`);
   };
 
@@ -112,8 +114,9 @@ export const SearchBarWithSuggestions = ({ value, onChange, onSubmit }: SearchBa
       case "event":
         return "Event";
       case "hotel":
+        return "Hotel";
       case "adventure":
-        return type.charAt(0).toUpperCase() + type.slice(1).replace('_', ' ');
+        return "Adventure Place";
       default:
         return type;
     }
@@ -128,12 +131,14 @@ export const SearchBarWithSuggestions = ({ value, onChange, onSubmit }: SearchBa
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyPress={handleKeyPress}
-        // 3. Keep onFocus to immediately set showSuggestions to true
+        // Show suggestions on focus
         onFocus={() => setShowSuggestions(true)}
+        // Delay hiding suggestions to allow time for the user to click a suggestion
         onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
         className="pl-10 md:pl-12 pr-3 md:pr-4 h-10 md:h-14 text-sm md:text-lg rounded-xl md:rounded-2xl border-2 focus-visible:border-primary shadow-md"
       />
       
+      {/* Suggestions Dropdown */}
       {showSuggestions && suggestions.length > 0 && (
         <div className="absolute z-50 w-full mt-2 bg-background border rounded-xl shadow-lg max-h-96 overflow-y-auto">
           {suggestions.map((result) => (
@@ -143,12 +148,15 @@ export const SearchBarWithSuggestions = ({ value, onChange, onSubmit }: SearchBa
               className="w-full flex items-center gap-3 p-3 hover:bg-accent transition-colors border-b last:border-b-0"
               onClick={() => handleSuggestionClick(result)}
             >
-              <img
-                src={result.image_url}
-                alt={result.name}
-                className="w-16 h-16 object-cover rounded"
-              />
-              <div className="flex-1 text-left">
+              {/* Using a placeholder or fetched image */}
+              {result.image_url && (
+                <img
+                  src={result.image_url}
+                  alt={result.name}
+                  className="w-16 h-16 object-cover rounded flex-shrink-0"
+                />
+              )}
+              <div className="flex-1 text-left min-w-0">
                 <p className="font-semibold text-sm md:text-base line-clamp-1">{result.name}</p>
                 <p className="text-xs md:text-sm text-muted-foreground">{getTypeLabel(result.type)}</p>
               </div>
