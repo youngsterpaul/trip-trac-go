@@ -269,5 +269,5 @@ return (
       <MobileBottomBar />
     </div>
   );
-};s
+};
 export default Index;
