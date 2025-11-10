@@ -39,7 +39,7 @@ export const ListingCard = ({
 
   const handleSave = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    
+
     // Check if user is logged in
     const { data: { session } = {} } = await supabase.auth.getSession();
     if (!session) {
@@ -47,7 +47,7 @@ export const ListingCard = ({
       navigate("/auth");
       return;
     }
-    
+
     setSaved(!saved);
     onSave?.(id, type.toLowerCase().replace(" ", "_"));
   };
@@ -76,40 +76,40 @@ export const ListingCard = ({
   return (
     <Card 
       onClick={handleCardClick}
-      className="group overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 rounded-none cursor-pointer"
+      // Added rounded-lg and changed rounded-none on image container to match
+      className="group overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 rounded-lg cursor-pointer" 
     >
-      <div className="relative aspect-[4/3] overflow-hidden rounded-none">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-t-lg"> {/* Only round the top corners */}
         <img
           src={imageUrl}
           alt={name}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
         />
         
-        {/* Top Overlay for Name and Location */}
-        <div className="absolute inset-x-0 top-0 p-3 pb-8 bg-gradient-to-b from-black/60 to-transparent text-white">
-          <h3 className="font-bold text-lg mb-0 line-clamp-1">{name}</h3> 
-          <p className="text-xs line-clamp-1">{location}, {country}</p> 
-        </div>
+        {/* Category Badge - Now at Top-Left */}
+        <Badge className="absolute top-3 left-3 bg-red-600 text-white backdrop-blur text-xs z-10">
+          {type}
+        </Badge>
 
-        {/* Save Button - no background, red heart when saved */}
+        {/* Save Button */}
         <Button
           variant="ghost"
           size="icon"
           onClick={handleSave}
           className={cn(
-            "absolute top-3 right-3 h-8 w-8 rounded-full transition-all z-10", // Reduced size slightly
+            "absolute top-3 right-3 h-8 w-8 rounded-full transition-all z-10",
           )}
         >
           <Heart
             className={cn(
-              "h-4 w-4 transition-all", // Reduced size slightly
+              "h-4 w-4 transition-all",
               saved ? "fill-red-500 text-red-500" : "text-white"
             )}
           />
         </Button>
 
-        {/* Bottom Overlay for Price, Date, and Category Badge */}
-        <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/80 to-transparent flex justify-between items-end">
+        {/* Price and Date Overlay - Still at bottom for high visibility */}
+        <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/80 to-transparent flex justify-start items-end">
             
             {/* Price and Date on the left (combined for space) */}
             <div className="flex flex-col items-start space-y-1">
@@ -124,12 +124,13 @@ export const ListingCard = ({
                 </p>
                 )}
             </div>
-
-            {/* Category Badge - now at bottom-right with red background */}
-            <Badge className="bg-red-600 text-white backdrop-blur text-xs"> 
-                {type}
-            </Badge>
         </div>
+      </div>
+      
+      {/* Name and Location Detail - NEW SECTION BELOW THE IMAGE */}
+      <div className="p-4 pt-3 flex flex-col space-y-1">
+        <h3 className="font-bold text-lg line-clamp-1">{name}</h3> 
+        <p className="text-sm text-gray-500 line-clamp-1">{location}, {country}</p> 
       </div>
     </Card>
   );

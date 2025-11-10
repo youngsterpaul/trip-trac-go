@@ -228,7 +228,6 @@ const Index = () => {
           {/* Categories (Must match height of the slideshow) */}
           {/* **CHANGE 3: Use 'h-full' on the parent container (lg:h-auto) and 'flex-grow' on CategoryCard to match the slideshow height** */}
           <div className="w-full md:w-1/3 lg:w-1/4 order-2 md:order-2 flex flex-col justify-between">
-             <h2 className="text-2xl font-bold mb-4 hidden md:block">Explore Categories</h2>
              
              {/* Use h-full to occupy the full height of the parent flex container */}
              <div className="grid grid-cols-3 md:grid-cols-1 gap-3 md:gap-4 flex-grow">
