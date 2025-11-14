@@ -178,13 +178,9 @@ export const NavigationDrawer = ({ onClose }: NavigationDrawerProps) => {
           )}
           
           {/* LOGIN/LOGOUT BUTTON */}
-          <li className="pt-4 border-t border-gray-200">
-            {AuthButton}
-          </li>
         </ul>
       </nav>
-      {/* The Footer section has been removed */}
     </div>
    ); 
-   
+
 };
