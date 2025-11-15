@@ -80,13 +80,24 @@ const ImageSlideshow = () => {
   );
 };
 
+// **NEW TYPE/INTERFACE for a combined listing item**
+interface ListingItem {
+  id: string;
+  name: string;
+  image_url: string;
+  location: string;
+  country: string;
+  price: number;
+  date?: string; // Optional for Hotels/Adventure
+  created_at: string; // Crucial for sorting
+  type: "TRIP" | "EVENT" | "HOTEL" | "ADVENTURE PLACE"; // The item type
+}
+
 const Index = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const [trips, setTrips] = useState<any[]>([]);
-  const [events, setEvents] = useState<any[]>([]);
-  const [hotels, setHotels] = useState<any[]>([]);
-  const [adventurePlaces, setAdventurePlaces] = useState<any[]>([]);
+  // **CHANGE 1: Use a single state for all combined listings**
+  const [listings, setListings] = useState<ListingItem[]>([]);
   const [savedItems, setSavedItems] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
@@ -103,20 +114,58 @@ const Index = () => {
     };
     initializeData();
   }, []);
+  
+  // Helper to fetch and tag data from a single table
+  const fetchTableData = async (tableName: string, type: ListingItem['type'], query?: string) => {
+    let selectQuery = supabase.from(tableName).select("*, created_at");
+    
+    if (query) {
+      // Assuming 'name', 'location', 'country', 'place' are common search fields
+      selectQuery = selectQuery.or(`name.ilike.${query},location.ilike.${query},country.ilike.${query},place.ilike.${query}`);
+    } else {
+      // Limit results for the initial load if no query is present
+      selectQuery = selectQuery.limit(6); 
+    }
+    
+    const { data } = await selectQuery;
+    
+    if (data) {
+      // Add the 'type' to each item for rendering
+      return data.map(item => ({
+        ...item,
+        type: type,
+        // Ensure id is a string if it's not already
+        id: String(item.id), 
+      })) as ListingItem[];
+    }
+    return [];
+  };
 
+  // **CHANGE 2: Refactor fetchAllData to combine and sort results**
   const fetchAllData = async () => {
     setLoading(true);
+
     const [tripsData, eventsData, hotelsData, adventurePlacesData] = await Promise.all([
-      supabase.from("trips").select("*").limit(6),
-      supabase.from("events").select("*").limit(6),
-      supabase.from("hotels").select("*").limit(6),
-      supabase.from("adventure_places").select("*").limit(6),
+      fetchTableData("trips", "TRIP"),
+      fetchTableData("events", "EVENT"),
+      fetchTableData("hotels", "HOTEL"),
+      fetchTableData("adventure_places", "ADVENTURE PLACE"),
     ]);
 
-    if (tripsData.data) setTrips(tripsData.data);
-    if (eventsData.data) setEvents(eventsData.data);
-    if (hotelsData.data) setHotels(hotelsData.data);
-    if (adventurePlacesData.data) setAdventurePlaces(adventurePlacesData.data);
+    // Combine all arrays
+    let combinedListings = [
+      ...tripsData,
+      ...eventsData,
+      ...hotelsData,
+      ...adventurePlacesData,
+    ];
+
+    // **Sorting Logic: Sort by 'created_at' in descending order (newest first)**
+    combinedListings.sort((a, b) => 
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+
+    setListings(combinedListings);
     setLoading(false);
   };
 
@@ -127,10 +176,11 @@ const Index = () => {
       .eq("user_id", uid);
 
     if (data) {
-      setSavedItems(new Set(data.map(item => item.item_id)));
+      setSavedItems(new Set(data.map(item => String(item.item_id))));
     }
   };
 
+  // **CHANGE 3: Refactor handleSearch to combine and sort results from search queries**
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
       fetchAllData();
@@ -142,16 +192,26 @@ const Index = () => {
     const query = `%${sanitizedQuery}%`;
 
     const [tripsData, eventsData, hotelsData, adventurePlacesData] = await Promise.all([
-      supabase.from("trips").select("*").or(`name.ilike.${query},location.ilike.${query},country.ilike.${query},place.ilike.${query}`),
-      supabase.from("events").select("*").or(`name.ilike.${query},location.ilike.${query},country.ilike.${query},place.ilike.${query}`),
-      supabase.from("hotels").select("*").or(`name.ilike.${query},location.ilike.${query},country.ilike.${query},place.ilike.${query}`),
-      supabase.from("adventure_places").select("*").or(`name.ilike.${query},location.ilike.${query},country.ilike.${query},place.ilike.${query}`),
+      fetchTableData("trips", "TRIP", query),
+      fetchTableData("events", "EVENT", query),
+      fetchTableData("hotels", "HOTEL", query),
+      fetchTableData("adventure_places", "ADVENTURE PLACE", query),
     ]);
 
-    if (tripsData.data) setTrips(tripsData.data);
-    if (eventsData.data) setEvents(eventsData.data);
-    if (hotelsData.data) setHotels(hotelsData.data);
-    if (adventurePlacesData.data) setAdventurePlaces(adventurePlacesData.data);
+    // Combine all arrays
+    let combinedListings = [
+      ...tripsData,
+      ...eventsData,
+      ...hotelsData,
+      ...adventurePlacesData,
+    ];
+    
+    // Sort by 'created_at' in descending order
+    combinedListings.sort((a, b) => 
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+
+    setListings(combinedListings);
   };
 
   const handleSave = async (itemId: string, itemType: string) => {
@@ -285,70 +345,23 @@ const Index = () => {
                 ))}
               </>
             ) : (
+              // **CHANGE 4: Render from the single 'listings' array**
               <>
-                {/* Trips */}
-                {trips.map((trip) => (
+                {listings.map((item) => (
                   <ListingCard
-                    key={trip.id}
-                    id={trip.id}
-                    type="TRIP"
-                    name={trip.name}
-                    imageUrl={trip.image_url}
-                    location={trip.location}
-                    country={trip.country}
-                    price={trip.price} 
-                    date={trip.date}
+                    key={`${item.type}-${item.id}`} // Use type and id for a unique key
+                    id={item.id}
+                    // The type is now correctly passed from the combined object
+                    type={item.type} 
+                    name={item.name}
+                    imageUrl={item.image_url}
+                    location={item.location}
+                    country={item.country}
+                    price={item.price} 
+                    // date is only defined for TRIP and EVENT, but ListingCard handles its absence
+                    date={item.date} 
                     onSave={handleSave}
-                    isSaved={savedItems.has(trip.id)}
-                  />
-                ))}
-
-                {/* Events */}
-                {events.map((event) => (
-                  <ListingCard
-                    key={event.id}
-                    id={event.id}
-                    type="EVENT"
-                    name={event.name}
-                    imageUrl={event.image_url}
-                    location={event.location}
-                    country={event.country}
-                    price={event.price} 
-                    date={event.date}
-                    onSave={handleSave}
-                    isSaved={savedItems.has(event.id)}
-                  />
-                ))}
-
-                {/* Hotels */}
-                {hotels.map((hotel) => (
-                  <ListingCard
-                    key={hotel.id}
-                    id={hotel.id}
-                    type="HOTEL"
-                    name={hotel.name}
-                    imageUrl={hotel.image_url}
-                    location={hotel.location}
-                    country={hotel.country}
-                    price={hotel.price} 
-                    onSave={handleSave}
-                    isSaved={savedItems.has(hotel.id)}
-                  />
-                ))}
-
-                {/* Adventure Places */}
-                {adventurePlaces.map((place) => (
-                  <ListingCard
-                    key={place.id}
-                    id={place.id}
-                    type="ADVENTURE PLACE"
-                    name={place.name}
-                    imageUrl={place.image_url}
-                    location={place.location}
-                    country={place.country}
-                    price={place.price} 
-                    onSave={handleSave}
-                    isSaved={savedItems.has(place.id)}
+                    isSaved={savedItems.has(item.id)}
                   />
                 ))}
               </>

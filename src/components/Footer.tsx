@@ -21,9 +21,9 @@ export const Footer = () => {
             <h3 className="font-bold mb-3">Quick Links</h3>
             <ul className="space-y-2 text-sm">
               <li><Link to="/" className="text-blue-200 hover:text-white transition-colors">Home</Link></li>
-              <li><Link to="/CreateHotel" className="text-blue-200 hover:text-white transition-colors">List Hotel</Link></li>
-              <li><Link to="/CreateAdventure" className="text-blue-200 hover:text-white transition-colors">List Your Campsite</Link></li>
-              <li><Link to="/CreateTripEvent" className="text-blue-200 hover:text-white transition-colors">Organise Trip</Link></li>
+              <li><Link to="/CreateHotel" className="text-blue-200 hover:text-white transition-colors">List Hotel or Accommodation</Link></li>
+              <li><Link to="/CreateAdventure" className="text-blue-200 hover:text-white transition-colors">List Your Campsite or Experience</Link></li>
+              <li><Link to="/CreateTripEvent" className="text-blue-200 hover:text-white transition-colors">Organise Trip or an Evnet</Link></li>
             </ul>
           </div>
           
