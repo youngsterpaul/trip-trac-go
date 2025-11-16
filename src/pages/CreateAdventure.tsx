@@ -565,5 +565,4 @@ const CreateAdventure = () => {
     </div>
   );
 };
-
 export default CreateAdventure;
