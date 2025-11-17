@@ -1,182 +1,109 @@
-import { useState, useEffect } from "react";
-import { Menu, Heart, Ticket, Shield, Home, FolderOpen, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { NavigationDrawer } from "@/components/NavigationDrawer";
-import { Link } from "react-router-dom";
+// ... (imports and other components remain the same)
 
-export const Header = () => {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const { user, signOut } = useAuth();
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [userName, setUserName] = useState<string>("");
+const Index = () => {
+  // ... (existing state and functions)
 
-  useEffect(() => {
-    const checkRole = async () => {
-      if (!user) {
-        setUserRole(null);
-        setUserName("");
-        return;
-      }
-
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id);
-
-      if (data && data.length > 0) {
-        const roles = data.map(r => r.role);
-        if (roles.includes("admin")) setUserRole("admin");
-        else setUserRole("user");
-      }
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("name")
-        .eq("id", user.id)
-        .single();
-
-      if (profile && profile.name) {
-        const firstName = profile.name.split(" ")[0];
-        setUserName(firstName);
-      }
-    };
-
-    checkRole();
-  }, [user]);
-
-  // Determine the correct link for the account icon
-  const accountLink = user ? "/profile/edit" : "/auth";
+  const categories = [
+    { icon: Calendar, title: "Trips", path: "/category/trips", bgImage: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800" },
+    { icon: PartyPopper, title: "Events", path: "/category/events", bgImage: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800" },
+    { icon: Hotel, title: "Hotels", path: "/category/hotels", bgImage: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800" },
+    { icon: Mountain, title: "Adventure", path: "/category/adventure", bgImage: "https://images.unsplash.com/photo-1551632811-561732d1e306?w=800" },
+  ];
 
   return (
-    // On small screens, the header will be hidden on scroll via layout management in Index.tsx's parent container
-    // On large screens, it remains visible.
-    <header className="sticky top-0 z-50 w-full border-b bg-blue-950 text-white h-16">
-      <div className="container flex h-full items-center justify-between px-4">
-        
-        {/* Logo and Drawer Trigger (Left Side) */}
-        <div className="flex items-center gap-3">
-          <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-white hover:bg-blue-800">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-72 p-0 h-screen">
-              <NavigationDrawer onClose={() => setIsDrawerOpen(false)} />
-            </SheetContent>
-          </Sheet>
-          
-          <Link to="/" className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center text-blue-900 font-bold text-lg">
-              T
-            </div>
-            <div>
-              <span className="font-bold text-base md:text-lg text-white block">
-                TripTrac
-              </span>
-              <p className="text-xs text-blue-200 hidden lg:block">Explore the world</p>
-            </div>
-          </Link>
-        </div>
-
-        {/* Desktop Navigation (Centered) - Hidden on small screen */}
-        {/* We use flex-grow to push the account controls to the right */}
-        <nav className="hidden lg:flex items-center justify-center gap-6 flex-grow">
-          <Link to="/" className="flex items-center gap-2 font-bold hover:text-blue-200 transition-colors">
-            <Home className="h-4 w-4" />
-            <span>Home</span>
-          </Link>
-          {/* Renamed link text to match 'My Listing' requirement */}
-          <Link to="/my-listing" className="flex items-center gap-2 font-bold hover:text-blue-200 transition-colors">
-            <FolderOpen className="h-4 w-4" />
-            <span>My Listing</span>
-          </Link>
-          <Link to="/bookings" className="flex items-center gap-2 font-bold hover:text-blue-200 transition-colors">
-            <Ticket className="h-4 w-4" />
-            <span>My Bookings</span>
-          </Link>
-          <Link to="/saved" className="flex items-center gap-2 font-bold hover:text-blue-200 transition-colors">
-            <Heart className="h-4 w-4" />
-            <span>Saved</span>
-          </Link>
-        </nav>
-
-        {/* Account Controls (Right Side) */}
-        <div className="flex items-center gap-2 ml-auto lg:ml-0">
-            
-            {/* Mobile Account Icon (Visible on small screens) */}
-            <Link to={accountLink} className="lg:hidden">
-              <Button variant="ghost" size="icon" className="text-white hover:bg-blue-800">
-                <User className="h-5 w-5" />
-              </Button>
-            </Link>
-
-            {/* Desktop Dropdown (Visible on large screens) */}
-            <div className="hidden lg:block">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  {user ? (
-                    // Uses User icon and name text
-                    <Button variant="ghost" className="flex items-center gap-2 text-white hover:bg-blue-800">
-                      <User className="h-6 w-6" />
-                      <span className="text-sm font-bold">
-                        {userName || user.email?.split("@")[0] || "Account"}
-                      </span>
-                    </Button>
-                  ) : (
-                    // Login button
-                    <Button variant="ghost" className="text-white hover:bg-blue-800">
-                      Login
-                    </Button>
-                  )}
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {user ? (
-                    <>
-                      <DropdownMenuItem asChild>
-                        <Link to="/profile/edit" className="cursor-pointer">
-                          Profile Edit
-                        </Link>
-                      </DropdownMenuItem>
-                      {userRole === "admin" && (
-                        <DropdownMenuItem asChild>
-                          <Link to="/admin/dashboard" className="cursor-pointer">
-                            <Shield className="mr-2 h-4 w-4" />
-                            Admin Dashboard
-                          </Link>
-                        </DropdownMenuItem>
-                      )}
-                      <DropdownMenuItem onClick={signOut} className="cursor-pointer">
-                        Sign Out
-                      </DropdownMenuItem>
-                    </>
-                  ) : (
-                    <DropdownMenuItem asChild>
-                      <Link to="/auth" className="cursor-pointer">
-                        Login / Sign Up
-                      </Link>
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+    <div className="min-h-screen bg-background pb-20 md:pb-0">
+      <Header />
+      <div className="sticky top-0 md:top-16 z-40 bg-background border-b shadow-sm">
+        <div className="container px-4 py-4">
+          {/* Search bar border-radius set to zero */}
+          <SearchBarWithSuggestions 
+            value={searchQuery} 
+            onChange={setSearchQuery} 
+            onSubmit={() => fetchAllData(searchQuery)}
+            className="rounded-none" // Tailwind class to remove border-radius
+          />
         </div>
       </div>
-    </header>
+      
+      {/* Remove padding from main container */}
+      <main className="container px-0 md:py-8">
+        
+        {/* Remove margin/gap between categories and slideshow section */}
+        <section className="flex flex-col lg:flex-row gap-0">
+          
+          {/* Categories Container: Width 1/3 (Adjusted from 1/3 to 2/5 for bigger look), order 1, height set to match slideshow via 'h-full' and 'flex-grow' context */}
+          <div 
+            className="w-full lg:w-2/5 order-2 lg:order-1 flex flex-col" 
+            style={{ minHeight: '300px' }} // Ensures minimum height on mobile
+          >
+            {/* The grid must fill the container's height (h-full) and use gap-4 for separation */}
+            <div className="grid grid-cols-2 gap-4 lg:h-full lg:flex-grow">
+              {categories.map((cat) => (
+                <div
+                  key={cat.title}
+                  onClick={() => navigate(cat.path)}
+                  // Use aspect-square on small screens, and let lg:h-full manage height on large screens
+                  className="relative aspect-square cursor-pointer overflow-hidden group rounded-none" // border-radius set to zero
+                  style={{ backgroundImage: `url(${cat.bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+                >
+                  {/* Category Content Overlay */}
+                  <div className="absolute inset-0 bg-black/50 group-hover:bg-black/40 transition-all flex flex-col items-center justify-center p-4">
+                    <cat.icon className="h-6 w-6 md:h-12 md:w-12 text-white mb-1 md:mb-2" />
+                    <h3 className="font-bold text-white text-xs md:text-lg">{cat.title}</h3>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* Slideshow Container: Width 2/3 (Adjusted from 2/3 to 3/5), order 2 */}
+          <div className="w-full lg:w-3/5 order-1 lg:order-2">
+            <ImageSlideshow />
+          </div>
+        </section>
+        
+        {/* Listings Section (Add back horizontal padding for content) */}
+        <div className="px-4">
+          <hr className="border-t border-gray-200 my-8" />
+          <section>
+            <div className="bg-blue-950 text-white w-full py-3 mb-6 px-4">
+              <h2 className="font-bold text-xl lg:text-2xl">Popular Picks and Recent Finds</h2>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {loading ? (
+                [...Array(10)].map((_, i) => (
+                  <div key={i} className="shadow-lg">
+                    <div className="aspect-[4/3] bg-muted animate-pulse" />
+                    <div className="p-4 space-y-2">
+                      <div className="h-4 bg-muted animate-pulse rounded w-3/4" />
+                    </div>
+                  </div>
+                ))
+              ) : (
+                listings.map((item) => (
+                  <ListingCard
+                    key={item.id}
+                    id={item.id}
+                    type={item.type}
+                    name={item.name}
+                    imageUrl={item.image_url}
+                    location={item.location}
+                    country={item.country}
+                    price={item.price || item.entry_fee || 0}
+                    date={item.date}
+                    onSave={handleSave}
+                    isSaved={savedItems.has(item.id)}
+                  />
+                ))
+              )}
+            </div>
+          </section>
+        </div>
+      </main>
+      <Footer />
+      <MobileBottomBar />
+    </div>
   );
 };
 
-export default Header;
+export default Index;
