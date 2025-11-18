@@ -41,7 +41,7 @@ const ImageSlideshow = () => {
   const slide = slides[currentSlide];
 
   return (
-    <div className="relative w-full aspect-video lg:aspect-[2/1] overflow-hidden bg-gray-200">
+    <div className="relative w-full aspect-video lg:aspect-[2/1] overflow-hidden bg-gray-700">
       <img src={slide.imageUrl} alt={slide.name} className="w-full h-full object-cover" />
       <div className="absolute inset-0 bg-blue-900/60 flex flex-col justify-end p-6 md:p-8">
         <h3 className="text-3xl font-extrabold text-white mb-2">{slide.name}</h3>
@@ -132,22 +132,21 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-0">
+    <div className="min-h-screen bg-gray-900 text-gray-100 pb-20 md:pb-0">
       <Header />
-      <div className="sticky top-0 md:top-16 z-40 bg-background border-b shadow-sm">
+      <div className="sticky top-0 md:top-16 z-40 bg-gray-900 border-b border-gray-700 shadow-sm">
         <div className="container px-4 py-4">
           <SearchBarWithSuggestions value={searchQuery} onChange={setSearchQuery} onSubmit={() => fetchAllData(searchQuery)} />
         </div>
       </div>
       <main className="container px-0 md:px-4 py-0 md:py-8">
         <section className="flex flex-col lg:flex-row gap-4 md:gap-6">
-          <div className="w-full lg:w-1/3 order-2 lg:order-1 flex"> {/* Added flex to make the categories container stretch */}
-            <div className="grid grid-cols-2 gap-2 md:gap-0 lg:gap-4 w-full px-2 md:px-0"> {/* Added lg:gap-4 for column/row gap, and w-full */}
+          <div className="w-full lg:w-1/3 order-2 lg:order-1 flex">
+            <div className="grid grid-cols-2 gap-2 md:gap-0 lg:gap-4 w-full px-2 md:px-0">
               {categories.map((cat) => (
                 <div
                   key={cat.title}
                   onClick={() => navigate(cat.path)}
-                  // Adjusted class to make boxes bigger on lg, remove fixed h-24 on lg, and enforce aspect-square
                   className="relative h-24 lg:h-full lg:aspect-square cursor-pointer overflow-hidden group"
                   style={{ backgroundImage: `url(${cat.bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
                 >
@@ -157,22 +156,21 @@ const Index = () => {
                   </div>
                 </div>
               ))}
-            </div>
           </div>
           <div className="w-full lg:w-2/3 order-1 lg:order-2">
             <ImageSlideshow />
           </div>
         </section>
         <div className="px-4">
-          <hr className="border-t border-gray-200 my-8" />
+          <hr className="border-t border-gray-700 my-8" />
           <section>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {loading ? (
                 [...Array(10)].map((_, i) => (
                   <div key={i} className="shadow-lg">
-                    <div className="aspect-[4/3] bg-muted animate-pulse" />
-                    <div className="p-4 space-y-2">
-                      <div className="h-4 bg-muted animate-pulse rounded w-3/4" />
+                    <div className="aspect-[4/3] bg-gray-700 animate-pulse" />
+                    <div className="p-4 space-y-2 bg-gray-800">
+                      <div className="h-4 bg-gray-700 animate-pulse rounded w-3/4" />
                     </div>
                   </div>
                 ))
