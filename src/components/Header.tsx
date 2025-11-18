@@ -105,11 +105,6 @@ export const Header = () => {
             {/* Name is now visible */}
             <span>Home</span>
           </Link>
-          <Link to="/my-listing" className="flex items-center gap-2 font-bold hover:text-blue-200 transition-colors">
-            <FolderOpen className="h-4 w-4" />
-            {/* Name is now visible */}
-            <span>My Listing</span>
-          </Link>
           <Link to="/bookings" className="flex items-center gap-2 font-bold hover:text-blue-200 transition-colors">
             <Ticket className="h-4 w-4" />
             {/* Name is now visible */}
@@ -119,6 +114,11 @@ export const Header = () => {
             <Heart className="h-4 w-4" />
             {/* Name is now visible */}
             <span>Wishlist</span>
+          </Link>
+                    <Link to="/my-listing" className="flex items-center gap-2 font-bold hover:text-blue-200 transition-colors">
+            <FolderOpen className="h-4 w-4" />
+            {/* Name is now visible */}
+            <span>Become a Host</span>
           </Link>
         </nav>
 
