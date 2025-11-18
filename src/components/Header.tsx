@@ -118,7 +118,7 @@ export const Header = () => {
           <Link to="/saved" className="flex items-center gap-2 font-bold hover:text-blue-200 transition-colors">
             <Heart className="h-4 w-4" />
             {/* Name is now visible */}
-            <span>Saved</span>
+            <span>Wishlist</span>
           </Link>
         </nav>
 
