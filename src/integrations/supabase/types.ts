@@ -16,7 +16,6 @@ export type Database = {
     Tables: {
       adventure_places: {
         Row: {
-          access_pin: string | null
           activities: Json | null
           admin_notes: string | null
           allowed_admin_emails: string[] | null
@@ -33,7 +32,6 @@ export type Database = {
           entry_fee_type: string | null
           facilities: Json | null
           gallery_images: string[] | null
-          hashed_access_pin: string | null
           id: string
           image_url: string
           images: string[] | null
@@ -46,7 +44,6 @@ export type Database = {
           registration_number: string | null
         }
         Insert: {
-          access_pin?: string | null
           activities?: Json | null
           admin_notes?: string | null
           allowed_admin_emails?: string[] | null
@@ -63,7 +60,6 @@ export type Database = {
           entry_fee_type?: string | null
           facilities?: Json | null
           gallery_images?: string[] | null
-          hashed_access_pin?: string | null
           id?: string
           image_url: string
           images?: string[] | null
@@ -76,7 +72,6 @@ export type Database = {
           registration_number?: string | null
         }
         Update: {
-          access_pin?: string | null
           activities?: Json | null
           admin_notes?: string | null
           allowed_admin_emails?: string[] | null
@@ -93,7 +88,6 @@ export type Database = {
           entry_fee_type?: string | null
           facilities?: Json | null
           gallery_images?: string[] | null
-          hashed_access_pin?: string | null
           id?: string
           image_url?: string
           images?: string[] | null
@@ -256,7 +250,6 @@ export type Database = {
       }
       hotels: {
         Row: {
-          access_pin: string | null
           admin_notes: string | null
           allowed_admin_emails: string[] | null
           amenities: string[] | null
@@ -271,7 +264,6 @@ export type Database = {
           establishment_type: string | null
           facilities: Json | null
           gallery_images: string[] | null
-          hashed_access_pin: string | null
           id: string
           image_url: string
           images: string[] | null
@@ -284,7 +276,6 @@ export type Database = {
           registration_number: string | null
         }
         Insert: {
-          access_pin?: string | null
           admin_notes?: string | null
           allowed_admin_emails?: string[] | null
           amenities?: string[] | null
@@ -299,7 +290,6 @@ export type Database = {
           establishment_type?: string | null
           facilities?: Json | null
           gallery_images?: string[] | null
-          hashed_access_pin?: string | null
           id?: string
           image_url: string
           images?: string[] | null
@@ -312,7 +302,6 @@ export type Database = {
           registration_number?: string | null
         }
         Update: {
-          access_pin?: string | null
           admin_notes?: string | null
           allowed_admin_emails?: string[] | null
           amenities?: string[] | null
@@ -327,7 +316,6 @@ export type Database = {
           establishment_type?: string | null
           facilities?: Json | null
           gallery_images?: string[] | null
-          hashed_access_pin?: string | null
           id?: string
           image_url?: string
           images?: string[] | null
