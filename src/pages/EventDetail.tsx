@@ -124,24 +124,12 @@ const EventDetail = () => {
       <Header />
       
       <main className="container px-4 py-6 max-w-6xl mx-auto">
-        {/* Image Gallery Carousel and Share Button Container */}
-        <div className="relative w-full mb-6">
-          <Button
-            variant="ghost"
-            onClick={handleShare}
-            // MODIFICATION: Share button style changes: solid red, no hover, white text
-            className="absolute top-4 right-4 z-20 bg-red-600 rounded-full p-2 h-auto w-auto text-white shadow-lg 
-                        hover:bg-red-600 focus:bg-red-700 active:bg-red-700" 
-          >
-            <Share2 className="h-5 w-5" />
-          </Button>
-
-          {/* Image Gallery Carousel */}
+        {/* Image Gallery Carousel */}
+        <div className="w-full mb-6">
           <Carousel
             opts={{ loop: true }}
             plugins={[Autoplay({ delay: 3000 })]}
             className="w-full"
-            // Add on an index change handler for the dots
             setApi={(api) => {
                 if (api) {
                   api.on("select", () => {
@@ -162,7 +150,6 @@ const EventDetail = () => {
               ))}
             </CarouselContent>
 
-            {/* Carousel navigation controls - MODIFICATION: Added RGBA background */}
             <CarouselPrevious 
               className="left-4 z-10 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white border-none" 
             />
@@ -170,7 +157,6 @@ const EventDetail = () => {
               className="right-4 z-10 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white border-none" 
             />
             
-            {/* White live dots - MODIFICATION: Added this section */}
             {displayImages.length > 1 && (
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
                     {displayImages.map((_, index) => (
@@ -178,45 +164,45 @@ const EventDetail = () => {
                             key={index}
                             className={`w-2 h-2 rounded-full transition-all duration-300 ${
                                 index === current
-                                    ? 'bg-white' // Active dot
-                                    : 'bg-white/40' // Inactive dot with RGBA
+                                    ? 'bg-white'
+                                    : 'bg-white/40'
                             }`}
-                            // Optionally add onClick to navigate, but keeping it simple for now
                         />
                     ))}
                 </div>
             )}
           </Carousel>
         </div>
-        {/* End of Image Gallery Carousel and Share Button Container */}
+
+        {/* Title, Location on left, Map & Share buttons on right */}
+        <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-6">
+          <div className="flex flex-col">
+            <h1 className="text-3xl font-bold">{event.name}</h1>
+            <p className="text-muted-foreground">{event.location}, {event.country}</p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={openInMaps}
+              className="bg-blue-600 text-white hover:bg-blue-700 border-blue-600"
+            >
+              <MapPin className="mr-2 h-4 w-4" />
+              View on Map
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleShare}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              <Share2 className="h-5 w-5" />
+            </Button>
+          </div>
+        </div>
 
         <div className="grid md:grid-cols-3 gap-6">
-          {/* MODIFICATION: Combined Name, Location, Date, Phone, Map Button, and About section 
-             into a single card-like container (md:col-span-2) on large screens.
-          */}
           <div className="md:col-span-2 space-y-6 p-4 md:p-6 border rounded-lg bg-card shadow-sm">
-            
-            {/* Title, Location & Map Button Group */}
-            {/* MODIFICATION: Changed flex direction and alignment for title, location, and map button */}
-            <div className="flex flex-col md:flex-row md:justify-between md:items-center space-y-2 md:space-y-0">
-              {/* Title and location details on the left */}
-              <div className="flex flex-col">
-                <h1 className="text-3xl font-bold">{event.name}</h1>
-                <p className="text-muted-foreground">{event.location}, {event.country}</p>
-              </div>
-              {/* View on Map button on the right, on the same row as the title on larger screens */}
-              <Button
-                variant="outline"
-                onClick={openInMaps}
-                className="w-full md:w-auto flex-shrink-0" 
-              >
-                <MapPin className="mr-2 h-4 w-4" />
-                View on Map
-              </Button>
-            </div>
-            
             {/* Date and Phone Group */}
-            <div className="flex flex-wrap gap-4 pt-2 border-t md:border-t-0">
+            <div className="flex flex-wrap gap-4">
               <div className="flex items-center gap-2">
                 <Calendar className="h-5 w-5 text-primary" />
                 <span>{new Date(event.date).toLocaleDateString()}</span>

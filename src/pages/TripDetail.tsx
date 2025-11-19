@@ -125,116 +125,78 @@ const TripDetail = () => {
       <Header />
       
       <main className="container px-4 py-6 max-w-6xl mx-auto">
-        {/* Desktop: Info left, carousel right. Mobile: carousel then info */}
-        <div className="grid md:grid-cols-2 gap-6 mb-6">
-          
-          {/* LEFT COLUMN ON DESKTOP: Name, Map, Date (hidden on mobile) */}
-          <div className="hidden md:block space-y-4">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">{trip.name}</h1>
-              <p className="text-muted-foreground">{trip.location}, {trip.country}</p>
-            </div>
+        {/* Image Gallery Carousel */}
+        <div className="w-full mb-6">
+          <Carousel
+            opts={{ loop: true }}
+            plugins={[Autoplay({ delay: 3000 })]}
+            className="w-full"
+            setApi={(api) => {
+                if (api) {
+                  api.on("select", () => {
+                      setCurrent(api.selectedScrollSnap());
+                  });
+                }
+            }}
+          >
+            <CarouselContent>
+              {displayImages.map((img, idx) => (
+                <CarouselItem key={idx}>
+                  <img
+                    src={img}
+                    alt={`${trip.name} ${idx + 1}`}
+                    className="w-full h-64 md:h-96 object-cover"
+                  />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+
+            <CarouselPrevious 
+              className="left-4 z-10 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white border-none" 
+            />
+            <CarouselNext 
+              className="right-4 z-10 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white border-none" 
+            />
             
+            {displayImages.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
+                    {displayImages.map((_, index) => (
+                        <div
+                            key={index}
+                            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                                index === current
+                                    ? 'bg-white'
+                                    : 'bg-white/40'
+                            }`}
+                        />
+                    ))}
+                </div>
+            )}
+          </Carousel>
+        </div>
+
+        {/* Title, Location on left, Map & Share buttons on right */}
+        <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-6">
+          <div className="flex flex-col">
+            <h1 className="text-3xl font-bold">{trip.name}</h1>
+            <p className="text-muted-foreground">{trip.location}, {trip.country}</p>
+          </div>
+          <div className="flex gap-2">
             <Button
               variant="outline"
               onClick={openInMaps}
-              className="w-full"
+              className="bg-blue-600 text-white hover:bg-blue-700 border-blue-600"
             >
               <MapPin className="mr-2 h-4 w-4" />
               View on Map
             </Button>
-
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-primary" />
-                <span>{new Date(trip.date).toLocaleDateString()}</span>
-              </div>
-              {trip.phone_number && (
-                <div className="flex items-center gap-2">
-                  <Phone className="h-5 w-5 text-primary" />
-                  <a href={`tel:${trip.phone_number}`}>{trip.phone_number}</a>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* RIGHT COLUMN ON DESKTOP / TOP ON MOBILE: Image Gallery Carousel */}
-          <div className="relative w-full">
             <Button
-              variant="ghost"
-              size="icon"
+              variant="outline"
               onClick={handleShare}
-              className="absolute top-4 right-4 z-20 bg-white/80 hover:bg-white text-gray-800 rounded-full shadow-md"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               <Share2 className="h-5 w-5" />
             </Button>
-
-            <Carousel
-              opts={{ loop: true }}
-              plugins={[Autoplay({ delay: 4000 })]}
-            >
-              <CarouselContent>
-                {displayImages.map((img, idx) => (
-                  <CarouselItem key={idx}>
-                    <img
-                      src={img}
-                      alt={`${trip.name} ${idx + 1}`}
-                      className="w-full h-64 md:h-96 object-cover" 
-                    />
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-
-              <CarouselPrevious 
-                className="left-4 z-10 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white border-none" 
-              />
-              <CarouselNext 
-                className="right-4 z-10 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white border-none" 
-              />
-              
-              {displayImages.length > 1 && (
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
-                  {displayImages.map((_, index) => (
-                    <div
-                      key={index}
-                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                        index === current ? 'bg-white' : 'bg-white/40' 
-                      }`}
-                    />
-                  ))}
-                </div>
-              )}
-            </Carousel>
-          </div>
-
-          {/* MOBILE ONLY: Name, Map, Date below carousel */}
-          <div className="md:hidden space-y-4">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">{trip.name}</h1>
-              <p className="text-muted-foreground">{trip.location}, {trip.country}</p>
-            </div>
-            
-            <Button
-              variant="outline"
-              onClick={openInMaps}
-              className="w-full"
-            >
-              <MapPin className="mr-2 h-4 w-4" />
-              View on Map
-            </Button>
-
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-primary" />
-                <span>{new Date(trip.date).toLocaleDateString()}</span>
-              </div>
-              {trip.phone_number && (
-                <div className="flex items-center gap-2">
-                  <Phone className="h-5 w-5 text-primary" />
-                  <a href={`tel:${trip.phone_number}`}>{trip.phone_number}</a>
-                </div>
-              )}
-            </div>
           </div>
         </div>
 
