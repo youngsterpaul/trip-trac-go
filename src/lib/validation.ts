@@ -21,15 +21,12 @@ export const paymentPhoneSchema = z.string()
   .trim()
   .regex(/^\+?[0-9]{10,15}$/, "Invalid phone number format (10-15 digits)");
 
-// Access PIN validation schema
-export const accessPinSchema = z.string()
-  .min(8, "PIN must be at least 8 characters")
-  .max(50, "PIN must be less than 50 characters")
-  .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>])/, 
-    "PIN must contain uppercase, lowercase, numbers and special characters")
+// Description validation schema (100 words max)
+export const descriptionSchema = z.string()
+  .trim()
   .refine(
-    pin => !['123456', 'password', '111111', 'qwerty', 'abc123', 'Password1!', 'Admin123!'].includes(pin.toLowerCase()), 
-    "PIN is too common"
+    (val) => val.split(/\s+/).filter(Boolean).length <= 100,
+    "Description must be 100 words or less"
   );
 
 // Registration number validation schema
