@@ -33,8 +33,6 @@ const CreateAdventure = () => {
     entry_fee: "",
     map_link: "",
     registrationNumber: "",
-    accessPin: "",
-    confirmAccessPin: "",
     amenities: ""
   });
   
@@ -166,17 +164,6 @@ const CreateAdventure = () => {
         .filter(f => f.name.trim())
         .map(f => ({ name: f.name.trim(), price: parseFloat(f.price) || 0 }));
 
-      // Hash the PIN using database function
-      let hashedPin = null;
-      if (formData.accessPin) {
-        const { data: hashData, error: hashError } = await supabase.rpc('hash_pin', {
-          pin_text: formData.accessPin
-        });
-        if (hashError) {
-          throw new Error('Failed to hash PIN: ' + hashError.message);
-        }
-        hashedPin = hashData;
-      }
 
       const { error } = await supabase
         .from("adventure_places")
@@ -190,7 +177,7 @@ const CreateAdventure = () => {
           gallery_images: uploadedUrls,
           map_link: formData.map_link || null,
           registration_number: formData.registrationNumber || null,
-          hashed_access_pin: hashedPin,
+          
           email: formData.email || null,
           phone_numbers: phoneArray.length > 0 ? phoneArray : null,
           entry_fee_type: formData.entry_fee_type,
@@ -293,30 +280,6 @@ const CreateAdventure = () => {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="accessPin">Access PIN *</Label>
-                <Input
-                  id="accessPin"
-                  type="password"
-                  required
-                  value={formData.accessPin}
-                  onChange={(e) => setFormData({...formData, accessPin: e.target.value})}
-                  placeholder="Min 8 chars with uppercase, lowercase, numbers & special chars"
-                />
-                <p className="text-sm text-muted-foreground">Must include uppercase, lowercase, numbers & special characters (!@#$%^&*)</p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="confirmAccessPin">Confirm Access PIN *</Label>
-                <Input
-                  id="confirmAccessPin"
-                  type="password"
-                  required
-                  value={formData.confirmAccessPin}
-                  onChange={(e) => setFormData({...formData, confirmAccessPin: e.target.value})}
-                  placeholder="Re-enter access PIN"
-                />
-              </div>
 
               <div className="space-y-2">
                 <Label htmlFor="entry_fee_type">Entry Fee Type *</Label>
