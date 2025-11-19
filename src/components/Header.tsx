@@ -62,25 +62,8 @@ export const Header = () => {
     checkRole();
   }, [user]);
 
-  useEffect(() => {
-    const controlHeader = () => {
-      const currentScrollY = window.scrollY;
-      
-      if (window.innerWidth < 768) {
-        // Mobile: hide header on scroll down
-        if (currentScrollY > lastScrollY && currentScrollY > 100) {
-          setIsVisible(false);
-        } else {
-          setIsVisible(true);
-        }
-      }
-      
-      setLastScrollY(currentScrollY);
-    };
-
-    window.addEventListener("scroll", controlHeader);
-    return () => window.removeEventListener("scroll", controlHeader);
-  }, [lastScrollY]);
+  // Header should always remain visible (sticky)
+  // Removed scroll hide behavior
 
   // Function to get the display name for the icon (name only, no email)
   const getDisplayName = () => {
@@ -100,14 +83,14 @@ export const Header = () => {
   };
 
   return (
-    <header className={`sticky top-0 z-50 w-full border-b border-border bg-header text-header-foreground h-16 transition-transform duration-300 ${!isVisible ? '-translate-y-full' : 'translate-y-0'}`}>
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-blue-900 text-white h-16">
       <div className="container flex h-full items-center justify-between px-4">
         
         {/* Logo and Drawer Trigger (Left Side) */}
         <div className="flex items-center gap-3">
           <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
             <SheetTrigger asChild>
-              <button className="inline-flex items-center justify-center h-10 w-10 rounded-md text-header-foreground hover:bg-header-hover transition-colors">
+              <button className="inline-flex items-center justify-center h-10 w-10 rounded-md text-white hover:bg-blue-800 transition-colors">
                 <Menu className="h-5 w-5" />
               </button>
             </SheetTrigger>

@@ -17,6 +17,10 @@ interface Booking {
   payment_status: string;
   status: string;
   created_at: string;
+  guest_name: string | null;
+  guest_email: string | null;
+  guest_phone: string | null;
+  slots_booked: number | null;
 }
 
 const Bookings = () => {
@@ -114,28 +118,47 @@ const Bookings = () => {
                        'Booking'}
                     </h3>
 
-                    <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                      {booking.booking_details.date && (
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          <span>{new Date(booking.booking_details.date).toLocaleDateString()}</span>
+                    <div className="flex flex-col gap-3 text-sm">
+                      {/* Contact Information */}
+                      {(booking.guest_name || booking.guest_email || booking.guest_phone) && (
+                        <div className="space-y-1">
+                          <p className="font-medium text-foreground">Contact:</p>
+                          {booking.guest_name && <p className="text-muted-foreground">Name: {booking.guest_name}</p>}
+                          {booking.guest_email && <p className="text-muted-foreground">Email: {booking.guest_email}</p>}
+                          {booking.guest_phone && <p className="text-muted-foreground">Phone: {booking.guest_phone}</p>}
                         </div>
                       )}
-                      {(booking.booking_details.adults || booking.booking_details.children) && (
-                        <div className="flex items-center gap-1">
-                          <Users className="h-4 w-4" />
-                          <span>
-                            {booking.booking_details.adults ? `${booking.booking_details.adults} Adults` : ''}
-                            {booking.booking_details.children ? ` • ${booking.booking_details.children} Children` : ''}
-                          </span>
-                        </div>
-                      )}
-                      {booking.booking_details.location && (
-                        <div className="flex items-center gap-1">
-                          <MapPin className="h-4 w-4" />
-                          <span>{booking.booking_details.location}</span>
-                        </div>
-                      )}
+
+                      {/* Booking Details */}
+                      <div className="flex flex-wrap gap-4 text-muted-foreground">
+                        {booking.booking_details.date && (
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-4 w-4" />
+                            <span>{new Date(booking.booking_details.date).toLocaleDateString()}</span>
+                          </div>
+                        )}
+                        {booking.slots_booked && (
+                          <div className="flex items-center gap-1">
+                            <Users className="h-4 w-4" />
+                            <span>{booking.slots_booked} Tickets</span>
+                          </div>
+                        )}
+                        {(booking.booking_details.adults || booking.booking_details.children) && (
+                          <div className="flex items-center gap-1">
+                            <Users className="h-4 w-4" />
+                            <span>
+                              {booking.booking_details.adults ? `${booking.booking_details.adults} Adults` : ''}
+                              {booking.booking_details.children ? ` • ${booking.booking_details.children} Children` : ''}
+                            </span>
+                          </div>
+                        )}
+                        {booking.booking_details.location && (
+                          <div className="flex items-center gap-1">
+                            <MapPin className="h-4 w-4" />
+                            <span>{booking.booking_details.location}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     <p className="text-xs text-muted-foreground">
