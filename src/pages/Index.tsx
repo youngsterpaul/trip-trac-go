@@ -5,7 +5,7 @@ import { MobileBottomBar } from "@/components/MobileBottomBar";
 import { SearchBarWithSuggestions } from "@/components/SearchBarWithSuggestions";
 import { ListingCard } from "@/components/ListingCard";
 import { Footer } from "@/components/Footer";
-import { Calendar, Hotel, Mountain, PartyPopper } from "lucide-react";
+import { Calendar, Hotel, Mountain, PartyPopper, ChevronLeft, ChevronRight } from "lucide-react"; // Import Chevron icons
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { getUserId } from "@/lib/sessionManager";
@@ -74,11 +74,29 @@ const Index = () => {
   const [lastScrollY, setLastScrollY] = useState(0);
   const [showSearchIcon, setShowSearchIcon] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+  const featuredPlacesRef = useRef<HTMLDivElement>(null); // Ref for Featured Places scroll
+  const featuredHotelsRef = useRef<HTMLDivElement>(null); // Ref for Featured Hotels scroll
   const [scrollableRows, setScrollableRows] = useState<{ trips: any[], events: any[], hotels: any[] }>({ trips: [], events: [], hotels: [] });
   const [nearbyPlacesHotels, setNearbyPlacesHotels] = useState<any[]>([]);
   const [loadingScrollable, setLoadingScrollable] = useState(true);
   const [loadingNearby, setLoadingNearby] = useState(true);
 
+  // --- Scroll Functions ---
+  const scrollFeaturedPlaces = (direction: 'left' | 'right') => {
+    if (featuredPlacesRef.current) {
+      const scrollAmount = direction === 'right' ? 280 : -280; // 256px (w-64) + 16px (gap-4)
+      featuredPlacesRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
+
+  const scrollFeaturedHotels = (direction: 'left' | 'right') => {
+    if (featuredHotelsRef.current) {
+      const scrollAmount = direction === 'right' ? 280 : -280; // 256px (w-64) + 16px (gap-4)
+      featuredHotelsRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
+
+  // --- Data Fetching and Other Hooks (omitted for brevity, assume they are the same) ---
   const fetchScrollableRows = async () => {
     setLoadingScrollable(true);
     const hotelsData = await supabase.from("hotels").select("*").eq("approval_status", "approved").eq("is_hidden", false).limit(10);
@@ -228,7 +246,7 @@ const Index = () => {
     { icon: Hotel, title: "Hotels", path: "/category/hotels", bgImage: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800" },
     { icon: Mountain, title: "Adventure", path: "/category/adventure", bgImage: "https://images.unsplash.com/photo-1551632811-561732d1e306?w=800" },
   ];
-
+// --- JSX RETURN ---
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
       <Header onSearchClick={handleSearchIconClick} showSearchIcon={showSearchIcon} />
@@ -244,13 +262,12 @@ const Index = () => {
       </div>
       <main className="container px-0 md:px-4 py-0 md:py-8">
         <section className="flex flex-col lg:flex-row gap-4 md:gap-6">
-          <div className="w-full lg:w-1/3 order-2 lg:order-1 flex"> {/* Added flex to make the categories container stretch */}
-            <div className="grid grid-cols-2 gap-2 md:gap-0 lg:gap-4 w-full px-2 md:px-0"> {/* Added lg:gap-4 for column/row gap, and w-full */}
+          <div className="w-full lg:w-1/3 order-2 lg:order-1 flex">
+            <div className="grid grid-cols-2 gap-2 md:gap-0 lg:gap-4 w-full px-2 md:px-0">
               {categories.map((cat) => (
                 <div
                   key={cat.title}
                   onClick={() => navigate(cat.path)}
-                  // Adjusted class to make boxes bigger on lg, remove fixed h-24 on lg, and enforce aspect-square
                   className="relative h-24 lg:h-full lg:aspect-square cursor-pointer overflow-hidden group"
                   style={{ backgroundImage: `url(${cat.bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
                 >
@@ -269,7 +286,7 @@ const Index = () => {
         <div className="px-4">
           {/* Main Listings - First */}
           <section className="mb-8">
-            <div className="mt-4" /> {/* Replaced h2 with a small spacing div */}
+            <div className="mt-4" /> {/* Small spacing div */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {loading ? (
                 [...Array(10)].map((_, i) => (
@@ -306,52 +323,107 @@ const Index = () => {
           {/* Featured Places */}
           <section className="mb-8">
             <h2 className="text-2xl font-bold mb-4">Featured Places</h2>
-            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-              {loadingScrollable ? (
-                [...Array(5)].map((_, i) => (
-                  <div key={i} className="flex-shrink-0 w-64">
-                    <div className="aspect-[4/3] bg-muted animate-pulse rounded-lg" />
-                    <div className="h-4 bg-muted animate-pulse rounded mt-2 w-3/4" />
-                    <div className="h-3 bg-muted animate-pulse rounded mt-1 w-1/2" />
-                  </div>
-                ))
-              ) : (
-                nearbyPlacesHotels.filter((item) => item.table === "adventure_places").slice(0, 10).map((place) => (
-                  <div key={place.id} className="flex-shrink-0 w-64 cursor-pointer" onClick={() => navigate(`/adventure/${place.id}`)}>
-                    <div className="relative aspect-[4/3] overflow-hidden rounded-lg">
-                      <img src={place.image_url} alt={place.name} className="w-full h-full object-cover" />
+            <div className="relative">
+              {/* Scrollable Container */}
+              <div 
+                ref={featuredPlacesRef}
+                className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }} // Hide scrollbar for Firefox/IE
+              >
+                {loadingScrollable ? (
+                  [...Array(5)].map((_, i) => (
+                    <div key={i} className="flex-shrink-0 w-64">
+                      <div className="aspect-[4/3] bg-muted animate-pulse rounded-lg" />
+                      <div className="h-4 bg-muted animate-pulse rounded mt-2 w-3/4" />
+                      <div className="h-3 bg-muted animate-pulse rounded mt-1 w-1/2" />
                     </div>
-                    <h3 className="font-semibold mt-2">{place.name}</h3>
-                    <p className="text-sm text-muted-foreground">{place.location}</p>
-                  </div>
-                ))
-              )}
+                  ))
+                ) : (
+                  nearbyPlacesHotels.filter((item) => item.table === "adventure_places").slice(0, 10).map((place) => (
+                    <div key={place.id} className="flex-shrink-0 w-64 cursor-pointer" onClick={() => navigate(`/adventure/${place.id}`)}>
+                      <div className="relative aspect-[4/3] overflow-hidden rounded-lg">
+                        <img src={place.image_url} alt={place.name} className="w-full h-full object-cover" />
+                      </div>
+                      <h3 className="font-semibold mt-2">{place.name}</h3>
+                      <p className="text-sm text-muted-foreground">{place.location}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+              
+              {/* Left Scroll Button */}
+              <Button
+                variant="outline"
+                size="icon"
+                className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white z-10 hidden md:flex shadow-md rounded-full"
+                onClick={() => scrollFeaturedPlaces('left')}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+
+              {/* Right Scroll Button */}
+              <Button
+                variant="outline"
+                size="icon"
+                className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white z-10 hidden md:flex shadow-md rounded-full"
+                onClick={() => scrollFeaturedPlaces('right')}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+
             </div>
           </section>
 
           {/* Featured Hotels */}
           <section className="mb-8">
             <h2 className="text-2xl font-bold mb-4">Featured Hotels</h2>
-            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-              {loadingScrollable ? (
-                [...Array(5)].map((_, i) => (
-                  <div key={i} className="flex-shrink-0 w-64">
-                    <div className="aspect-[4/3] bg-muted animate-pulse rounded-lg" />
-                    <div className="h-4 bg-muted animate-pulse rounded mt-2 w-3/4" />
-                    <div className="h-3 bg-muted animate-pulse rounded mt-1 w-1/2" />
-                  </div>
-                ))
-              ) : (
-                scrollableRows.hotels.map((hotel) => (
-                  <div key={hotel.id} className="flex-shrink-0 w-64 cursor-pointer" onClick={() => navigate(`/hotel/${hotel.id}`)}>
-                    <div className="relative aspect-[4/3] overflow-hidden rounded-lg">
-                      <img src={hotel.image_url} alt={hotel.name} className="w-full h-full object-cover" />
+            <div className="relative">
+              {/* Scrollable Container */}
+              <div 
+                ref={featuredHotelsRef}
+                className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }} // Hide scrollbar for Firefox/IE
+              >
+                {loadingScrollable ? (
+                  [...Array(5)].map((_, i) => (
+                    <div key={i} className="flex-shrink-0 w-64">
+                      <div className="aspect-[4/3] bg-muted animate-pulse rounded-lg" />
+                      <div className="h-4 bg-muted animate-pulse rounded mt-2 w-3/4" />
+                      <div className="h-3 bg-muted animate-pulse rounded mt-1 w-1/2" />
                     </div>
-                    <h3 className="font-semibold mt-2">{hotel.name}</h3>
-                    <p className="text-sm text-muted-foreground">{hotel.location}</p>
-                  </div>
-                ))
-              )}
+                  ))
+                ) : (
+                  scrollableRows.hotels.map((hotel) => (
+                    <div key={hotel.id} className="flex-shrink-0 w-64 cursor-pointer" onClick={() => navigate(`/hotel/${hotel.id}`)}>
+                      <div className="relative aspect-[4/3] overflow-hidden rounded-lg">
+                        <img src={hotel.image_url} alt={hotel.name} className="w-full h-full object-cover" />
+                      </div>
+                      <h3 className="font-semibold mt-2">{hotel.name}</h3>
+                      <p className="text-sm text-muted-foreground">{hotel.location}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Left Scroll Button */}
+              <Button
+                variant="outline"
+                size="icon"
+                className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white z-10 hidden md:flex shadow-md rounded-full"
+                onClick={() => scrollFeaturedHotels('left')}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+
+              {/* Right Scroll Button */}
+              <Button
+                variant="outline"
+                size="icon"
+                className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white z-10 hidden md:flex shadow-md rounded-full"
+                onClick={() => scrollFeaturedHotels('right')}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
             </div>
           </section>
 
