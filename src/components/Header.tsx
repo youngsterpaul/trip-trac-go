@@ -68,9 +68,6 @@ export const Header = ({ onSearchClick, showSearchIcon = true }: HeaderProps) =>
     checkRole();
   }, [user]);
 
-  // Header should always remain visible (sticky)
-  // Removed scroll hide behavior
-
   // Function to get the display name for the icon (name only, no email)
   const getDisplayName = () => {
     return userName || "Account";
@@ -78,7 +75,7 @@ export const Header = ({ onSearchClick, showSearchIcon = true }: HeaderProps) =>
 
   // Mobile account icon tap handler
   const [showMobileAccountDialog, setShowMobileAccountDialog] = useState(false);
-  
+
   const handleMobileAccountTap = () => {
     if (!user) {
       // Redirect to login
@@ -192,10 +189,11 @@ export const Header = ({ onSearchClick, showSearchIcon = true }: HeaderProps) =>
             )}
           </div>
 
-          {/* Desktop Auth Actions (Right Side) - Keep this one */}
+          {/* Desktop Auth Actions (Right Side) - MODIFIED SECTION */}
           <div className="hidden md:flex items-center gap-2">
             <ThemeToggle />
             {user ? (
+              // Logged In: Dropdown Menu with Account Icon and Name
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-2 px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 transition-colors text-white">
@@ -218,244 +216,18 @@ export const Header = ({ onSearchClick, showSearchIcon = true }: HeaderProps) =>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button 
+              // Logged Out: Account Icon (replaces the Login / Sign Up Button)
+              <button 
                 onClick={() => navigate('/auth')}
-                variant="outline" 
-                className="bg-white text-blue-900 hover:bg-white/90 border-white font-medium"
+                className="rounded-full h-10 w-10 flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors"
+                aria-label="Login or Sign Up"
               >
-                Login / Sign Up
-              </Button>
+                <User className="h-5 w-5 text-white" />
+              </button>
             )}
           </div>
         </div>
       </div>
     </header>
-  );import { useState, useEffect } from "react";
-import { Menu, Heart, Ticket, Shield, Home, FolderOpen, User, Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuLabel, // Imported for the login prompt label
-  DropdownMenuSeparator, // Imported to separate sections
-} from "@/components/ui/dropdown-menu";
-import { NavigationDrawer } from "./NavigationDrawer";
-import { Link, useNavigate } from "react-router-dom";
-import { ThemeToggle } from "./ThemeToggle";
-
-interface HeaderProps {
-  onSearchClick?: () => void;
-  showSearchIcon?: boolean;
-}
-
-export const Header = ({ onSearchClick, showSearchIcon = true }: HeaderProps) => {
-  const navigate = useNavigate();
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const { user, signOut } = useAuth();
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [userName, setUserName] = useState<string>("");
-  // Removed unused state: [isVisible, setIsVisible, lastScrollY, setLastScrollY]
-  
-  // Removed unused state: [showMobileAccountDialog, setShowMobileAccountDialog]
-  // The mobile logic is simplified to use the default mobile button or a DropdownMenu
-
-  useEffect(() => {
-    const checkRole = async () => {
-      if (!user) {
-        setUserRole(null);
-        setUserName("");
-        return;
-      }
-
-      // 1. Fetch User Role
-      const { data: roleData } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id);
-
-      if (roleData && roleData.length > 0) {
-        const roles = roleData.map(r => r.role);
-        if (roles.includes("admin")) setUserRole("admin");
-        else setUserRole("user");
-      }
-
-      // 2. Fetch User Name
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("name")
-        .eq("id", user.id)
-        .single();
-
-      if (profile && profile.name) {
-        // Extract first name (text before first space)
-        const firstName = profile.name.split(" ")[0];
-        setUserName(firstName);
-      }
-    };
-
-    checkRole();
-  }, [user]);
-
-  // Function to get the display name for the icon
-  const getDisplayName = () => {
-    return userName || "Account";
-  };
-
-  // The simplified mobile account tap handler
-  const handleMobileAccountTap = () => {
-    if (!user) {
-      // Redirect to login if not logged in
-      navigate("/auth");
-    } else {
-      // For logged-in users on mobile, we can let the mobile dropdown logic handle it
-      // or simply rely on the default Sheet navigation for profile/bookings.
-      // Since the original component already contained a separate mobile dropdown logic,
-      // we'll revert to simply navigating to the profile or dashboard if logged in
-      // or opening the mobile dropdown if you intended to keep it (which the previous code did).
-      // For simplicity, we'll keep the existing mobile rendering but remove the custom dialog state.
-      // The mobile view now uses a simple button that navigates to /auth if logged out, or
-      // is handled via the dropdown menu if logged in (if that's the intended component behavior).
-      // Given the desktop change, we'll ensure mobile remains functional:
-      // If logged out, it pushes to /auth. If logged in, the dropdown handles actions.
-    }
-  };
-
-
-  return (
-    <header className="md:sticky top-0 z-50 w-full border-b border-border bg-blue-900 text-white h-16 dark:bg-blue-900 dark:text-white">
-      <div className="container flex h-full items-center justify-between px-4">
-        
-        {/* Logo and Drawer Trigger (Left Side) */}
-        <div className="flex items-center gap-3">
-          <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-            <SheetTrigger asChild>
-              <button className="inline-flex items-center justify-center h-10 w-10 rounded-md text-white hover:bg-blue-800 transition-colors">
-                <Menu className="h-5 w-5" />
-              </button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-72 p-0 h-screen">
-              <NavigationDrawer onClose={() => setIsDrawerOpen(false)} />
-            </SheetContent>
-          </Sheet>
-          
-          <Link to="/" className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-lg bg-background flex items-center justify-center text-primary font-bold text-lg">
-              T
-            </div>
-            <div>
-              <span className="font-bold text-base md:text-lg text-header-foreground block">
-                TripTrac
-              </span>
-              <p className="text-xs text-muted-foreground block">Explore the world</p>
-            </div>
-          </Link>
-        </div>
-
-        {/* Desktop Navigation (Centered) */}
-        <nav className="hidden lg:flex items-center gap-6">
-          <Link to="/" className="flex items-center gap-2 font-bold hover:text-white/80 transition-colors">
-            <Home className="h-4 w-4" />
-            <span>Home</span>
-          </Link>
-          <Link to="/bookings" className="flex items-center gap-2 font-bold hover:text-white/80 transition-colors">
-            <Ticket className="h-4 w-4" />
-            <span>My Bookings</span>
-          </Link>
-          <Link to="/saved" className="flex items-center gap-2 font-bold hover:text-white/80 transition-colors">
-            <Heart className="h-4 w-4" />
-            <span>Wishlist</span>
-          </Link>
-          <Link to="/my-listing" className="flex items-center gap-2 font-bold hover:text-white/80 transition-colors">
-            <FolderOpen className="h-4 w-4" />
-            <span>Become a Host</span>
-          </Link>
-        </nav>
-
-        {/* Account Controls (Right Side) */}
-        <div className="flex items-center gap-2">
-          
-          {/* Search Icon Button */}
-          {showSearchIcon && (
-            <button 
-              onClick={() => {
-                if (onSearchClick) {
-                  onSearchClick();
-                } else {
-                  navigate('/');
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }
-              }}
-              className="rounded-full h-10 w-10 flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors"
-              aria-label="Search"
-            >
-              <Search className="h-5 w-5 text-white" />
-            </button>
-          )}
-            
-          {/* Mobile: Account Icon with Name (Right Side) - Simplified */}
-          <button 
-            onClick={handleMobileAccountTap}
-            className="md:hidden flex items-center gap-2 text-white hover:text-white/80 transition-colors"
-          >
-            <User className="h-5 w-5" />
-            <span className="text-sm font-medium">{getDisplayName()}</span>
-          </button>
-          
-          {/* Desktop Auth Actions (Right Side) - MODIFIED */}
-          <div className="hidden md:flex items-center gap-2">
-            <ThemeToggle />
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 transition-colors text-white">
-                  <User className="h-5 w-5" />
-                  <span className="font-medium">{user ? getDisplayName() : "Account"}</span>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-background border-border">
-                {user ? (
-                  <>
-                    <DropdownMenuItem asChild>
-                      <Link to="/profile/edit" className="text-foreground hover:bg-accent cursor-pointer">Profile</Link>
-                    </DropdownMenuItem>
-                    {userRole === "admin" && (
-                      <DropdownMenuItem asChild>
-                        <Link to="/admin/dashboard" className="text-foreground hover:bg-accent cursor-pointer">Admin Dashboard</Link>
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuItem onClick={signOut} className="text-foreground hover:bg-accent cursor-pointer">
-                      Log out
-                    </DropdownMenuItem>
-                  </>
-                ) : (
-                  <>
-                    <DropdownMenuLabel className="font-semibold text-center py-2">
-                      Ready to explore?
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem 
-                      onClick={() => navigate('/auth')} 
-                      className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold cursor-pointer"
-                    >
-                      Login / Sign Up
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-      </div>
-    </header>
   );
-};
 };
