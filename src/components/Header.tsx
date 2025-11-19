@@ -89,7 +89,7 @@ export const Header = ({ onSearchClick, showSearchIcon = true }: HeaderProps) =>
   };
 
   return (
-    <header className="md:sticky top-0 z-50 w-full border-b border-border bg-blue-900 text-white h-16">
+    <header className="md:sticky top-0 z-50 w-full border-b border-border bg-blue-900 text-white h-16 dark:bg-blue-900 dark:text-white">
       <div className="container flex h-full items-center justify-between px-4">
         
         {/* Logo and Drawer Trigger (Left Side) */}

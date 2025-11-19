@@ -292,7 +292,34 @@ const Index = () => {
             </div>
           </section>
 
+
           <hr className="border-t border-gray-200 my-8" />
+
+          {/* Featured Places */}
+          <section className="mb-8">
+            <h2 className="text-2xl font-bold mb-4">Featured Places</h2>
+            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+              {loadingScrollable ? (
+                [...Array(5)].map((_, i) => (
+                  <div key={i} className="flex-shrink-0 w-64">
+                    <div className="aspect-[4/3] bg-muted animate-pulse rounded-lg" />
+                    <div className="h-4 bg-muted animate-pulse rounded mt-2 w-3/4" />
+                    <div className="h-3 bg-muted animate-pulse rounded mt-1 w-1/2" />
+                  </div>
+                ))
+              ) : (
+                nearbyPlacesHotels.filter((item) => item.table === "adventure_places").slice(0, 10).map((place) => (
+                  <div key={place.id} className="flex-shrink-0 w-64 cursor-pointer" onClick={() => navigate(`/adventure/${place.id}`)}>
+                    <div className="relative aspect-[4/3] overflow-hidden rounded-lg">
+                      <img src={place.image_url} alt={place.name} className="w-full h-full object-cover" />
+                    </div>
+                    <h3 className="font-semibold mt-2">{place.name}</h3>
+                    <p className="text-sm text-muted-foreground">{place.location}</p>
+                  </div>
+                ))
+              )}
+            </div>
+          </section>
 
           {/* Featured Hotels */}
           <section className="mb-8">

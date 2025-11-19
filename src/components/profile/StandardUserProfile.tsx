@@ -60,6 +60,9 @@ export const StandardUserProfile = () => {
         title: "Success",
         description: "Profile updated successfully",
       });
+      
+      // Trigger a page reload to update the navigation drawer
+      window.location.reload();
     } catch (error) {
       console.error("Error updating profile:", error);
       toast({

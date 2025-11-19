@@ -21,14 +21,14 @@ const MobileThemeToggle = () => {
     <li className="pt-2 border-t border-gray-200 dark:border-gray-700">
       <button
         onClick={toggleTheme}
-        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 group"
+        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 group"
       >
         {theme === "dark" ? (
-          <Sun className="h-5 w-5 text-yellow-500 group-hover:text-yellow-600 transition-colors" />
+          <Sun className="h-5 w-5 text-white group-hover:text-yellow-600 transition-colors" />
         ) : (
-          <Moon className="h-5 w-5 text-gray-500 group-hover:text-blue-600 transition-colors" />
+          <Moon className="h-5 w-5 text-white group-hover:text-blue-600 transition-colors" />
         )}
-        <span className="font-medium">
+        <span className="font-medium text-white">
           {theme === "dark" ? "Light Mode" : "Dark Mode"}
         </span>
       </button>
@@ -135,10 +135,10 @@ export const NavigationDrawer = ({ onClose }: NavigationDrawerProps) => {
       <Link
         to="/profile"
         onClick={onClose}
-        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-blue-100 hover:bg-blue-800 hover:text-white transition-all duration-200 group"
+        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-white hover:bg-blue-800 transition-all duration-200 group mb-2"
       >
-        <User className="h-5 w-5" />
-        <span className="font-medium truncate">
+        <User className="h-5 w-5 text-white" />
+        <span className="font-medium truncate text-white">
           {userName || "My Profile"}
         </span>
       </Link>
@@ -146,8 +146,8 @@ export const NavigationDrawer = ({ onClose }: NavigationDrawerProps) => {
         onClick={handleLogout}
         className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-red-300 hover:bg-red-900/30 transition-all duration-200 group"
       >
-        <LogOut className="h-5 w-5" />
-        <span className="font-medium">Logout</span>
+        <LogOut className="h-5 w-5 text-red-300" />
+        <span className="font-medium text-red-300">Logout</span>
       </button>
     </li>
   ) : (
@@ -201,24 +201,24 @@ export const NavigationDrawer = ({ onClose }: NavigationDrawerProps) => {
                     <Link
                       to={item.path}
                       onClick={onClose}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-blue-100 hover:bg-blue-800 hover:text-white transition-all duration-200 group"
+                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-white hover:bg-blue-800 transition-all duration-200 group"
                     >
-                      <item.icon className="h-5 w-5" />
-                      <span className="font-medium">
+                      <item.icon className="h-5 w-5 text-white" />
+                      <span className="font-medium text-white">
                         {item.label}
                       </span>
                     </Link>
                   ) : (
                     <button
-                      onClick={() => handleProtectedNavigation(item.path)}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 hover:bg-gray-100 transition-all duration-200 group"
-                    >
-                      <item.icon className="h-5 w-5 text-gray-500 group-hover:text-blue-600 transition-colors" />
-                      <span className="font-medium">
-                        {item.label}
-                      </span>
-                    </button>
-                  )}
+                      onClick={() => handleProtectedNavigation(item.path)}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-white hover:bg-blue-800 transition-all duration-200 group"
+                    >
+                      <item.icon className="h-5 w-5 text-white" />
+                      <span className="font-medium text-white">
+                        {item.label}
+                      </span>
+                    </button>
+                  )}
                   {/* ADD DARK MODE TOGGLE AND REMOVED CHANGE NAME BUTTON */}
                   {item.label === "Wishlist" && (
                     <>
@@ -232,42 +232,42 @@ export const NavigationDrawer = ({ onClose }: NavigationDrawerProps) => {
           </li>
           
           {/* 2. PARTNER LINKS (MIDDLE SECTION) */}
-          <li className="mb-4 pt-4 border-t border-gray-200">
-            <p className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Partner</p>
-            <ul className="space-y-1">
-              {partnerItems.map((item) => (
-                <li key={item.path}>
-                  <button
-                    onClick={() => handleProtectedNavigation(item.path)}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 hover:bg-gray-100 transition-all duration-200 group"
-                  >
-                    <item.icon className="h-5 w-5 text-blue-600 group-hover:text-blue-700 transition-colors" />
-                    <span className="font-medium"> 
-                      {item.label}
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </li>
+          <li className="mb-4 pt-4 border-t border-blue-800">
+            <p className="px-4 py-2 text-xs font-semibold text-blue-300 uppercase">Partner</p>
+            <ul className="space-y-1">
+              {partnerItems.map((item) => (
+                <li key={item.path}>
+                  <button
+                    onClick={() => handleProtectedNavigation(item.path)}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-white hover:bg-blue-800 transition-all duration-200 group"
+                  >
+                    <item.icon className="h-5 w-5 text-white" />
+                    <span className="font-medium text-white"> 
+                      {item.label}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </li>
 
-          {/* 3. VLOG, CONTACT, ABOUT (BOTTOM SECTION) */}
-          <li className="mb-4 pt-4 border-t border-gray-200">
-            <p className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Company</p>
-            <ul className="space-y-1">
-              {bottomNavItems.map((item) => (
-                <li key={item.path}>
-                  <Link
-                    to={item.path}
-                    onClick={onClose}
-                    className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 hover:bg-gray-100 transition-all duration-200 group"
-                  >
-                    <item.icon className="h-5 w-5 text-gray-500 group-hover:text-blue-600 transition-colors" />
-                    <span className="font-medium">
-                      {item.label}
-                    </span>
-                  </Link>
-                </li>
+          {/* 3. VLOG, CONTACT, ABOUT (BOTTOM SECTION) */}
+          <li className="mb-4 pt-4 border-t border-blue-800">
+            <p className="px-4 py-2 text-xs font-semibold text-blue-300 uppercase">Company</p>
+            <ul className="space-y-1">
+              {bottomNavItems.map((item) => (
+                <li key={item.path}>
+                  <Link
+                    to={item.path}
+                    onClick={onClose}
+                    className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-white hover:bg-blue-800 transition-all duration-200 group"
+                  >
+                    <item.icon className="h-5 w-5 text-white" />
+                    <span className="font-medium text-white">
+                      {item.label}
+                    </span>
+                  </Link>
+                </li>
               ))}
             </ul>
           </li>
