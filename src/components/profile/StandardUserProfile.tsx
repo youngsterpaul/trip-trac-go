@@ -89,10 +89,8 @@ export const StandardUserProfile = () => {
         description: "Profile updated successfully",
       });
       
-      // Refresh the page to update the header and navigation drawer
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
+      // Refresh the profile data to show updates
+      await fetchProfile();
     } catch (error) {
       console.error("Error updating profile:", error);
       toast({
