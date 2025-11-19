@@ -159,37 +159,74 @@ export const Header = ({ onSearchClick, showSearchIcon = true }: HeaderProps) =>
             </button>
           )}
             
-        {/* Mobile: Account Icon with Name (Right Side) */}
-        <div className="md:hidden flex items-center gap-2 relative">
-          <button 
-            onClick={handleMobileAccountTap}
-            className="flex items-center gap-2 text-header-foreground hover:text-muted-foreground transition-colors"
-          >
-            <User className="h-5 w-5" />
-            <span className="text-sm font-medium">{getDisplayName()}</span>
-          </button>
-          
-          {/* Mobile account dropdown */}
-          {showMobileAccountDialog && user && (
-            <div className="absolute top-full right-0 mt-2 w-48 bg-background border rounded-lg shadow-lg z-50">
-              <Link 
-                to="/profile/edit" 
-                className="block px-4 py-3 hover:bg-accent text-foreground"
-                onClick={() => setShowMobileAccountDialog(false)}
+          {/* Mobile: Account Icon with Name (Right Side) */}
+          <div className="md:hidden flex items-center gap-2 relative">
+            <button 
+              onClick={handleMobileAccountTap}
+              className="flex items-center gap-2 text-white hover:text-white/80 transition-colors"
+            >
+              <User className="h-5 w-5" />
+              <span className="text-sm font-medium">{getDisplayName()}</span>
+            </button>
+            
+            {/* Mobile account dropdown */}
+            {showMobileAccountDialog && user && (
+              <div className="absolute top-full right-0 mt-2 w-48 bg-background border rounded-lg shadow-lg z-50">
+                <Link 
+                  to="/profile/edit" 
+                  className="block px-4 py-3 hover:bg-accent text-foreground"
+                  onClick={() => setShowMobileAccountDialog(false)}
+                >
+                  Profile
+                </Link>
+                <button 
+                  onClick={() => {
+                    setShowMobileAccountDialog(false);
+                    signOut();
+                  }}
+                  className="block w-full text-left px-4 py-3 hover:bg-accent text-foreground border-t"
+                >
+                  Log out
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Auth Actions (Right Side) */}
+          <div className="hidden md:flex items-center gap-2">
+            <ThemeToggle />
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-2 px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 transition-colors text-white">
+                    <User className="h-5 w-5" />
+                    <span className="font-medium">{getDisplayName()}</span>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-background border-border">
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile/edit" className="text-foreground hover:bg-accent cursor-pointer">Profile</Link>
+                  </DropdownMenuItem>
+                  {userRole === "admin" && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin/dashboard" className="text-foreground hover:bg-accent cursor-pointer">Admin Dashboard</Link>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={signOut} className="text-foreground hover:bg-accent cursor-pointer">
+                    Log out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button 
+                onClick={() => navigate('/auth')}
+                variant="outline" 
+                className="bg-white text-blue-900 hover:bg-white/90 border-white font-medium"
               >
-                Profile
-              </Link>
-              <button 
-                onClick={() => {
-                  setShowMobileAccountDialog(false);
-                  signOut();
-                }}
-                className="block w-full text-left px-4 py-3 hover:bg-accent text-foreground border-t"
-              >
-                Log out
-              </button>
-            </div>
-          )}
+                Login / Sign Up
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Desktop Auth Actions (Right Side) */}
@@ -198,33 +235,34 @@ export const Header = ({ onSearchClick, showSearchIcon = true }: HeaderProps) =>
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 px-3 py-2 rounded-md text-header-foreground hover:bg-header-hover transition-colors">
+                <button className="flex items-center gap-2 px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 transition-colors text-white">
                   <User className="h-5 w-5" />
-                  <span>{getDisplayName()}</span>
+                  <span className="font-medium">{getDisplayName()}</span>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="bg-background border-border">
                 <DropdownMenuItem asChild>
-                  <Link to="/profile/edit">Profile Edit</Link>
+                  <Link to="/profile/edit" className="text-foreground hover:bg-accent cursor-pointer">Profile</Link>
                 </DropdownMenuItem>
                 {userRole === "admin" && (
                   <DropdownMenuItem asChild>
-                    <Link to="/admin/dashboard">Admin Dashboard</Link>
+                    <Link to="/admin/dashboard" className="text-foreground hover:bg-accent cursor-pointer">Admin Dashboard</Link>
                   </DropdownMenuItem>
                 )}
-                <DropdownMenuItem onClick={signOut} className="text-red-600">
-                  Sign Out
+                <DropdownMenuItem onClick={signOut} className="text-foreground hover:bg-accent cursor-pointer">
+                  Log out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Link to="/auth">
-              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                Login / Sign Up
-              </Button>
-            </Link>
+            <Button 
+              onClick={() => navigate('/auth')}
+              variant="outline" 
+              className="bg-white text-blue-900 hover:bg-white/90 border-white font-medium"
+            >
+              Login / Sign Up
+            </Button>
           )}
-        </div>
         </div>
       </div>
     </header>

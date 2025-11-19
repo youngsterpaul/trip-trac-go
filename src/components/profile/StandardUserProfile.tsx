@@ -61,8 +61,10 @@ export const StandardUserProfile = () => {
         description: "Profile updated successfully",
       });
       
-      // Trigger a page reload to update the navigation drawer
-      window.location.reload();
+      // Refresh the page to update the header and navigation drawer
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     } catch (error) {
       console.error("Error updating profile:", error);
       toast({
