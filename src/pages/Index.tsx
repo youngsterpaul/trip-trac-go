@@ -72,6 +72,7 @@ const Index = () => {
   const { position } = useGeolocation();
   const [isSearchVisible, setIsSearchVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [showSearchIcon, setShowSearchIcon] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -92,14 +93,17 @@ const Index = () => {
       const currentScrollY = window.scrollY;
       
       if (window.innerWidth >= 768) {
-        // Desktop: shrink search bar on scroll down
+        // Desktop: show search icon when scrolled down
         if (currentScrollY > 200) {
           setIsSearchVisible(false);
+          setShowSearchIcon(true);
         } else {
           setIsSearchVisible(true);
+          setShowSearchIcon(false);
         }
       } else {
         setIsSearchVisible(true);
+        setShowSearchIcon(false);
       }
       
       setLastScrollY(currentScrollY);
@@ -108,6 +112,12 @@ const Index = () => {
     window.addEventListener("scroll", controlSearchBar);
     return () => window.removeEventListener("scroll", controlSearchBar);
   }, [lastScrollY]);
+
+  const handleSearchIconClick = () => {
+    setIsSearchVisible(true);
+    setShowSearchIcon(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const fetchAllData = async (query?: string) => {
     setLoading(true);
@@ -172,14 +182,19 @@ const Index = () => {
     { icon: Mountain, title: "Adventure", path: "/category/adventure", bgImage: "https://images.unsplash.com/photo-1551632811-561732d1e306?w=800" },
   ];
 
-  return (
-    <div className="min-h-screen bg-background pb-20 md:pb-0">
-      <Header />
-      <div className="sticky top-0 md:top-16 z-40 bg-background border-b shadow-sm">
-        <div className="container px-4 py-4">
-          <SearchBarWithSuggestions value={searchQuery} onChange={setSearchQuery} onSubmit={() => fetchAllData(searchQuery)} />
-        </div>
-      </div>
+  return (
+    <div className="min-h-screen bg-background pb-20 md:pb-0">
+      <Header onSearchClick={handleSearchIconClick} showSearchIcon={showSearchIcon} />
+      <div 
+        ref={searchRef}
+        className={`sticky top-0 md:top-16 z-40 bg-background border-b shadow-sm transition-all duration-300 ${
+          isSearchVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'
+        }`}
+      >
+        <div className="container px-4 py-4">
+          <SearchBarWithSuggestions value={searchQuery} onChange={setSearchQuery} onSubmit={() => fetchAllData(searchQuery)} />
+        </div>
+      </div>
       <main className="container px-0 md:px-4 py-0 md:py-8">
         <section className="flex flex-col lg:flex-row gap-4 md:gap-6">
           <div className="w-full lg:w-1/3 order-2 lg:order-1 flex"> {/* Added flex to make the categories container stretch */}

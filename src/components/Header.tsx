@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Menu, Heart, Ticket, Shield, Home, FolderOpen, User } from "lucide-react";
+import { Menu, Heart, Ticket, Shield, Home, FolderOpen, User, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,7 +18,12 @@ import { NavigationDrawer } from "./NavigationDrawer";
 import { Link } from "react-router-dom";
 import { ThemeToggle } from "./ThemeToggle";
 
-export const Header = () => {
+interface HeaderProps {
+  onSearchClick?: () => void;
+  showSearchIcon?: boolean;
+}
+
+export const Header = ({ onSearchClick, showSearchIcon = false }: HeaderProps) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const { user, signOut } = useAuth();
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -134,6 +139,17 @@ export const Header = () => {
 
         {/* Account Controls (Right Side) */}
         <div className="flex items-center gap-2">
+          
+          {/* Search Icon Button (appears when scrolled) */}
+          {showSearchIcon && (
+            <button 
+              onClick={onSearchClick}
+              className="rounded-full h-10 w-10 flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors"
+              aria-label="Search"
+            >
+              <Search className="h-5 w-5 text-white" />
+            </button>
+          )}
             
         {/* Mobile: Account Icon with Name (Right Side) */}
         <div className="md:hidden flex items-center gap-2 relative">
@@ -169,7 +185,7 @@ export const Header = () => {
         </div>
 
         {/* Desktop Auth Actions (Right Side) */}
-        <div className="hidden md:flex items-center gap-4">
+        <div className="hidden md:flex items-center gap-2">
           <ThemeToggle />
           {user ? (
             <DropdownMenu>
