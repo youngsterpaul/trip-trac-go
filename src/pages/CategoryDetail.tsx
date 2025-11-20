@@ -34,14 +34,9 @@ const CategoryDetail = () => {
     };
   } = {
     trips: {
-      title: "Trips & Events",
-      tables: ["trips", "events"],
+      title: "Trips",
+      tables: ["trips"],
       type: "TRIP"
-    },
-    events: {
-      title: "Events",
-      tables: ["events"],
-      type: "EVENT"
     },
     hotels: {
       title: "Hotels",
@@ -49,7 +44,12 @@ const CategoryDetail = () => {
       type: "HOTEL"
     },
     adventure: {
-      title: "Adventure Places",
+      title: "Attractions",
+      tables: ["adventure_places"],
+      type: "ADVENTURE PLACE"
+    },
+    campsite: {
+      title: "Campsite & Experience",
       tables: ["adventure_places"],
       type: "ADVENTURE PLACE"
     }

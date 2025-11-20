@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { MobileBottomBar } from "@/components/MobileBottomBar";
 import { SearchBarWithSuggestions } from "@/components/SearchBarWithSuggestions";
 import { ListingCard } from "@/components/ListingCard";
 import { Footer } from "@/components/Footer";
-import { Calendar, Hotel, Mountain, Compass } from "lucide-react";
+import { Calendar, Hotel, Tent, Compass } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { getUserId } from "@/lib/sessionManager";
@@ -220,7 +221,7 @@ const Index = () => {
         { icon: Calendar, title: "Trips", path: "/category/trips", bgImage: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800" },
         { icon: Compass, title: "Attractions", path: "/category/adventure", bgImage: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800" },
         { icon: Hotel, title: "Hotels", path: "/category/hotels", bgImage: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800" },
-        { icon: Mountain, title: "Adventure", path: "/category/adventure", bgImage: "https://images.unsplash.com/photo-1551632811-561732d1e306?w=800" },
+        { icon: Tent, title: "Campsite & Experience", path: "/category/campsite", bgImage: "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=800" },
     ];
 
     return (
@@ -263,10 +264,16 @@ const Index = () => {
                 <div className="px-4">
                     {/* Main Listings - First - MODIFIED FOR HORIZONTAL SCROLLING */}
                     <section className="mb-8">
-                        {/* Modified h2 for smaller font on small screens and added top margin */}
-                        <h2 className="text-sm md:text-2xl font-bold mb-4 mt-4 md:mt-0 whitespace-nowrap overflow-hidden text-ellipsis">
-                            Featured Trips & Events
-                        </h2>
+                        <div className="flex justify-between items-center mb-4 mt-4 md:mt-0">
+                            <h2 className="text-sm md:text-2xl font-bold whitespace-nowrap overflow-hidden text-ellipsis">
+                                Featured Trips & Events
+                            </h2>
+                            <Link to="/category/trips">
+                                <Button variant="outline" size="sm" className="text-xs md:text-sm">
+                                    View All
+                                </Button>
+                            </Link>
+                        </div>
                         <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
                             {loading ? (
                                 [...Array(10)].map((_, i) => (
@@ -305,10 +312,16 @@ const Index = () => {
 
                     {/* Featured Places */}
                     <section className="mb-4 md:mb-8">
-                        {/* Modified h2 for smaller font on small screens */}
-                        <h2 className="text-sm md:text-2xl font-bold mb-4 whitespace-nowrap overflow-hidden text-ellipsis">
-                            Featured Places
-                        </h2>
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-sm md:text-2xl font-bold whitespace-nowrap overflow-hidden text-ellipsis">
+                                Featured Places
+                            </h2>
+                            <Link to="/category/trips">
+                                <Button variant="outline" size="sm" className="text-xs md:text-sm">
+                                    View All
+                                </Button>
+                            </Link>
+                        </div>
                         <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
                             {loadingScrollable ? (
                                 [...Array(10)].map((_, i) => (
@@ -344,10 +357,16 @@ const Index = () => {
 
                     {/* Featured Hotels */}
                     <section className="mb-4 md:mb-8">
-                        {/* Modified h2 for smaller font on small screens */}
-                        <h2 className="text-sm md:text-2xl font-bold mb-4 whitespace-nowrap overflow-hidden text-ellipsis">
-                            Featured Hotels
-                        </h2>
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-sm md:text-2xl font-bold whitespace-nowrap overflow-hidden text-ellipsis">
+                                Featured Hotels
+                            </h2>
+                            <Link to="/category/hotels">
+                                <Button variant="outline" size="sm" className="text-xs md:text-sm">
+                                    View All
+                                </Button>
+                            </Link>
+                        </div>
                         <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
                             {loadingScrollable ? (
                                 [...Array(10)].map((_, i) => (
@@ -383,9 +402,16 @@ const Index = () => {
 
                     {/* Featured Attractions */}
                     <section className="mb-4 md:mb-8">
-                        <h2 className="text-sm md:text-2xl font-bold mb-4 whitespace-nowrap overflow-hidden text-ellipsis">
-                            Featured Attractions
-                        </h2>
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-sm md:text-2xl font-bold whitespace-nowrap overflow-hidden text-ellipsis">
+                                Featured Attractions
+                            </h2>
+                            <Link to="/category/adventure">
+                                <Button variant="outline" size="sm" className="text-xs md:text-sm">
+                                    View All
+                                </Button>
+                            </Link>
+                        </div>
                         <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
                             {loadingScrollable ? (
                                 [...Array(10)].map((_, i) => (
