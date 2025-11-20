@@ -42,13 +42,13 @@ const ImageSlideshow = () => {
     const slide = slides[currentSlide];
 
     return (
-        <div className="relative w-full aspect-video lg:aspect-[2/1] overflow-hidden bg-gray-200">
+        <div className="relative w-full aspect-[4/3] md:aspect-video lg:aspect-[2/1] overflow-hidden bg-gray-200">
             <img src={slide.imageUrl} alt={slide.name} className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-blue-900/60 flex flex-col justify-end p-6 md:p-8">
-                <h3 className="text-3xl font-extrabold text-white mb-2">{slide.name}</h3>
-                <p className="text-lg text-blue-200 mb-4">{slide.description}</p>
+            <div className="absolute inset-0 bg-blue-900/60 flex flex-col justify-end p-4 md:p-6 lg:p-8">
+                <h3 className="text-xl md:text-2xl lg:text-3xl font-extrabold text-white mb-1 md:mb-2">{slide.name}</h3>
+                <p className="text-sm md:text-base lg:text-lg text-blue-200 mb-2 md:mb-4">{slide.description}</p>
             </div>
-            <div className="absolute bottom-4 right-4 flex space-x-2">
+            <div className="absolute bottom-2 md:bottom-4 right-2 md:right-4 flex space-x-2">
                 {slides.map((_, index) => (
                     <div
                         key={index}
@@ -299,10 +299,10 @@ const Index = () => {
                     </section>
 
 
-                    <hr className="border-t border-gray-200 my-8" />
+                    <hr className="border-t border-gray-200 my-4 md:my-8" />
 
                     {/* Featured Places */}
-                    <section className="mb-8">
+                    <section className="mb-4 md:mb-8">
                         {/* Modified h2 for smaller font on small screens */}
                         <h2 className="text-sm md:text-2xl font-bold mb-4 whitespace-nowrap overflow-hidden text-ellipsis">
                             Featured Places
@@ -318,12 +318,19 @@ const Index = () => {
                                 ))
                             ) : (
                                 nearbyPlacesHotels.filter((item) => item.table === "adventure_places").slice(0, 10).map((place) => (
-                                    <div key={place.id} className="flex-shrink-0 w-64 cursor-pointer" onClick={() => navigate(`/adventure/${place.id}`)}>
-                                        <div className="relative aspect-[4/3] overflow-hidden rounded-lg">
-                                            <img src={place.image_url} alt={place.name} className="w-full h-full object-cover" />
-                                        </div>
-                                        <h3 className="font-semibold mt-2">{place.name}</h3>
-                                        <p className="text-sm text-muted-foreground">{place.location}</p>
+                                    <div key={place.id} className="flex-shrink-0 w-64">
+                                        <ListingCard
+                                            id={place.id}
+                                            type="ADVENTURE PLACE"
+                                            name={place.name}
+                                            imageUrl={place.image_url}
+                                            location={place.location}
+                                            country={place.country}
+                                            price={place.entry_fee || 0}
+                                            date=""
+                                            onSave={handleSave}
+                                            isSaved={savedItems.has(place.id)}
+                                        />
                                     </div>
                                 ))
                             )}
@@ -331,7 +338,7 @@ const Index = () => {
                     </section>
 
                     {/* Featured Hotels */}
-                    <section className="mb-8">
+                    <section className="mb-4 md:mb-8">
                         {/* Modified h2 for smaller font on small screens */}
                         <h2 className="text-sm md:text-2xl font-bold mb-4 whitespace-nowrap overflow-hidden text-ellipsis">
                             Featured Hotels
@@ -347,12 +354,19 @@ const Index = () => {
                                 ))
                             ) : (
                                 scrollableRows.hotels.map((hotel) => (
-                                    <div key={hotel.id} className="flex-shrink-0 w-64 cursor-pointer" onClick={() => navigate(`/hotel/${hotel.id}`)}>
-                                        <div className="relative aspect-[4/3] overflow-hidden rounded-lg">
-                                            <img src={hotel.image_url} alt={hotel.name} className="w-full h-full object-cover" />
-                                        </div>
-                                        <h3 className="font-semibold mt-2">{hotel.name}</h3>
-                                        <p className="text-sm text-muted-foreground">{hotel.location}</p>
+                                    <div key={hotel.id} className="flex-shrink-0 w-64">
+                                        <ListingCard
+                                            id={hotel.id}
+                                            type="HOTEL"
+                                            name={hotel.name}
+                                            imageUrl={hotel.image_url}
+                                            location={hotel.location}
+                                            country={hotel.country}
+                                            price={0}
+                                            date=""
+                                            onSave={handleSave}
+                                            isSaved={savedItems.has(hotel.id)}
+                                        />
                                     </div>
                                 ))
                             )}
