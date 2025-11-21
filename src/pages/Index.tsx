@@ -216,33 +216,35 @@ const Index = () => {
                 </div>
             </div>
             <main className="container px-0 md:px-4 py-0 md:py-8">
-                <section className="flex flex-col lg:flex-row gap-4 md:gap-6">
-                    <div className="w-full lg:w-1/3 order-2 lg:order-1 flex"> {/* Added flex to make the categories container stretch */}
-                        <div className="grid grid-cols-2 gap-2 md:gap-0 lg:gap-4 w-full px-2 md:px-0"> {/* Added lg:gap-4 for column/row gap, and w-full */}
+                <section className="flex flex-col gap-2 md:gap-4">
+                    {/* Hero Slogan Section */}
+                    <div className="w-full">
+                        <div className="relative w-full overflow-hidden bg-gradient-to-br from-background via-primary/5 to-background flex flex-col items-center justify-center p-4 md:p-8 py-6 md:py-12">
+                            <h1 className="text-xl md:text-3xl lg:text-4xl font-bold text-primary mb-2 md:mb-3 text-center">
+                                Discover Your Next Adventure
+                            </h1>
+                            <p className="text-xs md:text-base lg:text-lg text-muted-foreground text-center max-w-2xl">
+                                Travel beyond boundaries and explore extraordinary destinations that inspire wonder and create unforgettable memories
+                            </p>
+                        </div>
+                    </div>
+                    
+                    {/* Categories Section - Below on all screens */}
+                    <div className="w-full px-2 md:px-0">
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4">
                             {categories.map((cat) => (
                                 <div
                                     key={cat.title}
                                     onClick={() => navigate(cat.path)}
-                                    // Adjusted class to make boxes bigger on lg, remove fixed h-24 on lg, and enforce aspect-square
-                                    className="relative h-24 lg:h-full lg:aspect-square cursor-pointer overflow-hidden group"
+                                    className="relative h-28 md:h-40 lg:h-48 cursor-pointer overflow-hidden group rounded-lg"
                                     style={{ backgroundImage: `url(${cat.bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
                                 >
                                     <div className="absolute inset-0 bg-black/50 group-hover:bg-black/40 transition-all flex flex-col items-center justify-center p-4">
-                                        <cat.icon className="h-6 w-6 md:h-12 md:w-12 text-white mb-1 md:mb-2" />
-                                        <h3 className="font-bold text-white text-xs md:text-lg">{cat.title}</h3>
+                                        <cat.icon className="h-8 w-8 md:h-12 md:w-12 lg:h-16 lg:w-16 text-white mb-2 md:mb-3" />
+                                        <h3 className="font-bold text-white text-sm md:text-base lg:text-lg">{cat.title}</h3>
                                     </div>
                                 </div>
                             ))}
-                        </div>
-                    </div>
-                    <div className="w-full lg:w-2/3 order-1 lg:order-2">
-                        <div className="relative w-full aspect-[16/9] md:aspect-video lg:aspect-[2/1] overflow-hidden bg-gradient-to-br from-background via-primary/5 to-background flex flex-col items-center justify-center p-8 md:p-12">
-                            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-primary mb-4 text-center">
-                                Discover Your Next Adventure
-                            </h1>
-                            <p className="text-base md:text-lg lg:text-xl text-muted-foreground text-center max-w-2xl">
-                                Travel beyond boundaries and explore extraordinary destinations that inspire wonder and create unforgettable memories
-                            </p>
                         </div>
                     </div>
                 </section>

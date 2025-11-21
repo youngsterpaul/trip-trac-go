@@ -72,9 +72,34 @@ export const NavigationDrawer = ({ onClose }: NavigationDrawerProps) => {
     fetchUserData();
   }, [user]);
   
-  const handleProtectedNavigation = (path: string) => {
+  const handleProtectedNavigation = async (path: string) => {
     if (!user) {
       window.location.href = "/auth";
+      onClose();
+      return;
+    }
+
+    // Special handling for Become a Host
+    if (path === "/host-verification") {
+      try {
+        const { data: verification } = await supabase
+          .from("host_verifications")
+          .select("status")
+          .eq("user_id", user.id)
+          .single();
+
+        if (!verification) {
+          window.location.href = "/host-verification";
+        } else if (verification.status === "pending") {
+          window.location.href = "/verification-status";
+        } else if (verification.status === "rejected") {
+          window.location.href = "/host-verification";
+        } else if (verification.status === "approved") {
+          window.location.href = "/become-host";
+        }
+      } catch (error) {
+        window.location.href = "/host-verification";
+      }
     } else {
       window.location.href = path;
     }

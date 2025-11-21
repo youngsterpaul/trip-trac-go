@@ -106,40 +106,36 @@ const BecomeHost = () => {
         <h1 className="text-3xl font-bold mb-6">Become a Host</h1>
 
         {/* Create New Content Section */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/CreateTripEvent")}>
-            <div className="flex flex-col items-center text-center space-y-3">
-              <Plane className="h-12 w-12 text-blue-600" />
-              <h3 className="font-semibold text-lg">Create Trip or Event</h3>
-              <p className="text-sm text-muted-foreground">Organize trips and events for travelers</p>
-              <Button className="w-full">Create Now</Button>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mb-8">
+          <Card className="p-3 md:p-6 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/CreateTripEvent")}>
+            <div className="flex flex-col items-center text-center space-y-1 md:space-y-3">
+              <Plane className="h-6 w-6 md:h-12 md:w-12 text-blue-600" />
+              <h3 className="font-semibold text-xs md:text-lg">Create Trip</h3>
+              <Button size="sm" className="w-full text-xs md:text-sm">Create</Button>
             </div>
           </Card>
 
-          <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/CreateHotel")}>
-            <div className="flex flex-col items-center text-center space-y-3">
-              <Building className="h-12 w-12 text-green-600" />
-              <h3 className="font-semibold text-lg">Create Hotel</h3>
-              <p className="text-sm text-muted-foreground">List your hotel property</p>
-              <Button className="w-full">Create Now</Button>
+          <Card className="p-3 md:p-6 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/CreateHotel")}>
+            <div className="flex flex-col items-center text-center space-y-1 md:space-y-3">
+              <Building className="h-6 w-6 md:h-12 md:w-12 text-green-600" />
+              <h3 className="font-semibold text-xs md:text-lg">Create Hotel</h3>
+              <Button size="sm" className="w-full text-xs md:text-sm">Create</Button>
             </div>
           </Card>
 
-          <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/create-attraction")}>
-            <div className="flex flex-col items-center text-center space-y-3">
-              <Tent className="h-12 w-12 text-orange-600" />
-              <h3 className="font-semibold text-lg">Create Attraction</h3>
-              <p className="text-sm text-muted-foreground">List attractions and tourist sites</p>
-              <Button className="w-full">Create Now</Button>
+          <Card className="p-3 md:p-6 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/create-attraction")}>
+            <div className="flex flex-col items-center text-center space-y-1 md:space-y-3">
+              <Tent className="h-6 w-6 md:h-12 md:w-12 text-orange-600" />
+              <h3 className="font-semibold text-xs md:text-lg">Attraction</h3>
+              <Button size="sm" className="w-full text-xs md:text-sm">Create</Button>
             </div>
           </Card>
 
-          <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/create-attraction")}>
-            <div className="flex flex-col items-center text-center space-y-3">
-              <Tent className="h-12 w-12 text-purple-600" />
-              <h3 className="font-semibold text-lg">Create Camp Site or Experience</h3>
-              <p className="text-sm text-muted-foreground">List camp sites and unique experiences</p>
-              <Button className="w-full">Create Now</Button>
+          <Card className="p-3 md:p-6 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/CreateAdventure")}>
+            <div className="flex flex-col items-center text-center space-y-1 md:space-y-3">
+              <Tent className="h-6 w-6 md:h-12 md:w-12 text-purple-600" />
+              <h3 className="font-semibold text-xs md:text-lg">Campsite</h3>
+              <Button size="sm" className="w-full text-xs md:text-sm">Create</Button>
             </div>
           </Card>
         </div>
@@ -156,7 +152,7 @@ const BecomeHost = () => {
               <p className="text-muted-foreground">You haven't created any items yet. Start by creating your first listing above!</p>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
               {myContent.map((item) => (
                 <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                   <div className="aspect-video relative">
@@ -169,26 +165,26 @@ const BecomeHost = () => {
                       {getStatusBadge(item.approval_status)}
                     </div>
                   </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-lg mb-2 line-clamp-1">{item.name}</h3>
-                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{item.description || "No description"}</p>
-                    <div className="flex gap-2">
+                  <div className="p-2 md:p-4">
+                    <h3 className="font-semibold text-xs md:text-lg mb-1 md:mb-2 line-clamp-1">{item.name}</h3>
+                    <p className="text-xs md:text-sm text-muted-foreground mb-2 md:mb-3 line-clamp-2 hidden md:block">{item.description || "No description"}</p>
+                    <div className="flex flex-col md:flex-row gap-1 md:gap-2">
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => viewItemDetails(item)}
-                        className="flex-1"
+                        className="flex-1 text-xs md:text-sm h-7 md:h-9"
                       >
-                        <Eye className="h-4 w-4 mr-1" />
-                        View Details
+                        <Eye className="h-3 w-3 md:h-4 md:w-4 md:mr-1" />
+                        <span className="hidden md:inline">View</span>
                       </Button>
                       <Button
                         size="sm"
                         onClick={() => navigate(`/edit-listing/${item.type}/${item.id}`)}
-                        className="flex-1"
+                        className="flex-1 text-xs md:text-sm h-7 md:h-9"
                       >
-                        <Edit className="h-4 w-4 mr-1" />
-                        Edit
+                        <Edit className="h-3 w-3 md:h-4 md:w-4 md:mr-1" />
+                        <span className="hidden md:inline">Edit</span>
                       </Button>
                     </div>
                   </div>
