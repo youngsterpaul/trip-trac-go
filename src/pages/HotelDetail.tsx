@@ -9,6 +9,7 @@ import { MapPin, Phone, Share2, Mail, Wifi, Users, Clock, DollarSign, ArrowLeft 
 import { BookHotelDialog } from "@/components/booking/BookHotelDialog";
 import { SimilarItems } from "@/components/SimilarItems";
 import { AvailabilityCalendar } from "@/components/booking/AvailabilityCalendar";
+import { LiveViewerCount } from "@/components/LiveViewerCount";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Carousel, 
@@ -194,16 +195,17 @@ const HotelDetail = () => {
 
         {/* Title and Actions */}
         <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-6">
-          <div className="flex flex-col">
+          <div className="flex flex-col gap-2">
             <h1 className="text-2xl md:text-3xl font-bold">{hotel.name}</h1>
             <p className="text-sm md:text-base text-muted-foreground">
               {hotel.location}, {hotel.country}
             </p>
             {hotel.establishment_type && (
-              <p className="text-xs text-muted-foreground capitalize mt-1">
+              <p className="text-xs text-muted-foreground capitalize">
                 {hotel.establishment_type}
               </p>
             )}
+            <LiveViewerCount itemId={hotel.id} itemType="hotel" />
           </div>
           <div className="flex gap-2">
             <Button

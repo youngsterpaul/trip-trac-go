@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { SimilarItems } from "@/components/SimilarItems";
+import { LiveViewerCount } from "@/components/LiveViewerCount";
 import Autoplay from "embla-carousel-autoplay";
 
 interface Attraction {
@@ -269,14 +270,15 @@ export default function AttractionDetail() {
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-6">
-          <div className="flex flex-col">
+          <div className="flex flex-col gap-2">
             <h1 className="text-2xl md:text-3xl font-bold">{attraction.location_name}</h1>
             {attraction.local_name && (
-              <p className="text-xl text-muted-foreground mt-1">{attraction.local_name}</p>
+              <p className="text-xl text-muted-foreground">{attraction.local_name}</p>
             )}
             <p className="text-sm md:text-base text-muted-foreground">
               {attraction.country}
             </p>
+            <LiveViewerCount itemId={attraction.id} itemType="attraction" />
           </div>
           <div className="flex gap-2">
             {(attraction.location_link) && (

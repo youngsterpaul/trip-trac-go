@@ -9,6 +9,7 @@ import { MapPin, Phone, Share2, Mail, DollarSign, Wifi, ArrowLeft } from "lucide
 import { BookAdventureDialog } from "@/components/booking/BookAdventureDialog";
 import { SimilarItems } from "@/components/SimilarItems";
 import { AvailabilityCalendar } from "@/components/booking/AvailabilityCalendar";
+import { LiveViewerCount } from "@/components/LiveViewerCount";
 import { useToast } from "@/hooks/use-toast";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
@@ -190,9 +191,10 @@ const AdventurePlaceDetail = () => {
 
         {/* Title, Location on left, Map & Share buttons on right */}
         <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-6">
-          <div className="flex flex-col">
+          <div className="flex flex-col gap-2">
             <h1 className="text-2xl md:text-3xl font-bold">{place.name}</h1>
             <p className="text-sm md:text-base text-muted-foreground">{place.location}, {place.country}</p>
+            <LiveViewerCount itemId={place.id} itemType="adventure" />
           </div>
           <div className="flex gap-2">
             <Button

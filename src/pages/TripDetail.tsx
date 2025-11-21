@@ -39,6 +39,7 @@ interface Trip {
 
 import { SimilarItems } from "@/components/SimilarItems";
 import { AvailabilityCalendar } from "@/components/booking/AvailabilityCalendar";
+import { LiveViewerCount } from "@/components/LiveViewerCount";
 
 const TripDetail = () => {
   const { id } = useParams();
@@ -189,9 +190,10 @@ const TripDetail = () => {
 
         {/* Title, Location on left, Map & Share buttons on right */}
         <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-6">
-          <div className="flex flex-col">
+          <div className="flex flex-col gap-2">
             <h1 className="text-2xl md:text-3xl font-bold">{trip.name}</h1>
             <p className="text-sm md:text-base text-muted-foreground">{trip.location}, {trip.country}</p>
+            <LiveViewerCount itemId={trip.id} itemType="trip" />
           </div>
           <div className="flex gap-2">
             <Button
