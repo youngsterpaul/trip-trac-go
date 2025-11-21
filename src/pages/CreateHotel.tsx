@@ -11,40 +11,58 @@ import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { MapPin, Mail, Phone, Navigation } from "lucide-react";
-import { registrationNumberSchema, adminEmailsSchema, descriptionSchema } from "@/lib/validation";
-import { getCountryPhoneCode } from "@/lib/countryHelpers";
+import { MapPin, Mail, Navigation, Clock, X } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { registrationNumberSchema, descriptionSchema } from "@/lib/validation";
 import { CountrySelector } from "@/components/creation/CountrySelector";
 import { PageHeader } from "@/components/creation/PageHeader";
+import { PhoneInput } from "@/components/creation/PhoneInput";
 
 const CreateHotel = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [phonePrefix, setPhonePrefix] = useState("+254");
   
   const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    location: "",
-    place: "",
-    country: "",
-    email: "",
-    phone_numbers: "",
-    map_link: "",
+    registrationName: "",
     registrationNumber: "",
-    establishmentType: "hotel",
-    amenities: ""
+    locationName: "",
+    country: "",
+    description: "",
+    email: "",
+    phoneNumber: "",
+    locationLink: "",
+    openingHours: "",
+    closingHours: "",
+    entranceFeeType: "free",
+    childPrice: "",
+    adultPrice: "",
+    establishmentType: "hotel"
   });
   
-  const [facilities, setFacilities] = useState<Array<{name: string, price: string, capacity: string}>>([
-    {name: "", price: "", capacity: ""}
+  const [workingDays, setWorkingDays] = useState({
+    Mon: false,
+    Tue: false,
+    Wed: false,
+    Thu: false,
+    Fri: false,
+    Sat: false,
+    Sun: false
+  });
+  
+  const [facilities, setFacilities] = useState<Array<{name: string, pricePerDay: string, capacity: string}>>([
+    {name: "", pricePerDay: "", capacity: ""}
   ]);
+  
+  const [activities, setActivities] = useState<Array<{name: string, price: string}>>([
+    {name: "", price: ""}
+  ]);
+  
   const [galleryImages, setGalleryImages] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
 
-  // Fetch user profile and set country/phone prefix
+  // Fetch user profile and set country
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (user) {
@@ -55,9 +73,7 @@ const CreateHotel = () => {
           .single();
         
         if (profile?.country) {
-          const prefix = getCountryPhoneCode(profile.country);
           setFormData(prev => ({ ...prev, country: profile.country }));
-          setPhonePrefix(prefix);
         }
       }
     };
@@ -65,48 +81,13 @@ const CreateHotel = () => {
     fetchUserProfile();
   }, [user]);
 
-  // Auto-fill location with geolocation
-  useEffect(() => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          const mapUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
-          setFormData(prev => ({ ...prev, map_link: mapUrl }));
-        },
-        () => {} // Silent fail
-      );
-    }
-  }, []);
-
-  const handleImageUpload = async (files: FileList | null) => {
-    if (!files) return;
-    
-    const newFiles = Array.from(files).slice(0, 5 - galleryImages.length);
-    setGalleryImages(prev => [...prev, ...newFiles].slice(0, 5));
-  };
-
-  const removeImage = (index: number) => {
-    setGalleryImages(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const addFacility = () => {
-    setFacilities([...facilities, {name: "", price: "", capacity: ""}]);
-  };
-
-  const removeFacility = (index: number) => {
-    if (facilities.length > 1) {
-      setFacilities(facilities.filter((_, i) => i !== index));
-    }
-  };
-
   const getCurrentLocation = () => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
           const mapUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
-          setFormData({...formData, map_link: mapUrl});
+          setFormData({...formData, locationLink: mapUrl});
           toast({
             title: "Location Added",
             description: "Your current location has been added to the map link.",
@@ -129,6 +110,37 @@ const CreateHotel = () => {
     }
   };
 
+  const handleImageUpload = async (files: FileList | null) => {
+    if (!files) return;
+    
+    const newFiles = Array.from(files).slice(0, 5 - galleryImages.length);
+    setGalleryImages(prev => [...prev, ...newFiles].slice(0, 5));
+  };
+
+  const removeImage = (index: number) => {
+    setGalleryImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const addFacility = () => {
+    setFacilities([...facilities, {name: "", pricePerDay: "", capacity: ""}]);
+  };
+
+  const removeFacility = (index: number) => {
+    if (facilities.length > 1) {
+      setFacilities(facilities.filter((_, i) => i !== index));
+    }
+  };
+
+  const addActivity = () => {
+    setActivities([...activities, {name: "", price: ""}]);
+  };
+
+  const removeActivity = (index: number) => {
+    if (activities.length > 1) {
+      setActivities(activities.filter((_, i) => i !== index));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -143,8 +155,6 @@ const CreateHotel = () => {
     }
 
     // Validate registration number
-
-    // Validate registration number
     const regValidation = registrationNumberSchema.safeParse(formData.registrationNumber);
     if (!regValidation.success) {
       toast({
@@ -155,13 +165,25 @@ const CreateHotel = () => {
       return;
     }
 
-    // Validate at least one facility
-    const validFacilities = facilities.filter(f => f.name && f.price && f.capacity);
-    if (validFacilities.length === 0) {
+    // Validate description
+    if (formData.description) {
+      const descValidation = descriptionSchema.safeParse(formData.description);
+      if (!descValidation.success) {
+        toast({
+          title: "Invalid Description",
+          description: descValidation.error.issues[0].message,
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+
+    // Validate images
+    if (galleryImages.length === 0) {
       toast({
-        title: "Error",
-        description: "Please add at least one facility with name, price, and capacity",
-        variant: "destructive",
+        title: "Images Required",
+        description: "Please upload at least one image (maximum 5).",
+        variant: "destructive"
       });
       return;
     }
@@ -177,64 +199,65 @@ const CreateHotel = () => {
         const fileName = `${user.id}/${Math.random()}.${fileExt}`;
         
         const { error: uploadError } = await supabase.storage
-          .from('user-content-images')
+          .from('listing-images')
           .upload(fileName, file);
 
         if (uploadError) throw uploadError;
 
         const { data: { publicUrl } } = supabase.storage
-          .from('user-content-images')
+          .from('listing-images')
           .getPublicUrl(fileName);
           
         uploadedUrls.push(publicUrl);
       }
 
-      const phoneArray = formData.phone_numbers
-        .split(',')
-        .map(p => p.trim())
-        .filter(p => p);
+      // Prepare working days array
+      const selectedDays = Object.entries(workingDays)
+        .filter(([_, isSelected]) => isSelected)
+        .map(([day, _]) => day);
 
-      const amenitiesArray = formData.amenities
-        .split(',')
-        .map(a => a.trim())
-        .filter(a => a);
+      // Prepare facilities array
+      const facilitiesArray = facilities
+        .filter(f => f.name.trim())
+        .map(f => ({ 
+          name: f.name.trim(), 
+          price: parseFloat(f.pricePerDay) || 0,
+          capacity: parseInt(f.capacity) || 0
+        }));
 
-      const facilitiesArray = validFacilities.map(f => ({ 
-        name: f.name.trim(), 
-        price: parseFloat(f.price),
-        capacity: parseInt(f.capacity)
-      }));
-
+      // Prepare activities array
+      const activitiesArray = activities
+        .filter(a => a.name.trim())
+        .map(a => ({ name: a.name.trim(), price: parseFloat(a.price) || 0 }));
 
       const { error } = await supabase
         .from("hotels")
         .insert([{
-          name: formData.name,
-          description: formData.description,
-          location: formData.location,
-          place: formData.place,
+          name: formData.registrationName,
+          registration_number: formData.registrationNumber,
+          location: formData.locationName,
+          place: formData.locationName,
           country: formData.country,
+          description: formData.description || null,
+          email: formData.email || null,
+          phone_numbers: formData.phoneNumber ? [formData.phoneNumber] : null,
+          map_link: formData.locationLink || null,
           image_url: uploadedUrls[0] || "",
           gallery_images: uploadedUrls,
-          map_link: formData.map_link || null,
-          registration_number: formData.registrationNumber,
-          
           establishment_type: formData.establishmentType,
-          email: formData.email || null,
-          phone_numbers: phoneArray.length > 0 ? phoneArray : null,
-          facilities: facilitiesArray,
-          amenities: amenitiesArray.length > 0 ? amenitiesArray : null,
-          created_by: user.id
+          facilities: facilitiesArray.length > 0 ? facilitiesArray : null,
+          created_by: user.id,
+          approval_status: "pending"
         }]);
 
       if (error) throw error;
 
       toast({
         title: "Success!",
-        description: "Your hotel has been submitted for verification.",
+        description: "Your hotel/accommodation has been submitted for verification.",
       });
 
-      navigate("/profile");
+      navigate("/become-host");
     } catch (error: any) {
       toast({
         title: "Error",
@@ -254,56 +277,24 @@ const CreateHotel = () => {
       <main className="container px-4 py-8 max-w-4xl mx-auto">
         <PageHeader title="Create Hotel & Accommodation" />
         <h1 className="md:hidden text-3xl font-bold mb-8">Create Hotel & Accommodation</h1>
+        <p className="text-muted-foreground mb-6">
+          Submit your hotel or accommodation for admin verification. It will be visible after approval.
+        </p>
 
         <Card className="p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Registration Details */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Registration & Contact</h3>
+              
               <div className="space-y-2">
-                <Label htmlFor="name">Hotel Name *</Label>
+                <Label htmlFor="registrationName">Registration Name (as per government documentation) *</Label>
                 <Input
-                  id="name"
+                  id="registrationName"
                   required
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  placeholder="Enter hotel name"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="country">Country *</Label>
-                <CountrySelector
-                  value={formData.country}
-                  onChange={(value) => {
-                    const prefix = getCountryPhoneCode(value);
-                    setPhonePrefix(prefix);
-                    setFormData({...formData, country: value});
-                  }}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="place">Place *</Label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="place"
-                    required
-                    className="pl-10"
-                    value={formData.place}
-                    onChange={(e) => setFormData({...formData, place: e.target.value})}
-                    placeholder="Enter place"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="location">Location Details *</Label>
-                <Input
-                  id="location"
-                  required
-                  value={formData.location}
-                  onChange={(e) => setFormData({...formData, location: e.target.value})}
-                  placeholder="Enter location details"
+                  value={formData.registrationName}
+                  onChange={(e) => setFormData({...formData, registrationName: e.target.value})}
+                  placeholder="Enter registered business name"
                 />
               </div>
 
@@ -318,23 +309,42 @@ const CreateHotel = () => {
                 />
               </div>
 
-
               <div className="space-y-2">
-                <Label htmlFor="establishmentType">Type of Establishment *</Label>
-                <select
-                  id="establishmentType"
-                  required
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  value={formData.establishmentType}
-                  onChange={(e) => setFormData({...formData, establishmentType: e.target.value})}
-                >
-                  <option value="hotel">Hotel</option>
-                  <option value="accommodation">Accommodation</option>
-                </select>
+                <Label htmlFor="locationName">Location Name *</Label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="locationName"
+                    required
+                    className="pl-10"
+                    value={formData.locationName}
+                    onChange={(e) => setFormData({...formData, locationName: e.target.value})}
+                    placeholder="Enter location name"
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Contact Email</Label>
+                <Label htmlFor="country">Country *</Label>
+                <CountrySelector
+                  value={formData.country}
+                  onChange={(value) => setFormData({...formData, country: value})}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">Description (100 words max)</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  placeholder="Describe your hotel or accommodation..."
+                  rows={4}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -343,34 +353,34 @@ const CreateHotel = () => {
                     className="pl-10"
                     value={formData.email}
                     onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    placeholder="contact@hotel.com"
+                    placeholder="contact@example.com"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="phone_numbers">Contact Phones</Label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="phone_numbers"
-                    className="pl-10"
-                    value={formData.phone_numbers}
-                    onChange={(e) => setFormData({...formData, phone_numbers: e.target.value})}
-                    placeholder={`${phonePrefix}...`}
-                  />
-                </div>
-                <p className="text-sm text-muted-foreground">Separate multiple numbers with commas</p>
+                <Label htmlFor="phone">Phone Number</Label>
+                <PhoneInput
+                  value={formData.phoneNumber}
+                  onChange={(value) => setFormData({...formData, phoneNumber: value})}
+                  country={formData.country}
+                  placeholder="758800117"
+                />
+                <p className="text-sm text-muted-foreground">Enter number without leading zero</p>
               </div>
+            </div>
+
+            {/* Operational Details */}
+            <div className="space-y-4 pt-6 border-t">
+              <h3 className="text-lg font-semibold">Operational Details</h3>
 
               <div className="space-y-2">
-                <Label htmlFor="map_link">Map Location Link</Label>
+                <Label htmlFor="locationLink">Location Link</Label>
                 <div className="flex gap-2">
                   <Input
-                    id="map_link"
-                    type="url"
-                    value={formData.map_link}
-                    onChange={(e) => setFormData({...formData, map_link: e.target.value})}
+                    id="locationLink"
+                    value={formData.locationLink}
+                    onChange={(e) => setFormData({...formData, locationLink: e.target.value})}
                     placeholder="https://maps.google.com/..."
                   />
                   <Button type="button" variant="outline" onClick={getCurrentLocation}>
@@ -379,88 +389,219 @@ const CreateHotel = () => {
                 </div>
                 <p className="text-sm text-muted-foreground">Add Google Maps link or use your current location</p>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({...formData, description: e.target.value})}
-                placeholder="Describe your hotel and accommodation..."
-                rows={5}
-              />
-            </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="openingHours">Opening Hours</Label>
+                  <div className="relative">
+                    <Clock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="openingHours"
+                      type="time"
+                      className="pl-10"
+                      value={formData.openingHours}
+                      onChange={(e) => setFormData({...formData, openingHours: e.target.value})}
+                    />
+                  </div>
+                </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="amenities">Amenities</Label>
-              <Input
-                id="amenities"
-                value={formData.amenities}
-                onChange={(e) => setFormData({...formData, amenities: e.target.value})}
-                placeholder="Free WiFi, Air Conditioning, Bathroom, etc."
-              />
-              <p className="text-sm text-muted-foreground">Separate multiple amenities with commas</p>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <Label>Facilities (Room Types) - Minimum 1 required *</Label>
-                <Button type="button" onClick={addFacility} variant="outline" size="sm">
-                  Add Facility
-                </Button>
+                <div className="space-y-2">
+                  <Label htmlFor="closingHours">Closing Hours</Label>
+                  <div className="relative">
+                    <Clock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="closingHours"
+                      type="time"
+                      className="pl-10"
+                      value={formData.closingHours}
+                      onChange={(e) => setFormData({...formData, closingHours: e.target.value})}
+                    />
+                  </div>
+                </div>
               </div>
-              
+
+              <div className="space-y-2">
+                <Label>Working Days</Label>
+                <div className="flex flex-wrap gap-2">
+                  {Object.keys(workingDays).map((day) => (
+                    <button
+                      key={day}
+                      type="button"
+                      onClick={() => setWorkingDays({...workingDays, [day]: !workingDays[day as keyof typeof workingDays]})}
+                      className={`px-4 py-2 rounded-lg border transition-colors ${
+                        workingDays[day as keyof typeof workingDays]
+                          ? 'bg-primary text-primary-foreground border-primary'
+                          : 'bg-background hover:bg-accent'
+                      }`}
+                    >
+                      {day}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="establishmentType">Type of Establishment *</Label>
+                <Select
+                  value={formData.establishmentType}
+                  onValueChange={(value) => setFormData({...formData, establishmentType: value})}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hotel">Hotel</SelectItem>
+                    <SelectItem value="accommodation">Accommodation</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Entrance Fee</Label>
+                <Select
+                  value={formData.entranceFeeType}
+                  onValueChange={(value) => setFormData({...formData, entranceFeeType: value})}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="free">Free</SelectItem>
+                    <SelectItem value="paid">Paid</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {formData.entranceFeeType === "paid" && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="childPrice">Children Price</Label>
+                    <Input
+                      id="childPrice"
+                      type="number"
+                      step="0.01"
+                      value={formData.childPrice}
+                      onChange={(e) => setFormData({...formData, childPrice: e.target.value})}
+                      placeholder="0.00"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="adultPrice">Adult Price</Label>
+                    <Input
+                      id="adultPrice"
+                      type="number"
+                      step="0.01"
+                      value={formData.adultPrice}
+                      onChange={(e) => setFormData({...formData, adultPrice: e.target.value})}
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Facilities */}
+            <div className="space-y-4 pt-6 border-t">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold">Facilities (Room Types)</h3>
+                <Button type="button" size="sm" onClick={addFacility}>Add Facility</Button>
+              </div>
               {facilities.map((facility, index) => (
-                <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-2">
+                <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-2">
                   <Input
-                    placeholder="Room type (e.g., Deluxe Suite)"
+                    placeholder="Facility name (e.g., Deluxe Suite)"
                     value={facility.name}
                     onChange={(e) => {
                       const newFacilities = [...facilities];
                       newFacilities[index].name = e.target.value;
                       setFacilities(newFacilities);
                     }}
-                    required
                   />
                   <Input
                     type="number"
-                    placeholder="Price/day"
-                    value={facility.price}
+                    step="0.01"
+                    placeholder="Price per day"
+                    value={facility.pricePerDay}
                     onChange={(e) => {
                       const newFacilities = [...facilities];
-                      newFacilities[index].price = e.target.value;
+                      newFacilities[index].pricePerDay = e.target.value;
                       setFacilities(newFacilities);
                     }}
-                    required
                   />
-                  <Input
-                    type="number"
-                    placeholder="Capacity"
-                    value={facility.capacity}
-                    onChange={(e) => {
-                      const newFacilities = [...facilities];
-                      newFacilities[index].capacity = e.target.value;
-                      setFacilities(newFacilities);
-                    }}
-                    required
-                  />
-                  {facilities.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      onClick={() => removeFacility(index)}
-                    >
-                      ×
-                    </Button>
-                  )}
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      placeholder="Capacity"
+                      value={facility.capacity}
+                      onChange={(e) => {
+                        const newFacilities = [...facilities];
+                        newFacilities[index].capacity = e.target.value;
+                        setFacilities(newFacilities);
+                      }}
+                    />
+                    {facilities.length > 1 && (
+                      <Button 
+                        type="button" 
+                        size="sm" 
+                        variant="destructive" 
+                        onClick={() => removeFacility(index)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
 
-            <div className="space-y-2">
-              <Label>Gallery Images (Max 5) *</Label>
+            {/* Activities */}
+            <div className="space-y-4 pt-6 border-t">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold">Activities</h3>
+                <Button type="button" size="sm" onClick={addActivity}>Add Activity</Button>
+              </div>
+              {activities.map((activity, index) => (
+                <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <Input
+                    placeholder="Activity name"
+                    value={activity.name}
+                    onChange={(e) => {
+                      const newActivities = [...activities];
+                      newActivities[index].name = e.target.value;
+                      setActivities(newActivities);
+                    }}
+                  />
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="Price"
+                      value={activity.price}
+                      onChange={(e) => {
+                        const newActivities = [...activities];
+                        newActivities[index].price = e.target.value;
+                        setActivities(newActivities);
+                      }}
+                    />
+                    {activities.length > 1 && (
+                      <Button 
+                        type="button" 
+                        size="sm" 
+                        variant="destructive" 
+                        onClick={() => removeActivity(index)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Image Upload */}
+            <div className="space-y-4 pt-6 border-t">
+              <h3 className="text-lg font-semibold">Images (Maximum 5) *</h3>
               <Input
                 type="file"
                 accept="image/*"
@@ -468,39 +609,34 @@ const CreateHotel = () => {
                 onChange={(e) => handleImageUpload(e.target.files)}
                 disabled={galleryImages.length >= 5}
               />
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                {galleryImages.map((file, index) => (
+                  <div key={index} className="relative">
+                    <img
+                      src={URL.createObjectURL(file)}
+                      alt={`Preview ${index + 1}`}
+                      className="w-full h-24 object-cover rounded-lg"
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="destructive"
+                      className="absolute top-1 right-1"
+                      onClick={() => removeImage(index)}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
               <p className="text-sm text-muted-foreground">
-                {galleryImages.length}/5 images selected
+                {galleryImages.length}/5 images uploaded
               </p>
-              {galleryImages.length > 0 && (
-                <div className="grid grid-cols-5 gap-2">
-                  {galleryImages.map((file, index) => (
-                    <div key={index} className="relative">
-                      <img 
-                        src={URL.createObjectURL(file)} 
-                        alt={`Preview ${index + 1}`}
-                        className="w-full h-20 object-cover rounded"
-                      />
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="destructive"
-                        className="absolute top-0 right-0 h-6 w-6 p-0"
-                        onClick={() => removeImage(index)}
-                      >×</Button>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
 
-            <div className="flex gap-4 pt-4">
-              <Button type="submit" disabled={loading} className="flex-1">
-                {uploading ? "Uploading Images..." : loading ? "Submitting..." : "Submit for Approval"}
-              </Button>
-              <Button type="button" variant="outline" onClick={() => navigate(-1)}>
-                Cancel
-              </Button>
-            </div>
+            <Button type="submit" className="w-full" disabled={loading || uploading}>
+              {loading ? "Submitting..." : "Submit for Approval"}
+            </Button>
           </form>
         </Card>
       </main>
