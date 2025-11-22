@@ -6,6 +6,7 @@ import { Footer } from "@/components/Footer";
 import { SearchBarWithSuggestions } from "@/components/SearchBarWithSuggestions";
 import { ListingCard } from "@/components/ListingCard";
 import { FilterBar } from "@/components/FilterBar";
+import { ListingSkeleton } from "@/components/ui/listing-skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { getUserId } from "@/lib/sessionManager";
@@ -323,20 +324,14 @@ const CategoryDetail = () => {
         <h1 className="text-3xl font-bold">{config.title}</h1>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
-          {loading || filteredItems.length === 0 ? (
+          {loading ? (
             <>
               {[...Array(12)].map((_, i) => (
-                <div key={i} className="border rounded-lg overflow-hidden">
-                  <div className="aspect-[4/3] bg-muted animate-pulse" />
-                  <div className="p-4 space-y-3">
-                    <div className="h-5 bg-muted animate-pulse rounded w-3/4" />
-                    <div className="h-4 bg-muted animate-pulse rounded w-1/2" />
-                    <div className="h-4 bg-muted animate-pulse rounded w-2/3" />
-                    <div className="h-6 bg-muted animate-pulse rounded w-1/3 mt-2" />
-                  </div>
-                </div>
+                <ListingSkeleton key={i} />
               ))}
             </>
+          ) : filteredItems.length === 0 ? (
+            <p className="col-span-full text-center text-muted-foreground py-8">No items found</p>
           ) : (
             filteredItems.map((item) => {
               const isAttraction = item.table === "attractions";

@@ -183,11 +183,18 @@ export default function AttractionDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background pb-20 md:pb-0">
         <Header />
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <Loader2 className="h-8 w-8 animate-spin" />
-        </div>
+        <main className="container mx-auto px-4 py-6 max-w-6xl">
+          <div className="space-y-6">
+            <div className="w-full h-64 md:h-96 bg-muted animate-pulse rounded-lg" />
+            <div className="space-y-4">
+              <div className="h-8 bg-muted animate-pulse rounded w-1/2" />
+              <div className="h-4 bg-muted animate-pulse rounded w-1/3" />
+              <div className="h-20 bg-muted animate-pulse rounded" />
+            </div>
+          </div>
+        </main>
         <Footer />
         <MobileBottomBar />
       </div>
@@ -281,15 +288,20 @@ export default function AttractionDetail() {
             <LiveViewerCount itemId={attraction.id} itemType="attraction" />
           </div>
           <div className="flex gap-2">
-            {attraction.location_link && (
-              <Button
-                onClick={() => window.open(attraction.location_link!, '_blank')}
-                className="gap-2"
-              >
-                <Navigation className="h-4 w-4" />
-                Location
-              </Button>
-            )}
+            <Button
+              onClick={() => {
+                if (attraction.location_link) {
+                  window.open(attraction.location_link, '_blank');
+                } else {
+                  const query = encodeURIComponent(`${attraction.location_name}, ${attraction.country}`);
+                  window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
+                }
+              }}
+              className="gap-2"
+            >
+              <Navigation className="h-4 w-4" />
+              Location
+            </Button>
             <Button
               variant="outline"
               onClick={handleShare}

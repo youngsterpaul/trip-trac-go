@@ -5,7 +5,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { MobileBottomBar } from "@/components/MobileBottomBar";
 import { Button } from "@/components/ui/button";
-import { MapPin, Phone, Share2, Mail, DollarSign, Wifi, ArrowLeft } from "lucide-react"; // Added Wifi for amenity icon
+import { MapPin, Phone, Share2, Mail, DollarSign, Wifi, ArrowLeft, Clock } from "lucide-react";
 import { BookAdventureDialog } from "@/components/booking/BookAdventureDialog";
 import { SimilarItems } from "@/components/SimilarItems";
 import { AvailabilityCalendar } from "@/components/booking/AvailabilityCalendar";
@@ -43,6 +43,9 @@ interface AdventurePlace {
   amenities: string[];
   registration_number: string;
   map_link: string;
+  opening_hours: string | null;
+  closing_hours: string | null;
+  days_opened: string[] | null;
 }
 
 const AdventurePlaceDetail = () => {
@@ -63,7 +66,7 @@ const AdventurePlaceDetail = () => {
     try {
       const { data, error } = await supabase
         .from("adventure_places")
-        .select("id, name, location, place, country, image_url, description, email, phone_numbers, amenities, activities, facilities, entry_fee, entry_fee_type, map_link, gallery_images, images, approval_status, created_at, created_by, is_hidden, allowed_admin_emails")
+        .select("id, name, location, place, country, image_url, description, email, phone_numbers, amenities, activities, facilities, entry_fee, entry_fee_type, map_link, gallery_images, images, opening_hours, closing_hours, days_opened, approval_status, created_at, created_by, is_hidden, allowed_admin_emails")
         .eq("id", id)
         .single();
 
@@ -112,7 +115,23 @@ const AdventurePlaceDetail = () => {
   };
 
   if (loading) {
-    return <div className="min-h-screen bg-background">Loading...</div>;
+    return (
+      <div className="min-h-screen bg-background pb-20 md:pb-0">
+        <Header />
+        <main className="container px-4 py-6 max-w-6xl mx-auto">
+          <div className="space-y-6">
+            <div className="w-full h-64 md:h-96 bg-muted animate-pulse rounded-lg" />
+            <div className="space-y-4">
+              <div className="h-8 bg-muted animate-pulse rounded w-1/2" />
+              <div className="h-4 bg-muted animate-pulse rounded w-1/3" />
+              <div className="h-20 bg-muted animate-pulse rounded" />
+            </div>
+          </div>
+        </main>
+        <Footer />
+        <MobileBottomBar />
+      </div>
+    );
   }
 
   if (!place) {
@@ -233,6 +252,24 @@ const AdventurePlaceDetail = () => {
               </div>
               <p className="text-xs md:text-base text-muted-foreground">{place.description}</p>
             </div>
+
+            {/* Operating Hours Section */}
+            {(place.opening_hours || place.closing_hours || (place.days_opened && place.days_opened.length > 0)) && (
+              <div className="pt-4 border-t">
+                <h2 className="text-lg md:text-xl font-semibold mb-3 flex items-center gap-2">
+                  <Clock className="h-5 w-5" />
+                  Operating Hours
+                </h2>
+                <div className="space-y-2">
+                  {place.opening_hours && place.closing_hours && (
+                    <p className="text-xs md:text-base">Hours: {place.opening_hours} - {place.closing_hours}</p>
+                  )}
+                  {place.days_opened && place.days_opened.length > 0 && (
+                    <p className="text-xs md:text-base">Open: {place.days_opened.join(', ')}</p>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Amenities Section */}
             {place.amenities && place.amenities.length > 0 && (
