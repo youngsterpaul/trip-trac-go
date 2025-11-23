@@ -87,13 +87,6 @@ export const ListingCard = ({
           </Badge>
         )}
 
-        {/* Name Overlay - Bottom-Left of Image */}
-        <div className="absolute inset-x-0 bottom-0 p-3 md:p-2 bg-gradient-to-t from-black/80 to-transparent">
-          <h3 className="font-bold text-sm md:text-sm text-white line-clamp-2">
-            {type === "ADVENTURE PLACE" ? "experience" : name}
-          </h3>
-        </div>
-
         {/* Price Tag - Top-Right Corner */}
         {!hidePrice && price !== undefined && (
           <div className="absolute top-2 right-2 bg-primary text-primary-foreground px-3 py-1.5 md:px-2 md:py-1 rounded-full shadow-lg z-10">
@@ -106,20 +99,27 @@ export const ListingCard = ({
       
       {/* Content below the image */}
       <div className="p-3 md:p-4 flex flex-col space-y-2">
-        {/* Location with icon */}
-        <div className="flex items-center gap-1">
-          <MapPin className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
-          <p className="text-xs md:text-sm text-muted-foreground line-clamp-1">
-            {location}, {country}
-          </p>
-        </div>
+        {/* Name */}
+        <h3 className="font-bold text-sm md:text-base line-clamp-2">
+          {type === "ADVENTURE PLACE" ? "experience" : name}
+        </h3>
         
-        {/* DATE row */}
-        {(date || isCustomDate) && (
-          <p className="text-xs md:text-sm font-semibold text-red-600 dark:text-red-400">
-            {isCustomDate ? "Custom" : formatDate(date)}
-          </p>
-        )}
+        {/* Location with icon and date on same row */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1 flex-1 min-w-0">
+            <MapPin className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
+            <p className="text-xs md:text-sm text-muted-foreground line-clamp-1">
+              {location}, {country}
+            </p>
+          </div>
+          
+          {/* DATE - Right side of location */}
+          {(date || isCustomDate) && (
+            <p className="text-xs md:text-sm font-semibold text-red-600 dark:text-red-400 whitespace-nowrap">
+              {isCustomDate ? "Custom" : formatDate(date)}
+            </p>
+          )}
+        </div>
         
         {/* EVENT CAPACITY - Only for events */}
         {type === "EVENT" && availableTickets !== undefined && (
