@@ -129,7 +129,9 @@ const Index = () => {
         const fetchTable = async (table: "trips" | "hotels" | "adventure_places", type: string) => {
             let dbQuery = supabase.from(table).select("*").eq("approval_status", "approved").eq("is_hidden", false);
             if (query) {
-                dbQuery = dbQuery.or(`name.ilike.%${query}%,location.ilike.%${query}%,country.ilike.%${query}%`);
+                // Search in name, location, country, and activities
+                const searchPattern = `%${query}%`;
+                dbQuery = dbQuery.or(`name.ilike.${searchPattern},location.ilike.${searchPattern},country.ilike.${searchPattern}`);
             }
             const { data } = await dbQuery;
             return (data || []).map((item: any) => ({ ...item, type }));
@@ -248,11 +250,12 @@ const Index = () => {
                                 </h1>
                                 
                                 {/* Search Bar Below Paragraph */}
-                                <div className="w-full mt-2 md:mt-4">
+                                <div className="w-full mt-2 md:mt-4 relative z-[200]">
                                     <SearchBarWithSuggestions 
                                         value={searchQuery} 
                                         onChange={setSearchQuery} 
-                                        onSubmit={() => fetchAllData(searchQuery)} 
+                                        onSubmit={() => fetchAllData(searchQuery)}
+                                        onSuggestionSearch={(query) => fetchAllData(query)}
                                     />
                                 </div>
                             </div>

@@ -9,6 +9,7 @@ interface SearchBarProps {
   value: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
+  onSuggestionSearch?: (query: string) => void;
 }
 
 interface SearchResult {
@@ -20,7 +21,7 @@ interface SearchResult {
   activities?: any;
 }
 
-export const SearchBarWithSuggestions = ({ value, onChange, onSubmit }: SearchBarProps) => {
+export const SearchBarWithSuggestions = ({ value, onChange, onSubmit, onSuggestionSearch }: SearchBarProps) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState<SearchResult[]>([]);
   const navigate = useNavigate();
@@ -64,6 +65,18 @@ export const SearchBarWithSuggestions = ({ value, onChange, onSubmit }: SearchBa
     }
   };
 
+  const getActivitiesText = (activities: any) => {
+    if (!activities) return "";
+    if (Array.isArray(activities)) {
+      return activities.slice(0, 3).join(", ");
+    }
+    if (typeof activities === "object") {
+      const activityList = Object.values(activities).filter(Boolean);
+      return activityList.slice(0, 3).join(", ");
+    }
+    return "";
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       setShowSuggestions(false);
@@ -73,8 +86,14 @@ export const SearchBarWithSuggestions = ({ value, onChange, onSubmit }: SearchBa
 
   const handleSuggestionClick = (result: SearchResult) => {
     setShowSuggestions(false);
-    // Navigates to the detail page using the item's type and ID, e.g., /trip/abc-123
-    navigate(`/${result.type}/${result.id}`);
+    // If onSuggestionSearch is provided, trigger search instead of navigation
+    if (onSuggestionSearch) {
+      onChange(result.name);
+      onSuggestionSearch(result.name);
+    } else {
+      // Otherwise navigate to detail page
+      navigate(`/${result.type}/${result.id}`);
+    }
   };
 
   const getTypeLabel = (type: string) => {
@@ -121,14 +140,17 @@ export const SearchBarWithSuggestions = ({ value, onChange, onSubmit }: SearchBa
             <button
               key={result.id}
               onClick={() => handleSuggestionClick(result)}
-              className="w-full px-4 py-3 flex items-center gap-3 hover:bg-accent transition-colors text-left border-b last:border-b-0"
+              className="w-full px-4 py-3 flex flex-col gap-1 hover:bg-accent transition-colors text-left border-b last:border-b-0"
             >
-              <div className="flex-1">
-                <p className="font-medium text-sm">{result.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {result.location && `${result.location}, `}{result.country} • {getTypeLabel(result.type)}
+              <p className="font-medium text-sm">{result.name}</p>
+              <p className="text-xs text-muted-foreground">
+                {result.location && `${result.location}, `}{result.country} • {getTypeLabel(result.type)}
+              </p>
+              {getActivitiesText(result.activities) && (
+                <p className="text-xs text-primary font-medium">
+                  {getActivitiesText(result.activities)}
                 </p>
-              </div>
+              )}
             </button>
           ))}
         </div>
