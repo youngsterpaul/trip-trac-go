@@ -131,7 +131,12 @@ export const SearchBarWithSuggestions = ({ value, onChange, onSubmit, onSuggesti
   const getActivitiesText = (activities: any) => {
     if (!activities) return "";
     if (Array.isArray(activities)) {
-      return activities.slice(0, 3).join(", ");
+      // Handle array of objects with name property (e.g., [{name: "Activity", price: 100}])
+      const activityNames = activities
+        .map(item => typeof item === 'object' && item.name ? item.name : item)
+        .filter(Boolean)
+        .slice(0, 3);
+      return activityNames.join(", ");
     }
     if (typeof activities === "object") {
       const activityList = Object.values(activities).filter(Boolean);
