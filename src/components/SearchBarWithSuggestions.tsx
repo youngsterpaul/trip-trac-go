@@ -227,7 +227,7 @@ export const SearchBarWithSuggestions = ({ value, onChange, onSubmit, onSuggesti
       <Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-muted-foreground z-10" />
       <Input
         type="text"
-        placeholder="Search for trips, events, hotels, places, or countries..."
+        placeholder="Search for trips, hotels, campsites, attractions, or countries..."
         value={value}
         onChange={(e) => {
           onChange(e.target.value);
