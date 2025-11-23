@@ -43,6 +43,8 @@ import Payment from "./pages/Payment";
 import MyReferrals from "./pages/MyReferrals";
 import AdminReferralSettings from "./pages/AdminReferralSettings";
 import AdminPaymentVerification from "./pages/AdminPaymentVerification";
+import HostBookings from "./pages/HostBookings";
+import HostBookingDetails from "./pages/HostBookingDetails";
 
 const queryClient = new QueryClient();
 
@@ -91,6 +93,8 @@ const App = () => (
               <Route path="/my-referrals" element={<MyReferrals />} />
               <Route path="/admin/referral-settings" element={<AdminReferralSettings />} />
               <Route path="/admin/payment-verification" element={<AdminPaymentVerification />} />
+              <Route path="/host-bookings" element={<HostBookings />} />
+              <Route path="/host-bookings/:type/:itemId" element={<HostBookingDetails />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>

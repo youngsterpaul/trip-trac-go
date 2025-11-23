@@ -522,6 +522,8 @@ export type Database = {
           gender: Database["public"]["Enums"]["gender_type"] | null
           id: string
           name: string
+          phone_number: string | null
+          phone_verified: boolean | null
           profile_picture_url: string | null
           referrer_id: string | null
           updated_at: string
@@ -534,6 +536,8 @@ export type Database = {
           gender?: Database["public"]["Enums"]["gender_type"] | null
           id: string
           name: string
+          phone_number?: string | null
+          phone_verified?: boolean | null
           profile_picture_url?: string | null
           referrer_id?: string | null
           updated_at?: string
@@ -546,6 +550,8 @@ export type Database = {
           gender?: Database["public"]["Enums"]["gender_type"] | null
           id?: string
           name?: string
+          phone_number?: string | null
+          phone_verified?: boolean | null
           profile_picture_url?: string | null
           referrer_id?: string | null
           updated_at?: string

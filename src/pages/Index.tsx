@@ -6,6 +6,7 @@ import { SearchBarWithSuggestions } from "@/components/SearchBarWithSuggestions"
 import { ListingCard } from "@/components/ListingCard";
 import { MapView } from "@/components/MapView";
 import { Footer } from "@/components/Footer";
+import { Card } from "@/components/ui/card";
 import { Calendar, Hotel, Tent, Compass, Map, Grid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -262,7 +263,7 @@ const Index = () => {
                 {/* Hero Section with Background Image */}
                     <div className="w-full">
                         <div 
-                            className="relative w-full overflow-hidden flex flex-col items-center justify-center p-4 md:p-12 py-12 md:py-24 rounded-lg"
+                            className="relative w-full overflow-hidden flex flex-col items-center justify-center p-4 md:p-12 py-12 md:py-24"
                             style={{
                                 backgroundImage: 'url(https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1920)',
                                 backgroundSize: 'cover',
@@ -598,6 +599,66 @@ const Index = () => {
                             ) : (
                                 <p className="col-span-full text-muted-foreground text-center">No nearby places found</p>
                             )}
+                        </div>
+                    </section>
+
+                    {/* Vlogs Section */}
+                    <section className="mb-8">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-sm md:text-2xl font-bold whitespace-nowrap overflow-hidden text-ellipsis">
+                                Travel Vlogs
+                            </h2>
+                            <Link to="/vlog" className="text-primary text-3xs md:text-sm hover:underline">
+                                View All
+                            </Link>
+                        </div>
+                        <div className="flex gap-2 md:gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory md:snap-none">
+                            {[
+                                {
+                                    id: "1",
+                                    title: "Exploring the Swiss Alps",
+                                    description: "Join us on an incredible journey through the majestic Swiss Alps",
+                                    image_url: "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=800&h=600&fit=crop"
+                                },
+                                {
+                                    id: "2",
+                                    title: "Tokyo Street Food Adventure",
+                                    description: "Dive into the vibrant food culture of Tokyo",
+                                    image_url: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&h=600&fit=crop"
+                                },
+                                {
+                                    id: "3",
+                                    title: "Safari Adventure in Kenya",
+                                    description: "Witness the incredible wildlife of Kenya",
+                                    image_url: "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=800&h=600&fit=crop"
+                                },
+                                {
+                                    id: "4",
+                                    title: "Diving the Great Barrier Reef",
+                                    description: "Explore the underwater wonders of Australia",
+                                    image_url: "https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=800&h=600&fit=crop"
+                                },
+                                {
+                                    id: "5",
+                                    title: "Northern Lights in Iceland",
+                                    description: "Chase the aurora borealis across Iceland",
+                                    image_url: "https://images.unsplash.com/photo-1483347756197-71ef80e95f73?w=800&h=600&fit=crop"
+                                }
+                            ].map((vlog) => (
+                                <div key={vlog.id} className="flex-shrink-0 w-[85vw] md:w-64 snap-center md:snap-align-none">
+                                    <Card className="cursor-pointer hover:shadow-lg transition-shadow overflow-hidden h-full">
+                                        <img
+                                            src={vlog.image_url}
+                                            alt={vlog.title}
+                                            className="w-full h-48 object-cover"
+                                        />
+                                        <div className="p-4">
+                                            <h3 className="font-bold text-base mb-2 line-clamp-1">{vlog.title}</h3>
+                                            <p className="text-sm text-muted-foreground line-clamp-2">{vlog.description}</p>
+                                        </div>
+                                    </Card>
+                                </div>
+                            ))}
                         </div>
                     </section>
                 </div>

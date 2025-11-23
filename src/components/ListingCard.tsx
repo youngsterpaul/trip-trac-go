@@ -75,14 +75,14 @@ export const ListingCard = ({
       className="group overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border rounded-lg bg-card shadow-sm
                  w-full" 
     >
-      <div className="relative aspect-[4/3] overflow-hidden">
+      <div className="relative aspect-[4/3] overflow-hidden m-0">
         <img
           src={imageUrl}
           alt={name}
           loading={priority ? "eager" : "lazy"}
           fetchPriority={priority ? "high" : "auto"}
           decoding="async"
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 m-0 p-0"
         />
         
         {/* Category Badge - Top-Left - Only show when showBadge is true */}
@@ -92,8 +92,8 @@ export const ListingCard = ({
           </Badge>
         )}
 
-        {/* Price Tag - Top-Right Corner */}
-        {!hidePrice && price !== undefined && (
+        {/* Price Tag - Top-Right Corner - Only for TRIP and EVENT */}
+        {!hidePrice && price !== undefined && (type === "TRIP" || type === "EVENT") && (
           <div className="absolute top-2 right-2 bg-primary text-primary-foreground px-3 py-1.5 md:px-2 md:py-1 rounded-full shadow-lg z-10">
             <p className="font-bold text-sm md:text-xs whitespace-nowrap">
               KSh {price}
