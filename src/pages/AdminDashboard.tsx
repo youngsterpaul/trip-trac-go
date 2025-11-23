@@ -286,82 +286,97 @@ const AdminDashboard = () => {
       : approvedListings.filter(item => item.type === category);
     
     if (items.length === 0) {
-      return <p className="text-muted-foreground">No {status} {category}s</p>;
+      return (
+        <Card>
+          <div className="p-8 text-center">
+            <p className="text-muted-foreground">No {status} {category}s</p>
+          </div>
+        </Card>
+      );
     }
 
     return (
-      <div className="grid gap-4">
-        {items.map((item) => (
-          <Card key={item.id} className="p-4 border-0">
-            <div className="flex gap-4">
-              <img
-                src={item.image_url || item.photo_urls?.[0] || ''}
-                alt={item.name || item.local_name || item.location_name}
-                className="w-32 h-32 object-cover rounded-lg"
-              />
-              <div className="flex-1">
-                <h3 className="font-bold text-lg">{item.name || item.local_name || item.location_name}</h3>
-                <p className="text-sm text-muted-foreground">{item.location || item.location_name}, {item.country}</p>
-                {item.date && <p className="text-sm">Date: {new Date(item.date).toLocaleDateString()}</p>}
-                {item.price && <p className="text-sm font-semibold">${item.price}</p>}
-                {(item.price_adult || item.price_child) && (
-                  <p className="text-sm font-semibold">
-                    Adult: ${item.price_adult || 0} | Child: ${item.price_child || 0}
-                  </p>
-                )}
-                {item.entry_fee && <p className="text-sm font-semibold">Entry Fee: ${item.entry_fee}</p>}
-                {item.registration_number && <p className="text-sm">Registration: {item.registration_number}</p>}
-                {item.email && <p className="text-sm">Email: {item.email}</p>}
-                {item.phone_number && <p className="text-sm">Phone: {item.phone_number}</p>}
-                {item.phone_numbers && item.phone_numbers.length > 0 && (
-                  <p className="text-sm">Phone: {item.phone_numbers.join(", ")}</p>
-                )}
-                
-                {status === 'pending' && (
-                  <>
-                    <Textarea
-                      placeholder="Admin notes..."
-                      value={adminNotes[item.id] || ""}
-                      onChange={(e) => setAdminNotes({ ...adminNotes, [item.id]: e.target.value })}
-                      className="mt-2"
-                    />
-                    <div className="flex gap-2 mt-3">
-                      <Button onClick={() => navigate(`/admin/review/${item.type}/${item.id}`)} size="sm" variant="outline">
+      <Card>
+        <div className="divide-y divide-border">
+          {items.map((item) => (
+            <div key={item.id} className="p-6">
+              <div className="flex gap-4">
+                <img
+                  src={item.image_url || item.photo_urls?.[0] || ''}
+                  alt={item.name || item.local_name || item.location_name}
+                  className="w-32 h-32 object-cover rounded-lg flex-shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-lg text-foreground">{item.name || item.local_name || item.location_name}</h3>
+                  <p className="text-sm text-muted-foreground">{item.location || item.location_name}, {item.country}</p>
+                  {item.date && <p className="text-sm">Date: {new Date(item.date).toLocaleDateString()}</p>}
+                  {item.price && <p className="text-sm font-semibold">${item.price}</p>}
+                  {(item.price_adult || item.price_child) && (
+                    <p className="text-sm font-semibold">
+                      Adult: ${item.price_adult || 0} | Child: ${item.price_child || 0}
+                    </p>
+                  )}
+                  {item.entry_fee && <p className="text-sm font-semibold">Entry Fee: ${item.entry_fee}</p>}
+                  {item.registration_number && <p className="text-sm">Registration: {item.registration_number}</p>}
+                  {item.email && <p className="text-sm">Email: {item.email}</p>}
+                  {item.phone_number && <p className="text-sm">Phone: {item.phone_number}</p>}
+                  {item.phone_numbers && item.phone_numbers.length > 0 && (
+                    <p className="text-sm">Phone: {item.phone_numbers.join(", ")}</p>
+                  )}
+                  
+                  {item.rejection_note && (
+                    <div className="mt-2 p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+                      <p className="text-sm font-semibold text-destructive mb-1">Rejection Reason:</p>
+                      <p className="text-sm text-muted-foreground">{item.rejection_note}</p>
+                    </div>
+                  )}
+                  
+                  {status === 'pending' && (
+                    <>
+                      <Textarea
+                        placeholder="Add note for approval or rejection reason..."
+                        value={adminNotes[item.id] || ""}
+                        onChange={(e) => setAdminNotes({ ...adminNotes, [item.id]: e.target.value })}
+                        className="mt-3"
+                      />
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        <Button onClick={() => navigate(`/admin/review/${item.type}/${item.id}`)} size="sm" variant="outline">
+                          View Details
+                        </Button>
+                        <Button onClick={() => handleApprove(item.id, item.type)} size="sm">
+                          Approve
+                        </Button>
+                        <Button onClick={() => handleReject(item.id, item.type)} variant="destructive" size="sm">
+                          Reject
+                        </Button>
+                      </div>
+                    </>
+                  )}
+
+                  {status === 'approved' && (
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      <Button 
+                        onClick={() => navigate(`/admin/review/${item.type}/${item.id}`)}
+                        size="sm"
+                        variant="outline"
+                      >
                         View Details
                       </Button>
-                      <Button onClick={() => handleApprove(item.id, item.type)} size="sm">
-                        Approve
-                      </Button>
-                      <Button onClick={() => handleReject(item.id, item.type)} variant="destructive" size="sm">
-                        Reject
+                      <Button 
+                        onClick={() => handleToggleVisibility(item.id, item.type, item.is_hidden)}
+                        size="sm"
+                        variant={item.is_hidden ? "default" : "outline"}
+                      >
+                        {item.is_hidden ? "Publish" : "Hide"}
                       </Button>
                     </div>
-                  </>
-                )}
-
-                {status === 'approved' && (
-                  <div className="flex gap-2 mt-3">
-                    <Button 
-                      onClick={() => navigate(`/admin/review/${item.type}/${item.id}`)}
-                      size="sm"
-                      variant="outline"
-                    >
-                      View Details
-                    </Button>
-                    <Button 
-                      onClick={() => handleToggleVisibility(item.id, item.type, item.is_hidden)}
-                      size="sm"
-                      variant={item.is_hidden ? "default" : "outline"}
-                    >
-                      {item.is_hidden ? "Publish" : "Hide"}
-                    </Button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
-          </Card>
-        ))}
-      </div>
+          ))}
+        </div>
+      </Card>
     );
   };
 
@@ -415,77 +430,73 @@ const AdminDashboard = () => {
           </TabsList>
 
           <TabsContent value="pending" className="space-y-6">
-            <div className="overflow-x-auto">
-              <div className="flex gap-4 pb-4 min-w-max">
-                <div className="min-w-[400px] flex-shrink-0">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-2xl font-bold">Pending Trips</h2>
-                    <Badge variant="outline" className="text-lg px-4 py-1">{getCategoryCount('trip', 'pending')}</Badge>
-                  </div>
-                  {renderListings('trip', 'pending')}
+            <div className="max-w-4xl mx-auto space-y-6">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-2xl font-bold text-foreground">Pending Trips</h2>
+                  <Badge variant="outline" className="text-lg px-4 py-1">{getCategoryCount('trip', 'pending')}</Badge>
                 </div>
+                {renderListings('trip', 'pending')}
+              </div>
 
-                <div className="min-w-[400px] flex-shrink-0">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-2xl font-bold">Pending Attractions</h2>
-                    <Badge variant="outline" className="text-lg px-4 py-1">{getCategoryCount('attraction', 'pending')}</Badge>
-                  </div>
-                  {renderListings('attraction', 'pending')}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-2xl font-bold text-foreground">Pending Attractions</h2>
+                  <Badge variant="outline" className="text-lg px-4 py-1">{getCategoryCount('attraction', 'pending')}</Badge>
                 </div>
+                {renderListings('attraction', 'pending')}
+              </div>
 
-                <div className="min-w-[400px] flex-shrink-0">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-2xl font-bold">Pending Hotels</h2>
-                    <Badge variant="outline" className="text-lg px-4 py-1">{getCategoryCount('hotel', 'pending')}</Badge>
-                  </div>
-                  {renderListings('hotel', 'pending')}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-2xl font-bold text-foreground">Pending Hotels</h2>
+                  <Badge variant="outline" className="text-lg px-4 py-1">{getCategoryCount('hotel', 'pending')}</Badge>
                 </div>
+                {renderListings('hotel', 'pending')}
+              </div>
 
-                <div className="min-w-[400px] flex-shrink-0">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-2xl font-bold">Pending Campsite and Experiences</h2>
-                    <Badge variant="outline" className="text-lg px-4 py-1">{getCategoryCount('adventure', 'pending')}</Badge>
-                  </div>
-                  {renderListings('adventure', 'pending')}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-2xl font-bold text-foreground">Pending Campsite and Experiences</h2>
+                  <Badge variant="outline" className="text-lg px-4 py-1">{getCategoryCount('adventure', 'pending')}</Badge>
                 </div>
+                {renderListings('adventure', 'pending')}
               </div>
             </div>
           </TabsContent>
 
           <TabsContent value="approved" className="space-y-6">
-            <div className="overflow-x-auto">
-              <div className="flex gap-4 pb-4 min-w-max">
-                <div className="min-w-[400px] flex-shrink-0">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-2xl font-bold">Approved Trips</h2>
-                    <Badge variant="outline" className="text-lg px-4 py-1">{getCategoryCount('trip', 'approved')}</Badge>
-                  </div>
-                  {renderListings('trip', 'approved')}
+            <div className="max-w-4xl mx-auto space-y-6">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-2xl font-bold text-foreground">Approved Trips</h2>
+                  <Badge variant="outline" className="text-lg px-4 py-1">{getCategoryCount('trip', 'approved')}</Badge>
                 </div>
+                {renderListings('trip', 'approved')}
+              </div>
 
-                <div className="min-w-[400px] flex-shrink-0">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-2xl font-bold">Approved Attractions</h2>
-                    <Badge variant="outline" className="text-lg px-4 py-1">{getCategoryCount('attraction', 'approved')}</Badge>
-                  </div>
-                  {renderListings('attraction', 'approved')}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-2xl font-bold text-foreground">Approved Attractions</h2>
+                  <Badge variant="outline" className="text-lg px-4 py-1">{getCategoryCount('attraction', 'approved')}</Badge>
                 </div>
+                {renderListings('attraction', 'approved')}
+              </div>
 
-                <div className="min-w-[400px] flex-shrink-0">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-2xl font-bold">Approved Hotels</h2>
-                    <Badge variant="outline" className="text-lg px-4 py-1">{getCategoryCount('hotel', 'approved')}</Badge>
-                  </div>
-                  {renderListings('hotel', 'approved')}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-2xl font-bold text-foreground">Approved Hotels</h2>
+                  <Badge variant="outline" className="text-lg px-4 py-1">{getCategoryCount('hotel', 'approved')}</Badge>
                 </div>
+                {renderListings('hotel', 'approved')}
+              </div>
 
-                <div className="min-w-[400px] flex-shrink-0">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-2xl font-bold">Approved Campsite and Experiences</h2>
-                    <Badge variant="outline" className="text-lg px-4 py-1">{getCategoryCount('adventure', 'approved')}</Badge>
-                  </div>
-                  {renderListings('adventure', 'approved')}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-2xl font-bold text-foreground">Approved Campsite and Experiences</h2>
+                  <Badge variant="outline" className="text-lg px-4 py-1">{getCategoryCount('adventure', 'approved')}</Badge>
                 </div>
+                {renderListings('adventure', 'approved')}
               </div>
             </div>
           </TabsContent>
