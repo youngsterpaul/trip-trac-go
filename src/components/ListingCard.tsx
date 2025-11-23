@@ -71,8 +71,8 @@ export const ListingCard = ({
   return (
     <Card 
       onClick={handleCardClick}
-      className="group overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-0 rounded-lg
-                 max-w-[160px] sm:max-w-xs md:max-w-sm lg:max-w-md xl:max-w-lg" 
+      className="group overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border rounded-lg bg-card shadow-sm
+                 w-full" 
     >
       <div className="relative aspect-[4/3] overflow-hidden">
         <img
@@ -89,16 +89,16 @@ export const ListingCard = ({
         )}
 
         {/* Name Overlay - Bottom-Left of Image */}
-        <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
-          <h3 className="font-bold text-xs md:text-sm text-white line-clamp-2">
+        <div className="absolute inset-x-0 bottom-0 p-3 md:p-2 bg-gradient-to-t from-black/80 to-transparent">
+          <h3 className="font-bold text-sm md:text-sm text-white line-clamp-2">
             {type === "ADVENTURE PLACE" ? "experience" : name}
           </h3>
         </div>
 
         {/* Price Tag - Top-Right Corner */}
         {!hidePrice && price !== undefined && (
-          <div className="absolute top-2 right-2 bg-primary text-primary-foreground px-2 py-1 rounded-full shadow-lg z-10">
-            <p className="font-bold text-xs whitespace-nowrap">
+          <div className="absolute top-2 right-2 bg-primary text-primary-foreground px-3 py-1.5 md:px-2 md:py-1 rounded-full shadow-lg z-10">
+            <p className="font-bold text-sm md:text-xs whitespace-nowrap">
               KSh {price}
             </p>
           </div>
@@ -106,11 +106,11 @@ export const ListingCard = ({
       </div>
       
       {/* Date and Event Capacity Details - Below the image */}
-      <div className="p-1.5 flex flex-col space-y-0.5">
+      <div className="p-3 md:p-4 flex flex-col space-y-2">
         {/* DATE row */}
         {(date || isCustomDate) && (
           <div className="flex justify-between items-center">
-            <p className="text-[0.6rem] font-semibold text-red-600 dark:text-red-400">
+            <p className="text-xs md:text-sm font-semibold text-red-600 dark:text-red-400">
               {isCustomDate ? "Custom" : formatDate(date)}
             </p>
           </div>
@@ -118,12 +118,12 @@ export const ListingCard = ({
         
         {/* EVENT CAPACITY - Only for events */}
         {type === "EVENT" && availableTickets !== undefined && (
-          <div className="flex items-center justify-between pt-0.5 border-t border-border/50 mt-0.5">
-            <p className="text-[0.6rem] font-medium text-muted-foreground">
+          <div className="flex items-center justify-between pt-1 border-t border-border/50 mt-1">
+            <p className="text-xs md:text-sm font-medium text-muted-foreground">
               Tickets Remaining:
             </p>
             <p className={cn(
-              "text-[0.6rem] font-bold",
+              "text-xs md:text-sm font-bold",
               (availableTickets - (bookedTickets || 0)) <= 5 ? "text-destructive" : "text-green-600 dark:text-green-400"
             )}>
               {Math.max(0, availableTickets - (bookedTickets || 0))} / {availableTickets}
