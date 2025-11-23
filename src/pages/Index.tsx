@@ -4,8 +4,9 @@ import { Header } from "@/components/Header";
 import { MobileBottomBar } from "@/components/MobileBottomBar";
 import { SearchBarWithSuggestions } from "@/components/SearchBarWithSuggestions";
 import { ListingCard } from "@/components/ListingCard";
+import { MapView } from "@/components/MapView";
 import { Footer } from "@/components/Footer";
-import { Calendar, Hotel, Tent, Compass } from "lucide-react";
+import { Calendar, Hotel, Tent, Compass, Map, Grid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -19,7 +20,7 @@ const Index = () => {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState("");
     const [listings, setListings] = useState<any[]>([]);
-    const [savedItems, setSavedItems] = useState<Set<string>>(new Set());
+    const [savedItems, setSavedItems] = useState<Set<string>>(new Set<string>());
     const [loading, setLoading] = useState(true);
     const [userId, setUserId] = useState<string | null>(null);
     const { toast } = useToast();
@@ -31,7 +32,8 @@ const Index = () => {
     const [nearbyPlacesHotels, setNearbyPlacesHotels] = useState<any[]>([]);
     const [loadingScrollable, setLoadingScrollable] = useState(true);
     const [loadingNearby, setLoadingNearby] = useState(true);
-    const [bookingStats, setBookingStats] = useState<Map<string, number>>(new Map());
+    const [bookingStats, setBookingStats] = useState<Map<string, number>>(new Map<string, number>());
+    const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
     const fetchScrollableRows = async () => {
         setLoadingScrollable(true);
@@ -283,47 +285,74 @@ const Index = () => {
                     </div>
                 </section>
                 <div className="px-4">
-                    {/* Latest - MODIFIED FOR HORIZONTAL SCROLLING */}
+                    {/* Latest - MODIFIED FOR HORIZONTAL SCROLLING OR MAP VIEW */}
                     <section className="mb-4 md:mb-8">
                         <div className="flex justify-between items-center mb-2 md:mb-4 mt-2 md:mt-0">
                             <h2 className="text-xs md:text-2xl font-bold whitespace-nowrap overflow-hidden text-ellipsis">
-                                Latest
+                                {searchQuery ? 'Search Results' : 'Latest'}
                             </h2>
-                        </div>
-                        <div className="flex gap-2 md:gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory md:snap-none">
-                            {loading || listings.length === 0 ? (
-                                [...Array(10)].map((_, i) => (
-                                    <div key={i} className="flex-shrink-0 w-[85vw] md:w-64 rounded-lg overflow-hidden shadow-md snap-center md:snap-align-none">
-                                        <div className="aspect-[4/3] bg-muted animate-pulse" />
-                                        <div className="p-2 md:p-4 space-y-2 md:space-y-3">
-                                            <div className="h-4 md:h-5 bg-muted animate-pulse rounded w-4/5" />
-                                            <div className="h-3 md:h-4 bg-muted animate-pulse rounded w-2/3" />
-                                            <div className="h-3 md:h-4 bg-muted animate-pulse rounded w-1/2" />
-                                        </div>
-                                    </div>
-                                ))
-                            ) : (
-                listings.map((item) => (
-                                    <div key={item.id} className="flex-shrink-0 w-[85vw] md:w-64 snap-center md:snap-align-none">
-                                        <ListingCard
-                                            id={item.id}
-                                            type={item.type}
-                                            name={item.name}
-                                            imageUrl={item.image_url}
-                                            location={item.location}
-                                            country={item.country}
-                                            price={item.price || item.entry_fee || 0}
-                                            date={item.date}
-                                            isCustomDate={item.is_custom_date}
-                                            onSave={handleSave}
-                                            isSaved={savedItems.has(item.id)}
-                                            hidePrice={true}
-                                            showBadge={true}
-                                        />
-                                    </div>
-                                ))
+                            {searchQuery && listings.length > 0 && (
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant={viewMode === 'list' ? 'default' : 'outline'}
+                                        size="sm"
+                                        onClick={() => setViewMode('list')}
+                                        className="gap-1"
+                                    >
+                                        <Grid className="h-4 w-4" />
+                                        <span className="hidden md:inline">List</span>
+                                    </Button>
+                                    <Button
+                                        variant={viewMode === 'map' ? 'default' : 'outline'}
+                                        size="sm"
+                                        onClick={() => setViewMode('map')}
+                                        className="gap-1"
+                                    >
+                                        <Map className="h-4 w-4" />
+                                        <span className="hidden md:inline">Map</span>
+                                    </Button>
+                                </div>
                             )}
                         </div>
+                        
+                        {searchQuery && viewMode === 'map' ? (
+                            <MapView listings={listings} />
+                        ) : (
+                            <div className="flex gap-2 md:gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory md:snap-none">
+                                {loading || listings.length === 0 ? (
+                                    [...Array(10)].map((_, i) => (
+                                        <div key={i} className="flex-shrink-0 w-[85vw] md:w-64 rounded-lg overflow-hidden shadow-md snap-center md:snap-align-none">
+                                            <div className="aspect-[4/3] bg-muted animate-pulse" />
+                                            <div className="p-2 md:p-4 space-y-2 md:space-y-3">
+                                                <div className="h-4 md:h-5 bg-muted animate-pulse rounded w-4/5" />
+                                                <div className="h-3 md:h-4 bg-muted animate-pulse rounded w-2/3" />
+                                                <div className="h-3 md:h-4 bg-muted animate-pulse rounded w-1/2" />
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    listings.map((item) => (
+                                        <div key={item.id} className="flex-shrink-0 w-[85vw] md:w-64 snap-center md:snap-align-none">
+                                            <ListingCard
+                                                id={item.id}
+                                                type={item.type}
+                                                name={item.name}
+                                                imageUrl={item.image_url}
+                                                location={item.location}
+                                                country={item.country}
+                                                price={item.price || item.entry_fee || 0}
+                                                date={item.date}
+                                                isCustomDate={item.is_custom_date}
+                                                onSave={handleSave}
+                                                isSaved={savedItems.has(item.id)}
+                                                hidePrice={true}
+                                                showBadge={true}
+                                            />
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        )}
                     </section>
 
 
