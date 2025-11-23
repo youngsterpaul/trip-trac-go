@@ -18,7 +18,9 @@ Deno.serve(async (req) => {
 
     const { itemIds, itemType } = await req.json();
 
-    const table = itemType === 'hotel' ? 'hotels' : 'adventure_places';
+    const table = itemType === 'hotel' ? 'hotels' 
+      : itemType === 'attraction' ? 'attractions'
+      : 'adventure_places';
 
     const { data, error } = await supabaseClient
       .from(table)
