@@ -138,6 +138,9 @@ export const NotificationBell = () => {
       case 'item_hidden':
         navigate('/my-listing');
         break;
+      case 'item_unhidden':
+        navigate('/my-listing');
+        break;
       case 'new_referral':
         navigate('/my-referrals');
         break;
