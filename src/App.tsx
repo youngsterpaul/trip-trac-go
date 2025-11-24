@@ -52,6 +52,8 @@ import CategoryTrips from "./pages/host/CategoryTrips";
 import CategoryHotels from "./pages/host/CategoryHotels";
 import CategoryAttractions from "./pages/host/CategoryAttractions";
 import CategoryExperiences from "./pages/host/CategoryExperiences";
+import VerificationList from "./pages/admin/VerificationList";
+import VerificationDetail from "./pages/admin/VerificationDetail";
 
 const queryClient = new QueryClient();
 
@@ -109,6 +111,8 @@ const App = () => (
               <Route path="/host/category/hotels" element={<CategoryHotels />} />
               <Route path="/host/category/attractions" element={<CategoryAttractions />} />
               <Route path="/host/category/experiences" element={<CategoryExperiences />} />
+              <Route path="/admin/verification/:status" element={<VerificationList />} />
+              <Route path="/admin/verification-detail/:id" element={<VerificationDetail />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
