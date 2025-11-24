@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { Plane, Building, Tent, MapPin, Plus } from "lucide-react";
+import { Plane, Building, Tent, MapPin, Plus, ArrowLeft } from "lucide-react";
 
 const BecomeHost = () => {
   const { user } = useAuth();
@@ -191,7 +191,17 @@ const BecomeHost = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1 container px-4 py-8 mb-20 md:mb-0">
-        <h1 className="text-3xl font-bold mb-6">Become a Host</h1>
+        <div className="flex items-center gap-4 mb-6">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/account")}
+            className="hover:bg-accent"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-3xl font-bold">Become a Host</h1>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Tours Card */}
@@ -237,7 +247,7 @@ const BecomeHost = () => {
             <Button
               onClick={(e) => {
                 e.stopPropagation();
-                navigate("/create-hotel");
+                navigate("/CreateHotel");
               }}
               size="sm"
               className="absolute top-2 right-2 z-10 bg-primary hover:bg-primary/90"
@@ -290,7 +300,7 @@ const BecomeHost = () => {
             <Button
               onClick={(e) => {
                 e.stopPropagation();
-                navigate("/create-adventure");
+                navigate("/CreateAdventure");
               }}
               size="sm"
               className="absolute top-2 right-2 z-10 bg-primary hover:bg-primary/90"
