@@ -2,7 +2,7 @@ import { MapPin, Heart } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn, optimizeSupabaseImage, generateImageSrcSet } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 
 interface ListingCardProps {
@@ -83,7 +83,9 @@ export const ListingCard = ({
     >
       <div className="relative aspect-[4/3] overflow-hidden m-0">
         <img
-          src={imageUrl}
+          src={optimizeSupabaseImage(imageUrl, { width: 640, height: 480, quality: 85 })}
+          srcSet={generateImageSrcSet(imageUrl, [320, 640, 960])}
+          sizes="(max-width: 640px) 320px, (max-width: 1024px) 640px, 640px"
           alt={name}
           loading={priority ? "eager" : "lazy"}
           fetchPriority={priority ? "high" : "auto"}

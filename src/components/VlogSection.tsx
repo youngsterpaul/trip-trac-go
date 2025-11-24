@@ -3,6 +3,23 @@ import { Card } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+/**
+ * Optimizes Unsplash image URLs with proper parameters
+ */
+function optimizeUnsplashImage(url: string, width: number, height: number): string {
+  if (!url || !url.includes('unsplash.com')) return url;
+  
+  // Add Unsplash optimization parameters
+  const params = new URLSearchParams();
+  params.append('w', width.toString());
+  params.append('h', height.toString());
+  params.append('fit', 'crop');
+  params.append('auto', 'format');
+  params.append('q', '80');
+  
+  return `${url}?${params.toString()}`;
+}
+
 interface Vlog {
   id: string;
   title: string;
@@ -95,8 +112,12 @@ export const VlogSection = () => {
             className="min-w-[280px] md:min-w-[320px] cursor-pointer hover:shadow-lg transition-shadow overflow-hidden"
           >
             <img
-              src={vlog.image_url}
+              src={optimizeUnsplashImage(vlog.image_url, 640, 384)}
+              srcSet={`${optimizeUnsplashImage(vlog.image_url, 320, 192)} 320w, ${optimizeUnsplashImage(vlog.image_url, 640, 384)} 640w`}
+              sizes="(max-width: 768px) 280px, 320px"
               alt={vlog.title}
+              loading="lazy"
+              decoding="async"
               className="w-full h-48 object-cover"
             />
             <div className="p-4">
