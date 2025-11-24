@@ -6,7 +6,7 @@ import { MobileBottomBar } from "@/components/MobileBottomBar";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Tent, Plus } from "lucide-react";
+import { ChevronRight, Tent, Plus, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -81,9 +81,19 @@ const CategoryExperiences = () => {
       <Header />
       <main className="flex-1 container px-4 py-8 max-w-4xl mx-auto mb-20 md:mb-0">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold">My Experiences</h1>
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/become-host")}
+              className="hover:bg-accent"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-3xl font-bold">My Experiences</h1>
+          </div>
           {experiences.length > 0 && (
-            <Button onClick={() => navigate("/create-adventure")} size="sm">
+            <Button onClick={() => navigate("/CreateAdventure")} size="sm">
               <Plus className="h-4 w-4 mr-2" />
               Add Experience
             </Button>
