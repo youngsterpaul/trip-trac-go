@@ -176,8 +176,10 @@ export const Header = ({ onSearchClick, showSearchIcon = true }: HeaderProps) =>
             <NotificationBell />
           </div>
 
-          {/* Desktop Auth Actions (Right Side) - Account, Notification, Theme */}
+          {/* Desktop Auth Actions (Right Side) - Notification, Theme, Account */}
           <div className="hidden md:flex items-center gap-2">
+            <NotificationBell />
+            <ThemeToggle />
             <button 
               onClick={() => user ? navigate('/account') : navigate('/auth')}
               className="rounded-full h-10 w-10 flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors"
@@ -185,8 +187,6 @@ export const Header = ({ onSearchClick, showSearchIcon = true }: HeaderProps) =>
             >
               <User className="h-5 w-5 text-white" />
             </button>
-            <NotificationBell />
-            <ThemeToggle />
           </div>
         </div>
       </div>

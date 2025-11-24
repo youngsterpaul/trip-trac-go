@@ -5,7 +5,7 @@ import { Footer } from "@/components/Footer";
 import { MobileBottomBar } from "@/components/MobileBottomBar";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChevronRight, ClipboardList, CheckCircle, XCircle } from "lucide-react";
+import { ChevronRight, ClipboardList, CheckCircle, XCircle, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -17,6 +17,7 @@ const AdminDashboard = () => {
   const [pendingCount, setPendingCount] = useState(0);
   const [approvedCount, setApprovedCount] = useState(0);
   const [rejectedCount, setRejectedCount] = useState(0);
+  const [hostVerificationCount, setHostVerificationCount] = useState(0);
 
   useEffect(() => {
     if (!user) {
@@ -89,6 +90,14 @@ const AdminDashboard = () => {
       const totalRejected = (rejectedTrips.count || 0) + (rejectedHotels.count || 0) + 
                            (rejectedAdventures.count || 0) + (rejectedAttractions.count || 0);
       setRejectedCount(totalRejected);
+
+      // Fetch host verifications pending count
+      const { count: hostVerificationsPending } = await supabase
+        .from("host_verifications")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "pending");
+      
+      setHostVerificationCount(hostVerificationsPending || 0);
     } catch (error) {
       console.error("Error fetching counts:", error);
     }
@@ -152,6 +161,20 @@ const AdminDashboard = () => {
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant="destructive">{rejectedCount}</Badge>
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              </div>
+            </button>
+
+            <button
+              onClick={() => navigate("/admin/verification")}
+              className="w-full flex items-center justify-between p-6 hover:bg-accent transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <ShieldCheck className="h-5 w-5 text-primary" />
+                <span className="font-medium text-foreground">Host Verifications</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary">{hostVerificationCount}</Badge>
                 <ChevronRight className="h-5 w-5 text-muted-foreground" />
               </div>
             </button>
