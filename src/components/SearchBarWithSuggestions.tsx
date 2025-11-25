@@ -22,7 +22,7 @@ interface SearchBarProps {
 interface SearchResult {
   id: string;
   name: string;
-  type: "trip" | "hotel" | "adventure" | "attraction";
+  type: "trip" | "hotel" | "adventure" | "attraction" | "event";
   location?: string;
   place?: string;
   country?: string;
@@ -92,10 +92,13 @@ export const SearchBarWithSuggestions = ({ value, onChange, onSubmit, onSuggesti
 
     try {
       // Fetch all items when empty, or filter when typing
-      const [tripsData, hotelsData, adventuresData, attractionsData] = await Promise.all([
+      const [tripsData, eventsData, hotelsData, adventuresData, attractionsData] = await Promise.all([
         queryValue 
-          ? supabase.from("trips").select("id, name, location, place, country, activities").eq("approval_status", "approved").or(`name.ilike.%${queryValue}%,location.ilike.%${queryValue}%,place.ilike.%${queryValue}%,country.ilike.%${queryValue}%`).limit(20)
-          : supabase.from("trips").select("id, name, location, place, country, activities").eq("approval_status", "approved").limit(20),
+          ? supabase.from("trips").select("id, name, location, place, country, activities").eq("approval_status", "approved").eq("type", "trip").or(`name.ilike.%${queryValue}%,location.ilike.%${queryValue}%,place.ilike.%${queryValue}%,country.ilike.%${queryValue}%`).limit(20)
+          : supabase.from("trips").select("id, name, location, place, country, activities").eq("approval_status", "approved").eq("type", "trip").limit(20),
+        queryValue 
+          ? supabase.from("trips").select("id, name, location, place, country, activities").eq("approval_status", "approved").eq("type", "event").or(`name.ilike.%${queryValue}%,location.ilike.%${queryValue}%,place.ilike.%${queryValue}%,country.ilike.%${queryValue}%`).limit(20)
+          : supabase.from("trips").select("id, name, location, place, country, activities").eq("approval_status", "approved").eq("type", "event").limit(20),
         queryValue
           ? supabase.from("hotels").select("id, name, location, place, country, activities, facilities").eq("approval_status", "approved").or(`name.ilike.%${queryValue}%,location.ilike.%${queryValue}%,place.ilike.%${queryValue}%,country.ilike.%${queryValue}%`).limit(20)
           : supabase.from("hotels").select("id, name, location, place, country, activities, facilities").eq("approval_status", "approved").limit(20),
@@ -109,6 +112,7 @@ export const SearchBarWithSuggestions = ({ value, onChange, onSubmit, onSuggesti
 
       let combined = [
         ...(tripsData.data || []).map((item) => ({ ...item, type: "trip" as const })),
+        ...(eventsData.data || []).map((item) => ({ ...item, type: "event" as const })),
         ...(hotelsData.data || []).map((item) => ({ ...item, type: "hotel" as const })),
         ...(adventuresData.data || []).map((item) => ({ ...item, type: "adventure" as const })),
         ...(attractionsData.data || []).map((item) => ({ 
@@ -201,7 +205,8 @@ export const SearchBarWithSuggestions = ({ value, onChange, onSubmit, onSuggesti
       onSuggestionSearch(result.name);
     } else {
       // Otherwise navigate to detail page
-      navigate(`/${result.type}/${result.id}`);
+      const detailPath = result.type === "event" ? "event" : result.type;
+      navigate(`/${detailPath}/${result.id}`);
     }
   };
 
@@ -219,6 +224,8 @@ export const SearchBarWithSuggestions = ({ value, onChange, onSubmit, onSuggesti
     switch (type) {
       case "trip":
         return "Trip";
+      case "event":
+        return "Event";
       case "hotel":
         return "Hotel";
       case "adventure":
@@ -233,6 +240,8 @@ export const SearchBarWithSuggestions = ({ value, onChange, onSubmit, onSuggesti
   const getTypeIcon = (type: string) => {
     switch (type) {
       case "trip":
+        return Plane;
+      case "event":
         return Plane;
       case "hotel":
         return Hotel;
@@ -262,7 +271,7 @@ export const SearchBarWithSuggestions = ({ value, onChange, onSubmit, onSuggesti
           <Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-muted-foreground z-10" />
           <Input
             type="text"
-            placeholder="Search for trips, hotels, campsites, attractions, or countries..."
+            placeholder="Search for trips, events, hotels, campsites, attractions, or countries..."
             value={value}
             onChange={(e) => {
               onChange(e.target.value);
