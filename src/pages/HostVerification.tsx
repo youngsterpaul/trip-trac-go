@@ -7,7 +7,6 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,7 +24,9 @@ const HostVerification = () => {
 
   // Form state
   const [legalName, setLegalName] = useState("");
-  const [address, setAddress] = useState("");
+  const [streetAddress, setStreetAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [postalCode, setPostalCode] = useState("");
   const [documentType, setDocumentType] = useState("");
   const [documentFront, setDocumentFront] = useState<File | null>(null);
   const [documentBack, setDocumentBack] = useState<File | null>(null);
@@ -85,7 +86,7 @@ const HostVerification = () => {
 
   const handleNext = () => {
     if (currentStep === 1) {
-      if (!legalName || !address || !documentType) {
+      if (!legalName || !streetAddress || !city || !documentType) {
         toast({
           title: "Missing Information",
           description: "Please fill in all required fields.",
@@ -148,7 +149,9 @@ const HostVerification = () => {
       const verificationData = {
         user_id: user!.id,
         legal_name: legalName,
-        residential_address: address,
+        street_address: streetAddress,
+        city: city,
+        postal_code: postalCode || null,
         document_type: documentType,
         document_front_url: frontUrl,
         document_back_url: backUrl,
@@ -275,14 +278,32 @@ const HostVerification = () => {
                   </p>
                 </div>
                 <div>
-                  <Label htmlFor="address">Current Residential Address (Street, City, Postal Code) *</Label>
-                  <Textarea
-                    id="address"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    placeholder="Enter your complete residential address including street, city, and postal code"
+                  <Label htmlFor="streetAddress">Street Address *</Label>
+                  <Input
+                    id="streetAddress"
+                    value={streetAddress}
+                    onChange={(e) => setStreetAddress(e.target.value)}
+                    placeholder="Enter your street address"
                     required
-                    rows={3}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="city">City *</Label>
+                  <Input
+                    id="city"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    placeholder="Enter your city"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="postalCode">Postal Code (Optional)</Label>
+                  <Input
+                    id="postalCode"
+                    value={postalCode}
+                    onChange={(e) => setPostalCode(e.target.value)}
+                    placeholder="Enter your postal code"
                   />
                 </div>
                 <div>

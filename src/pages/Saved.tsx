@@ -9,6 +9,7 @@ import { getUserId } from "@/lib/sessionManager";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Trash2, CheckCircle } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -26,6 +27,7 @@ const Saved = () => {
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [showClearAllDialog, setShowClearAllDialog] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -48,12 +50,16 @@ const Saved = () => {
   }, []);
 
   const fetchSavedItems = async (uid: string) => {
+    setIsLoading(true);
     const { data: savedData } = await supabase
       .from("saved_items")
       .select("*")
       .eq("user_id", uid);
 
-    if (!savedData) return;
+    if (!savedData) {
+      setIsLoading(false);
+      return;
+    }
 
     const items: any[] = [];
     
@@ -71,6 +77,7 @@ const Saved = () => {
     }
 
     setSavedListings(items);
+    setIsLoading(false);
   };
 
   const handleUnsave = async (itemId: string) => {
@@ -187,7 +194,17 @@ const Saved = () => {
           )}
         </div>
         
-        {savedListings.length === 0 ? (
+        {isLoading ? (
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="space-y-3">
+                <Skeleton className="h-48 w-full rounded-lg" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            ))}
+          </div>
+        ) : savedListings.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-xl text-muted-foreground">No saved items yet</p>
             <p className="text-muted-foreground mt-2">Start exploring and save your favorites!</p>

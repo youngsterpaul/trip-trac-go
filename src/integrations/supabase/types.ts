@@ -348,52 +348,58 @@ export type Database = {
       }
       host_verifications: {
         Row: {
+          city: string
           created_at: string
           document_back_url: string | null
           document_front_url: string
           document_type: string
           id: string
           legal_name: string
+          postal_code: string | null
           rejection_reason: string | null
-          residential_address: string
           reviewed_at: string | null
           reviewed_by: string | null
           selfie_url: string
           status: string
+          street_address: string
           submitted_at: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          city?: string
           created_at?: string
           document_back_url?: string | null
           document_front_url: string
           document_type: string
           id?: string
           legal_name: string
+          postal_code?: string | null
           rejection_reason?: string | null
-          residential_address: string
           reviewed_at?: string | null
           reviewed_by?: string | null
           selfie_url: string
           status?: string
+          street_address?: string
           submitted_at?: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          city?: string
           created_at?: string
           document_back_url?: string | null
           document_front_url?: string
           document_type?: string
           id?: string
           legal_name?: string
+          postal_code?: string | null
           rejection_reason?: string | null
-          residential_address?: string
           reviewed_at?: string | null
           reviewed_by?: string | null
           selfie_url?: string
           status?: string
+          street_address?: string
           submitted_at?: string
           updated_at?: string
           user_id?: string
