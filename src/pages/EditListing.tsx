@@ -17,6 +17,7 @@ import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { approvalStatusSchema } from "@/lib/validation";
+import { EmailVerification } from "@/components/creation/EmailVerification";
 
 interface Facility {
   name: string;
@@ -55,6 +56,8 @@ const EditListing = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [approvalStatus, setApprovalStatus] = useState("");
   const [isHidden, setIsHidden] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [originalEmail, setOriginalEmail] = useState("");
   
   // Check if user is re-submitting
   const urlParams = new URLSearchParams(window.location.search);
@@ -140,7 +143,13 @@ const EditListing = () => {
       }
       
       setMapLink(((data as any).map_link || (data as any).location_link as string) || "");
-      setEmail(((data as any).email as string) || "");
+      const fetchedEmail = ((data as any).email as string) || "";
+      setEmail(fetchedEmail);
+      setOriginalEmail(fetchedEmail);
+      // If email exists, mark as verified (existing email is already trusted)
+      if (fetchedEmail) {
+        setEmailVerified(true);
+      }
       
       // Images handling
       if (type === "attraction") {
@@ -371,6 +380,16 @@ const EditListing = () => {
           updateData.map_link = mapLink;
           break;
         case "email":
+          // Verify email if changed and not yet verified
+          if (email !== originalEmail && !emailVerified) {
+            toast({
+              title: "Email Verification Required",
+              description: "Please verify your new email address before saving",
+              variant: "destructive"
+            });
+            setSaving(false);
+            return;
+          }
           updateData.email = email;
           break;
         case "phone":
@@ -433,6 +452,11 @@ const EditListing = () => {
         title: "Success",
         description: "Changes saved successfully",
       });
+
+      // Update original email after successful save
+      if (field === "email") {
+        setOriginalEmail(email);
+      }
 
       toggleEditMode(field);
     } catch (error) {
@@ -726,14 +750,33 @@ const EditListing = () => {
             {/* Contact Information */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Mail className="h-5 w-5" />
-                  Contact Email
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Mail className="h-5 w-5" />
+                    Contact Email
+                  </CardTitle>
+                  <EditButton field="email" onSave={() => handleSaveField("email")} />
+                </div>
               </CardHeader>
               <CardContent>
-                <Input value={email || "No email"} disabled className="bg-muted cursor-not-allowed" />
-                <p className="text-xs text-muted-foreground mt-1">Email cannot be changed</p>
+                {editMode.email ? (
+                  <EmailVerification
+                    email={email}
+                    onEmailChange={(newEmail) => {
+                      setEmail(newEmail);
+                      // Reset verification if email changed from original
+                      if (newEmail !== originalEmail) {
+                        setEmailVerified(false);
+                      } else {
+                        setEmailVerified(true);
+                      }
+                    }}
+                    isVerified={emailVerified}
+                    onVerificationChange={setEmailVerified}
+                  />
+                ) : (
+                  <p className="text-sm">{email || "No email set"}</p>
+                )}
               </CardContent>
             </Card>
 
