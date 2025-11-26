@@ -17,6 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { SimilarItems } from "@/components/SimilarItems";
 
 import { AvailabilityCalendar } from "@/components/booking/AvailabilityCalendar";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ReviewSection } from "@/components/ReviewSection";
 import Autoplay from "embla-carousel-autoplay";
 
@@ -37,6 +38,7 @@ interface Attraction {
   price_adult: number;
   photo_urls: string[];
   gallery_images: string[];
+  facilities?: Array<{name: string, price: number, capacity: number}>;
 }
 
 export default function AttractionDetail() {
@@ -50,6 +52,7 @@ export default function AttractionDetail() {
   const [bookingLoading, setBookingLoading] = useState(false);
   const [current, setCurrent] = useState(0);
   const [isSaved, setIsSaved] = useState(false);
+  const [selectedFacilities, setSelectedFacilities] = useState<Array<{name: string, price: number, capacity: number}>>([]);
   
   const [bookingData, setBookingData] = useState({
     visit_date: "",
@@ -77,7 +80,7 @@ export default function AttractionDetail() {
         .single();
 
       if (error) throw error;
-      setAttraction(data);
+      setAttraction(data as any);
     } catch (error: any) {
       console.error('Error fetching attraction:', error);
       toast({
@@ -92,8 +95,27 @@ export default function AttractionDetail() {
   };
 
   const calculateTotal = () => {
-    if (!attraction || attraction.entrance_type === 'free') return 0;
-    return (bookingData.num_adults * attraction.price_adult) + (bookingData.num_children * attraction.price_child);
+    if (!attraction || attraction.entrance_type === 'free') {
+      let facilityTotal = 0;
+      selectedFacilities.forEach(f => {
+        facilityTotal += f.price;
+      });
+      return facilityTotal;
+    }
+    const entranceFee = (bookingData.num_adults * attraction.price_adult) + (bookingData.num_children * attraction.price_child);
+    let facilityTotal = 0;
+    selectedFacilities.forEach(f => {
+      facilityTotal += f.price;
+    });
+    return entranceFee + facilityTotal;
+  };
+
+  const toggleFacility = (facility: {name: string, price: number, capacity: number}, checked: boolean) => {
+    if (checked) {
+      setSelectedFacilities([...selectedFacilities, facility]);
+    } else {
+      setSelectedFacilities(selectedFacilities.filter(f => f.name !== facility.name));
+    }
   };
 
   const checkIfSaved = async () => {
@@ -193,6 +215,7 @@ export default function AttractionDetail() {
         booking_details: {
           num_adults: bookingData.num_adults,
           num_children: bookingData.num_children,
+          facilities: selectedFacilities.length > 0 ? selectedFacilities : null,
         },
         is_guest_booking: !user,
         guest_name: user ? null : bookingData.guest_name,
@@ -452,6 +475,24 @@ export default function AttractionDetail() {
           )}
         </div>
 
+        {/* Facilities Section */}
+        {attraction.facilities && Array.isArray(attraction.facilities) && attraction.facilities.length > 0 && (
+          <Card className="p-6 mt-6">
+            <h2 className="text-2xl font-semibold mb-3">Available Facilities</h2>
+            <div className="grid gap-3">
+              {attraction.facilities.map((facility: any, idx: number) => (
+                <div key={idx} className="border rounded-lg p-4 bg-background flex justify-between items-center">
+                  <div>
+                    <span className="font-medium">{facility.name}</span>
+                    <p className="text-sm text-muted-foreground">Capacity: {facility.capacity} people</p>
+                  </div>
+                  <span className="font-bold">${facility.price}</span>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+
         <ReviewSection itemId={attraction.id} itemType="attraction" />
 
         {/* Book Now Button for Small Screens - Below Operating Hours */}
@@ -507,6 +548,28 @@ export default function AttractionDetail() {
                 onChange={(e) => setBookingData({...bookingData, num_children: parseInt(e.target.value) || 0})}
               />
             </div>
+
+            {/* Facilities Selection */}
+            {attraction.facilities && Array.isArray(attraction.facilities) && attraction.facilities.length > 0 && (
+              <div className="space-y-3">
+                <Label>Select Facilities (Optional)</Label>
+                {attraction.facilities.map((facility: any, idx: number) => (
+                  <div key={idx} className="flex items-center justify-between border rounded p-3">
+                    <div className="flex items-center gap-3">
+                      <Checkbox
+                        checked={selectedFacilities.some(f => f.name === facility.name)}
+                        onCheckedChange={(checked) => toggleFacility(facility, !!checked)}
+                      />
+                      <div>
+                        <p className="font-medium">{facility.name}</p>
+                        <p className="text-xs text-muted-foreground">Capacity: {facility.capacity} people</p>
+                      </div>
+                    </div>
+                    <span className="font-bold">${facility.price}</span>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {!user && (
               <>

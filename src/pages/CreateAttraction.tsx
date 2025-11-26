@@ -59,6 +59,19 @@ export default function CreateAttraction() {
   
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
+  const [facilities, setFacilities] = useState<Array<{name: string, price: string, capacity: string, priceType: string}>>([
+    { name: "", price: "", capacity: "", priceType: "free" }
+  ]);
+
+  const addFacility = () => {
+    setFacilities([...facilities, { name: "", price: "", capacity: "", priceType: "free" }]);
+  };
+
+  const removeFacility = (index: number) => {
+    if (facilities.length > 1) {
+      setFacilities(facilities.filter((_, i) => i !== index));
+    }
+  };
 
   useEffect(() => {
     if (!user) {
@@ -197,12 +210,22 @@ export default function CreateAttraction() {
     try {
       const photoUrls = await uploadPhotos();
       
+      // Prepare facilities array
+      const facilitiesArray = facilities
+        .filter(f => f.name.trim())
+        .map(f => ({ 
+          name: f.name.trim(), 
+          price: f.priceType === "free" ? 0 : parseFloat(f.price) || 0,
+          capacity: parseInt(f.capacity) || 0
+        }));
+      
       const { error } = await supabase
         .from('attractions')
         .insert([{
           ...formData,
           photo_urls: photoUrls,
           gallery_images: photoUrls,
+          facilities: facilitiesArray.length > 0 ? facilitiesArray : null,
           created_by: user.id,
           approval_status: 'pending',
         }]);
@@ -457,6 +480,93 @@ export default function CreateAttraction() {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Facilities */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold">Facilities (Optional)</h2>
+              <Button type="button" size="sm" onClick={addFacility}>Add Facility</Button>
+            </div>
+            <p className="text-sm text-muted-foreground">Add facilities with Name, Price, and Capacity</p>
+            {facilities.map((facility, index) => (
+              <div key={index} className="space-y-2">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Name</Label>
+                    <Input
+                      placeholder="Facility name"
+                      value={facility.name}
+                      onChange={(e) => {
+                        const newFacilities = [...facilities];
+                        newFacilities[index].name = e.target.value;
+                        setFacilities(newFacilities);
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Price Type</Label>
+                    <Select
+                      value={facility.priceType}
+                      onValueChange={(value) => {
+                        const newFacilities = [...facilities];
+                        newFacilities[index].priceType = value;
+                        setFacilities(newFacilities);
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="free">Free</SelectItem>
+                        <SelectItem value="paid">Paid</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {facility.priceType === "paid" && (
+                    <div className="space-y-1">
+                      <Label className="text-xs">Price</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        value={facility.price}
+                        onChange={(e) => {
+                          const newFacilities = [...facilities];
+                          newFacilities[index].price = e.target.value;
+                          setFacilities(newFacilities);
+                        }}
+                      />
+                    </div>
+                  )}
+                  <div className="space-y-1">
+                    <Label className="text-xs">Capacity</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="number"
+                        placeholder="20"
+                        value={facility.capacity}
+                        onChange={(e) => {
+                          const newFacilities = [...facilities];
+                          newFacilities[index].capacity = e.target.value;
+                          setFacilities(newFacilities);
+                        }}
+                      />
+                      {facilities.length > 1 && (
+                        <Button 
+                          type="button" 
+                          size="sm" 
+                          variant="destructive" 
+                          onClick={() => removeFacility(index)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
 
           {/* Photos Section */}

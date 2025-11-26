@@ -14,6 +14,7 @@ import { guestBookingSchema, paymentPhoneSchema } from "@/lib/validation";
 interface Facility {
   name: string;
   price: number;
+  capacity?: number;
 }
 
 interface Activity {

@@ -389,15 +389,14 @@ const HotelDetail = () => {
                     {hotel.facilities.map((facility, idx) => (
                       <div key={idx} className="border rounded-lg p-4 bg-background">
                         <div className="flex justify-between items-start mb-2">
-                          <h3 className="font-semibold text-xs md:text-base">{facility.name}</h3>
+                          <div>
+                            <h3 className="font-semibold text-xs md:text-base">{facility.name}</h3>
+                            <p className="text-xs text-muted-foreground mt-1">Capacity: {facility.capacity} guests</p>
+                          </div>
                           <span className="text-base md:text-lg font-bold">
                             <DollarSign className="inline h-4 w-4" />
                             {facility.price}/day
                           </span>
-                        </div>
-                        <div className="flex items-center gap-1 text-xs md:text-sm text-muted-foreground">
-                          <Users className="h-4 w-4" />
-                          <span>Capacity: {facility.capacity} guests</span>
                         </div>
                       </div>
                     ))}

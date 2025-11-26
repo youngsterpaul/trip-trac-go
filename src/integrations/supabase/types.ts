@@ -123,6 +123,7 @@ export type Database = {
           description: string | null
           email: string | null
           entrance_type: string
+          facilities: Json | null
           gallery_images: string[] | null
           id: string
           is_hidden: boolean | null
@@ -152,6 +153,7 @@ export type Database = {
           description?: string | null
           email?: string | null
           entrance_type?: string
+          facilities?: Json | null
           gallery_images?: string[] | null
           id?: string
           is_hidden?: boolean | null
@@ -181,6 +183,7 @@ export type Database = {
           description?: string | null
           email?: string | null
           entrance_type?: string
+          facilities?: Json | null
           gallery_images?: string[] | null
           id?: string
           is_hidden?: boolean | null

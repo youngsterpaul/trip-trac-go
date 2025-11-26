@@ -19,6 +19,7 @@ import { ReviewSection } from "@/components/ReviewSection";
 interface Facility {
   name: string;
   price: number;
+  capacity?: number;
 }
 
 interface Activity {
@@ -425,9 +426,14 @@ const AdventurePlaceDetail = () => {
                   <h2 className="text-lg md:text-xl font-semibold mb-3">Available Facilities</h2>
                   <div className="grid gap-3">
                     {place.facilities.map((facility, idx) => (
-                      <div key={idx} className="border rounded-lg p-4 flex justify-between items-center bg-background">
-                        <span className="font-medium text-xs md:text-base">{facility.name}</span>
-                        <span className="font-bold text-xs md:text-base">${facility.price}/day</span>
+                      <div key={idx} className="border rounded-lg p-4 bg-background">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <span className="font-medium text-xs md:text-base">{facility.name}</span>
+                            {facility.capacity && <p className="text-xs text-muted-foreground mt-1">Capacity: {facility.capacity} people</p>}
+                          </div>
+                          <span className="font-bold text-xs md:text-base">${facility.price}/day</span>
+                        </div>
                       </div>
                     ))}
                   </div>

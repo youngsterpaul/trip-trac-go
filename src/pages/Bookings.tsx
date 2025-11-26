@@ -161,6 +161,21 @@ const Bookings = () => {
                       </div>
                     </div>
 
+                    {/* Facility Information */}
+                    {(booking.booking_details.facilities || booking.booking_details.selected_facilities) && (
+                      <div className="space-y-1">
+                        <p className="font-medium text-foreground">Facilities Booked:</p>
+                        {(booking.booking_details.facilities || booking.booking_details.selected_facilities)?.map((facility: any, idx: number) => (
+                          <p key={idx} className="text-sm text-muted-foreground">
+                            {facility.name} {facility.capacity ? `(Capacity: ${facility.capacity})` : ''} - ${facility.price}
+                            {facility.startDate && facility.endDate && 
+                              ` from ${new Date(facility.startDate).toLocaleDateString()} to ${new Date(facility.endDate).toLocaleDateString()}`
+                            }
+                          </p>
+                        ))}
+                      </div>
+                    )}
+
                     <p className="text-xs text-muted-foreground">
                       Booked on {new Date(booking.created_at).toLocaleDateString()}
                     </p>

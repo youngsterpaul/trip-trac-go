@@ -503,68 +503,81 @@ const CreateAdventure = () => {
                 <h3 className="text-lg font-semibold">Facilities</h3>
                 <Button type="button" size="sm" onClick={addFacility}>Add Facility</Button>
               </div>
+              <p className="text-sm text-muted-foreground">Add facilities with Name, Price, and Capacity</p>
               {facilities.map((facility, index) => (
                 <div key={index} className="space-y-2">
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
-                    <Input
-                      placeholder="Facility name"
-                      value={facility.name}
-                      onChange={(e) => {
-                        const newFacilities = [...facilities];
-                        newFacilities[index].name = e.target.value;
-                        setFacilities(newFacilities);
-                      }}
-                    />
-                    <Select
-                      value={facility.priceType}
-                      onValueChange={(value) => {
-                        const newFacilities = [...facilities];
-                        newFacilities[index].priceType = value;
-                        setFacilities(newFacilities);
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="free">Free</SelectItem>
-                        <SelectItem value="paid">Paid</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Name</Label>
+                      <Input
+                        placeholder="Facility name"
+                        value={facility.name}
+                        onChange={(e) => {
+                          const newFacilities = [...facilities];
+                          newFacilities[index].name = e.target.value;
+                          setFacilities(newFacilities);
+                        }}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Price Type</Label>
+                      <Select
+                        value={facility.priceType}
+                        onValueChange={(value) => {
+                          const newFacilities = [...facilities];
+                          newFacilities[index].priceType = value;
+                          setFacilities(newFacilities);
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="free">Free</SelectItem>
+                          <SelectItem value="paid">Paid</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                     {facility.priceType === "paid" && (
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder="Price per day"
-                        value={facility.price}
-                        onChange={(e) => {
-                          const newFacilities = [...facilities];
-                          newFacilities[index].price = e.target.value;
-                          setFacilities(newFacilities);
-                        }}
-                      />
+                      <div className="space-y-1">
+                        <Label className="text-xs">Price per Day</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="0.00"
+                          value={facility.price}
+                          onChange={(e) => {
+                            const newFacilities = [...facilities];
+                            newFacilities[index].price = e.target.value;
+                            setFacilities(newFacilities);
+                          }}
+                        />
+                      </div>
                     )}
-                    <div className="flex gap-2">
-                      <Input
-                        type="number"
-                        placeholder="Capacity"
-                        value={facility.capacity}
-                        onChange={(e) => {
-                          const newFacilities = [...facilities];
-                          newFacilities[index].capacity = e.target.value;
-                          setFacilities(newFacilities);
-                        }}
-                      />
-                      {facilities.length > 1 && (
-                        <Button 
-                          type="button" 
-                          size="sm" 
-                          variant="destructive" 
-                          onClick={() => removeFacility(index)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      )}
+                    <div className="space-y-1">
+                      <Label className="text-xs">Capacity</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          type="number"
+                          placeholder="20"
+                          value={facility.capacity}
+                          onChange={(e) => {
+                            const newFacilities = [...facilities];
+                            newFacilities[index].capacity = e.target.value;
+                            setFacilities(newFacilities);
+                          }}
+                        />
+                        {facilities.length > 1 && (
+                          <Button 
+                            type="button" 
+                            size="sm" 
+                            variant="destructive" 
+                            onClick={() => removeFacility(index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
