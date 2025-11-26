@@ -76,17 +76,15 @@ const Index = () => {
         }));
     };
 
-    const getScrollIndicators = (ref: React.RefObject<HTMLDivElement>, itemCount: number) => {
-        if (!ref.current || itemCount === 0) return { total: 0, current: 0 };
-        
-        const container = ref.current;
-        const itemWidth = container.scrollWidth / itemCount;
-        const visibleItems = Math.floor(container.clientWidth / itemWidth);
-        const totalDots = Math.ceil(itemCount / visibleItems);
-        const currentDot = Math.floor(container.scrollLeft / (itemWidth * visibleItems));
-        
-        return { total: totalDots, current: currentDot };
-    };
+  const getScrollIndicators = (ref: React.RefObject<HTMLDivElement>, itemCount: number) => {
+    if (!ref.current || itemCount === 0) return { total: 3, current: 0 };
+    
+    const container = ref.current;
+    const scrollPercentage = container.scrollLeft / (container.scrollWidth - container.clientWidth);
+    const currentDot = Math.min(2, Math.floor(scrollPercentage * 3));
+    
+    return { total: 3, current: currentDot };
+  };
 
     const fetchScrollableRows = async () => {
         setLoadingScrollable(true);
