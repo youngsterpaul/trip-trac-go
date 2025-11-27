@@ -55,7 +55,6 @@ export const BookTripDialog = ({ open, onOpenChange, trip }: Props) => {
   const [cardNumber, setCardNumber] = useState("");
   const [cardExpiry, setCardExpiry] = useState("");
   const [cardCvv, setCardCvv] = useState("");
-  const [tripNote, setTripNote] = useState("");
   const [loading, setLoading] = useState(false);
 
   const toggleActivity = (activity: Activity, checked: boolean) => {
@@ -174,70 +173,32 @@ export const BookTripDialog = ({ open, onOpenChange, trip }: Props) => {
 
     setLoading(true);
     try {
-      // Initiate M-Pesa STK Push if M-Pesa is selected
-      if (paymentMethod === "mpesa") {
-        const { data: mpesaResponse, error: mpesaError } = await supabase.functions.invoke("mpesa-stk-push", {
-          body: {
-            phoneNumber: paymentPhone,
-            amount: totalAmount,
-            accountReference: `TRIP-${trip.id}`,
-            transactionDesc: `Booking for ${trip.name}`,
-          },
-        });
-
-        if (mpesaError || !mpesaResponse?.success) {
-          throw new Error(mpesaResponse?.error || "M-Pesa payment failed");
-        }
-
-        toast({
-          title: "Payment initiated",
-          description: "Please check your phone to complete the payment",
-        });
-      }
-
-      const referralTrackingId = getReferralTrackingId();
-      
-      const { data: bookingData, error } = await supabase.from("bookings").insert({
+      const bookingData = {
         user_id: user?.id || null,
         booking_type: "trip",
         item_id: trip.id,
         total_amount: totalAmount,
         payment_method: paymentMethod,
         payment_phone: paymentPhone || null,
-        payment_status: "completed",
+        payment_status: paymentMethod === "mpesa" ? "pending" : "completed",
         is_guest_booking: !user,
         guest_name: !user ? guestName : null,
         guest_email: !user ? guestEmail : null,
         guest_phone: !user ? guestPhone : null,
         slots_booked: totalPeople,
         visit_date: trip.is_custom_date ? visitDate : trip.date,
-        referral_tracking_id: referralTrackingId,
+        referral_tracking_id: getReferralTrackingId(),
         booking_details: {
           trip_name: trip.name,
           date: trip.is_custom_date ? visitDate : trip.date,
           adults,
           children,
           activities: selectedActivities,
-          trip_note: tripNote,
         },
-      } as any).select().single();
+      };
 
-      if (error) throw error;
-
-      // Award commission if there's a referral
-      if (bookingData && referralTrackingId) {
-        await calculateAndAwardCommission(
-          bookingData.id,
-          totalAmount,
-          referralTrackingId
-        );
-      } else {
-        clearReferralTracking();
-      }
-
-      // Send confirmation email
       const emailData = {
-        bookingId: bookingData.id,
+        bookingId: '',
         email: user ? user.email : guestEmail,
         guestName: user ? user.user_metadata?.name || guestName : guestName,
         bookingType: "trip",
@@ -252,14 +213,114 @@ export const BookTripDialog = ({ open, onOpenChange, trip }: Props) => {
         visitDate: trip.is_custom_date ? visitDate : trip.date,
       };
 
-      await supabase.functions.invoke("send-booking-confirmation", {
-        body: emailData,
-      });
+      // Initiate M-Pesa STK Push if M-Pesa is selected
+      if (paymentMethod === "mpesa") {
+        const { data: mpesaResponse, error: mpesaError } = await supabase.functions.invoke("mpesa-stk-push", {
+          body: {
+            phoneNumber: paymentPhone,
+            amount: totalAmount,
+            accountReference: `TRIP-${trip.id}`,
+            transactionDesc: `Booking for ${trip.name}`,
+            bookingData: { ...bookingData, emailData },
+          },
+        });
 
-      toast({
-        title: "Booking successful!",
-        description: "Your tour has been booked. Check your email for confirmation.",
-      });
+        if (mpesaError || !mpesaResponse?.success) {
+          throw new Error(mpesaResponse?.error || "M-Pesa payment failed");
+        }
+
+        const checkoutRequestId = mpesaResponse.checkoutRequestId;
+
+        toast({
+          title: "Payment initiated",
+          description: "Please check your phone to complete the payment",
+        });
+
+        // Wait for payment confirmation with 40-second timeout
+        const startTime = Date.now();
+        const timeout = 40000; // 40 seconds
+        let paymentConfirmed = false;
+
+        while (Date.now() - startTime < timeout) {
+          await new Promise(resolve => setTimeout(resolve, 2000)); // Check every 2 seconds
+
+          const { data: pendingPayment } = await supabase
+            .from('pending_payments')
+            .select('payment_status')
+            .eq('checkout_request_id', checkoutRequestId)
+            .single();
+
+          if (pendingPayment?.payment_status === 'completed') {
+            paymentConfirmed = true;
+            break;
+          } else if (pendingPayment?.payment_status === 'failed') {
+            throw new Error('Payment was declined or failed');
+          }
+        }
+
+        if (!paymentConfirmed) {
+          throw new Error('Payment confirmation timeout. Please try again.');
+        }
+
+        // Award commission if there's a referral
+        const referralTrackingId = getReferralTrackingId();
+        if (referralTrackingId) {
+          const { data: bookings } = await supabase
+            .from('bookings')
+            .select('id')
+            .eq('payment_phone', paymentPhone)
+            .eq('item_id', trip.id)
+            .eq('payment_status', 'completed')
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+          if (bookings && bookings.length > 0) {
+            await calculateAndAwardCommission(
+              bookings[0].id,
+              totalAmount,
+              referralTrackingId
+            );
+          }
+        }
+        clearReferralTracking();
+
+        toast({
+          title: "Booking confirmed!",
+          description: "Your payment was successful. Check your email for confirmation.",
+        });
+      } else {
+        // For other payment methods, save booking immediately
+        const { data: savedBooking, error } = await supabase
+          .from("bookings")
+          .insert(bookingData as any)
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        // Award commission if there's a referral
+        const referralTrackingId = getReferralTrackingId();
+        if (savedBooking && referralTrackingId) {
+          await calculateAndAwardCommission(
+            savedBooking.id,
+            totalAmount,
+            referralTrackingId
+          );
+        } else {
+          clearReferralTracking();
+        }
+
+        // Send confirmation email
+        emailData.bookingId = savedBooking.id;
+        await supabase.functions.invoke("send-booking-confirmation", {
+          body: emailData,
+        });
+
+        toast({
+          title: "Booking confirmed!",
+          description: "Your booking has been confirmed. Check your email for details.",
+        });
+      }
 
       onOpenChange(false);
       if (user) {
@@ -426,16 +487,6 @@ export const BookTripDialog = ({ open, onOpenChange, trip }: Props) => {
                 <span>Total to Pay:</span>
                 <span>KSh {totalAmount.toFixed(2)}</span>
               </div>
-            </div>
-
-            <div>
-              <Label htmlFor="tripNote">Trip Note (Optional)</Label>
-              <Input
-                id="tripNote"
-                value={tripNote}
-                onChange={(e) => setTripNote(e.target.value)}
-                placeholder="Any special requests or notes"
-              />
             </div>
 
             <div>

@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -10,6 +11,7 @@ interface STKPushRequest {
   amount: number;
   accountReference: string;
   transactionDesc: string;
+  bookingData?: any;
 }
 
 serve(async (req) => {
@@ -18,9 +20,13 @@ serve(async (req) => {
   }
 
   try {
-    const { phoneNumber, amount, accountReference, transactionDesc }: STKPushRequest = await req.json();
+    const { phoneNumber, amount, accountReference, transactionDesc, bookingData }: STKPushRequest = await req.json();
 
     console.log('STK Push request received:', { phoneNumber, amount, accountReference });
+
+    if (!bookingData) {
+      throw new Error('Booking data is required');
+    }
 
     const consumerKey = Deno.env.get('MPESA_CONSUMER_KEY');
     const consumerSecret = Deno.env.get('MPESA_CONSUMER_SECRET');
@@ -75,7 +81,7 @@ serve(async (req) => {
       PartyA: formattedPhone,
       PartyB: shortcode,
       PhoneNumber: formattedPhone,
-      CallBackURL: 'https://mydomain.com/callback', // Update this to your callback URL
+      CallBackURL: `${Deno.env.get('SUPABASE_URL')}/functions/v1/mpesa-callback`,
       AccountReference: accountReference,
       TransactionDesc: transactionDesc,
     };
@@ -101,10 +107,32 @@ serve(async (req) => {
       throw new Error(stkData.ResponseDescription || 'STK Push failed');
     }
 
+    // Save pending payment to database
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    const { error: dbError } = await supabaseClient.from('pending_payments').insert({
+      checkout_request_id: stkData.CheckoutRequestID,
+      merchant_request_id: stkData.MerchantRequestID,
+      phone_number: formattedPhone,
+      amount: Math.round(amount),
+      account_reference: accountReference,
+      transaction_desc: transactionDesc,
+      booking_data: bookingData,
+    });
+
+    if (dbError) {
+      console.error('Error saving pending payment:', dbError);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
         message: 'STK Push initiated successfully',
+        checkoutRequestId: stkData.CheckoutRequestID,
+        merchantRequestId: stkData.MerchantRequestID,
         data: {
           MerchantRequestID: stkData.MerchantRequestID,
           CheckoutRequestID: stkData.CheckoutRequestID,

@@ -63,7 +63,6 @@ export const BookAdventureDialog = ({ open, onOpenChange, place }: Props) => {
   const [cardNumber, setCardNumber] = useState("");
   const [cardExpiry, setCardExpiry] = useState("");
   const [cardCvv, setCardCvv] = useState("");
-  const [tripNote, setTripNote] = useState("");
   const [loading, setLoading] = useState(false);
   
   // Guest booking fields
@@ -221,7 +220,6 @@ export const BookAdventureDialog = ({ open, onOpenChange, place }: Props) => {
           children,
           facilities: selectedFacilities,
           activities: selectedActivities,
-          trip_note: tripNote,
         },
       } as any).select().single();
 
@@ -526,16 +524,6 @@ export const BookAdventureDialog = ({ open, onOpenChange, place }: Props) => {
                 </div>
               </div>
             )}
-
-            <div>
-              <Label htmlFor="tripNote">Trip Note (Optional)</Label>
-              <Input
-                id="tripNote"
-                value={tripNote}
-                onChange={(e) => setTripNote(e.target.value)}
-                placeholder="Any special requests or notes"
-              />
-            </div>
 
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setStep(1)} className="flex-1">

@@ -543,6 +543,57 @@ export type Database = {
         }
         Relationships: []
       }
+      pending_payments: {
+        Row: {
+          account_reference: string
+          amount: number
+          booking_data: Json
+          checkout_request_id: string
+          created_at: string | null
+          id: string
+          merchant_request_id: string | null
+          mpesa_receipt_number: string | null
+          payment_status: string
+          phone_number: string
+          result_code: string | null
+          result_desc: string | null
+          transaction_desc: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          account_reference: string
+          amount: number
+          booking_data: Json
+          checkout_request_id: string
+          created_at?: string | null
+          id?: string
+          merchant_request_id?: string | null
+          mpesa_receipt_number?: string | null
+          payment_status?: string
+          phone_number: string
+          result_code?: string | null
+          result_desc?: string | null
+          transaction_desc?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          account_reference?: string
+          amount?: number
+          booking_data?: Json
+          checkout_request_id?: string
+          created_at?: string | null
+          id?: string
+          merchant_request_id?: string | null
+          mpesa_receipt_number?: string | null
+          payment_status?: string
+          phone_number?: string
+          result_code?: string | null
+          result_desc?: string | null
+          transaction_desc?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           country: string | null
