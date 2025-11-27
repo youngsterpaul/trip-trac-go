@@ -124,26 +124,50 @@ const HostVerification = () => {
     setIsLoading(true);
 
     try {
+      // Ensure profile exists first
+      const { data: existingProfile, error: profileCheckError } = await supabase
+        .from("profiles")
+        .select("id, name")
+        .eq("id", user!.id)
+        .maybeSingle();
+
+      if (profileCheckError) {
+        console.error("Profile check error:", profileCheckError);
+        throw new Error("Failed to verify user profile. Please contact support.");
+      }
+
+      // If no profile exists, create one
+      if (!existingProfile) {
+        const { error: createProfileError } = await supabase
+          .from("profiles")
+          .insert({
+            id: user!.id,
+            name: legalName,
+            email: user!.email || "",
+          });
+
+        if (createProfileError) {
+          console.error("Profile creation error:", createProfileError);
+          throw new Error("Failed to create user profile. Please try again.");
+        }
+      } else if (existingProfile.name !== legalName) {
+        // Update profile name if it was edited during verification
+        const { error: updateProfileError } = await supabase
+          .from("profiles")
+          .update({ name: legalName })
+          .eq("id", user!.id);
+
+        if (updateProfileError) {
+          console.error("Profile update error:", updateProfileError);
+        }
+      }
+
       // Upload files
       const frontUrl = await uploadFile(documentFront!, `${user!.id}/document_front_${Date.now()}`);
       const backUrl = documentBack 
         ? await uploadFile(documentBack, `${user!.id}/document_back_${Date.now()}`)
         : null;
       const selfieUrl = await uploadFile(selfie, `${user!.id}/selfie_${Date.now()}`);
-
-      // Update profile name if it was edited during verification
-      const { data: currentProfile } = await supabase
-        .from("profiles")
-        .select("name")
-        .eq("id", user!.id)
-        .single();
-
-      if (currentProfile && currentProfile.name !== legalName) {
-        await supabase
-          .from("profiles")
-          .update({ name: legalName })
-          .eq("id", user!.id);
-      }
 
       // Insert or update verification
       const verificationData = {
