@@ -796,6 +796,48 @@ export type Database = {
         }
         Relationships: []
       }
+      reschedule_log: {
+        Row: {
+          booking_id: string
+          created_at: string | null
+          id: string
+          new_date: string
+          old_date: string
+          user_id: string
+        }
+        Insert: {
+          booking_id: string
+          created_at?: string | null
+          id?: string
+          new_date: string
+          old_date: string
+          user_id: string
+        }
+        Update: {
+          booking_id?: string
+          created_at?: string | null
+          id?: string
+          new_date?: string
+          old_date?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reschedule_log_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reschedule_log_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "creator_booking_summary"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reviews: {
         Row: {
           comment: string | null
@@ -898,6 +940,7 @@ export type Database = {
           image_url: string
           images: string[] | null
           is_custom_date: boolean | null
+          is_flexible_date: boolean | null
           is_hidden: boolean | null
           location: string
           map_link: string | null
@@ -925,6 +968,7 @@ export type Database = {
           image_url: string
           images?: string[] | null
           is_custom_date?: boolean | null
+          is_flexible_date?: boolean | null
           is_hidden?: boolean | null
           location: string
           map_link?: string | null
@@ -952,6 +996,7 @@ export type Database = {
           image_url?: string
           images?: string[] | null
           is_custom_date?: boolean | null
+          is_flexible_date?: boolean | null
           is_hidden?: boolean | null
           location?: string
           map_link?: string | null

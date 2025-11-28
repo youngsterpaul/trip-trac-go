@@ -7,7 +7,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, DollarSign, Users, MapPin } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar, DollarSign, Users, MapPin, CalendarClock } from "lucide-react";
+import { RescheduleBookingDialog } from "@/components/booking/RescheduleBookingDialog";
 
 interface Booking {
   id: string;
@@ -21,6 +23,8 @@ interface Booking {
   guest_email: string | null;
   guest_phone: string | null;
   slots_booked: number | null;
+  visit_date: string | null;
+  item_id: string;
 }
 
 const Bookings = () => {
@@ -28,6 +32,7 @@ const Bookings = () => {
   const navigate = useNavigate();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [rescheduleBooking, setRescheduleBooking] = useState<Booking | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -181,9 +186,23 @@ const Bookings = () => {
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="h-5 w-5 text-primary" />
-                    <span className="text-2xl font-bold">${booking.total_amount}</span>
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="h-5 w-5 text-primary" />
+                      <span className="text-2xl font-bold">KSh {booking.total_amount}</span>
+                    </div>
+                    
+                    {booking.visit_date && booking.status !== 'cancelled' && booking.payment_status === 'paid' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setRescheduleBooking(booking)}
+                        className="w-fit"
+                      >
+                        <CalendarClock className="h-4 w-4 mr-2" />
+                        Reschedule
+                      </Button>
+                    )}
                   </div>
                 </div>
               </Card>
@@ -191,6 +210,13 @@ const Bookings = () => {
           </div>
         )}
       </main>
+
+      <RescheduleBookingDialog
+        booking={rescheduleBooking!}
+        open={!!rescheduleBooking}
+        onOpenChange={(open) => !open && setRescheduleBooking(null)}
+        onSuccess={fetchBookings}
+      />
 
       <Footer />
       <MobileBottomBar />
