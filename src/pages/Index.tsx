@@ -426,9 +426,25 @@ const Index = () => {
                             </div> : <p className="text-center text-muted-foreground py-8">No results found</p>}
                     </div>}
                 
-                <div className="px-[8px] my-[16px]">
+                <div className={`px-4 ${isSearchFocused ? 'hidden' : ''}`}>
                     {/* Latest - MODIFIED FOR HORIZONTAL SCROLLING OR MAP VIEW */}
-                    <section className="mb-4 md:mb-8"> 
+                    <section className="mb-4 md:mb-8">
+                        <div className="mb-2 md:mb-4 mt-2 md:mt-0 flex items-start justify-between">
+                            <h2 className="text-xs md:text-2xl font-bold whitespace-nowrap overflow-hidden text-ellipsis">
+                                {searchQuery ? 'Search Results' : position ? 'Featured For You' : 'Latest'}
+                            </h2>
+                            {searchQuery && listings.length > 0 && <div className="flex gap-2">
+                                    <Button variant={viewMode === 'list' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('list')} className="gap-1">
+                                        <Grid className="h-4 w-4" />
+                                        <span className="hidden md:inline">List</span>
+                                    </Button>
+                                    <Button variant={viewMode === 'map' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('map')} className="gap-1">
+                                        <Map className="h-4 w-4" />
+                                        <span className="hidden md:inline">Map</span>
+                                    </Button>
+                                </div>}
+                        </div>
+                        
                         {searchQuery && viewMode === 'map' ? <MapView listings={listings} /> : searchQuery ?
           // Column grid view for search results
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -447,7 +463,7 @@ const Index = () => {
                                             <ChevronRight className="h-6 w-6" />
                                         </Button>
                                     </>}
-                                <div ref={featuredForYouRef} onScroll={handleScroll('featuredForYou')} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={() => onTouchEnd(featuredForYouRef)} className="gap-2 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory md:snap-none items-start justify-start md:gap-[12px] flex flex-row">
+                                <div ref={featuredForYouRef} onScroll={handleScroll('featuredForYou')} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={() => onTouchEnd(featuredForYouRef)} className="gap-2 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory md:snap-none md:gap-[8px] flex items-start justify-start">
                                 {loading || listings.length === 0 ? [...Array(10)].map((_, i) => <div key={i} className="flex-shrink-0 w-[85vw] md:w-64 rounded-lg overflow-hidden shadow-md snap-center md:snap-align-none">
                                             <div className="aspect-[4/3] bg-muted animate-pulse" />
                                             <div className="p-2 md:p-4 space-y-2 md:space-y-3">
