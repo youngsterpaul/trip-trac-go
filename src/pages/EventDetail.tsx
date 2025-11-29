@@ -331,25 +331,34 @@ const EventDetail = () => {
         </Button>
 
         <div className="grid lg:grid-cols-[2fr,1fr] gap-6">
-          <div className="w-full relative">
-            <Badge className="absolute top-4 left-4 bg-primary text-primary-foreground z-20 text-xs font-bold px-3 py-1">
-              EVENT
-            </Badge>
-            <Carousel className="w-full rounded-2xl overflow-hidden">
-              <CarouselContent>
-                {allImages.map((img, idx) => (
-                  <CarouselItem key={idx}>
-                    <img src={img} alt={`${event.name} ${idx + 1}`} className="w-full h-64 md:h-96 object-cover" />
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              {allImages.length > 1 && (
-                <>
-                  <CarouselPrevious className="left-2" />
-                  <CarouselNext className="right-2" />
-                </>
-              )}
-            </Carousel>
+          <div className="space-y-4">
+            <div className="w-full relative">
+              <Badge className="absolute top-4 left-4 bg-primary text-primary-foreground z-20 text-xs font-bold px-3 py-1">
+                EVENT
+              </Badge>
+              <Carousel className="w-full rounded-2xl overflow-hidden">
+                <CarouselContent>
+                  {allImages.map((img, idx) => (
+                    <CarouselItem key={idx}>
+                      <img src={img} alt={`${event.name} ${idx + 1}`} className="w-full h-64 md:h-96 object-cover" />
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                {allImages.length > 1 && (
+                  <>
+                    <CarouselPrevious className="left-2" />
+                    <CarouselNext className="right-2" />
+                  </>
+                )}
+              </Carousel>
+            </div>
+
+            {event.description && (
+              <div className="p-6 border bg-card" style={{ borderRadius: 0 }}>
+                <h2 className="text-xl font-semibold mb-3">About This Event</h2>
+                <p className="text-muted-foreground whitespace-pre-wrap">{event.description}</p>
+              </div>
+            )}
           </div>
 
           <div className="space-y-4">
@@ -404,13 +413,6 @@ const EventDetail = () => {
             </div>
           </div>
         </div>
-
-        {event.description && (
-          <div className="mt-6 p-6 border bg-card" style={{ borderRadius: 0 }}>
-            <h2 className="text-xl font-semibold mb-3">About This Event</h2>
-            <p className="text-muted-foreground whitespace-pre-wrap">{event.description}</p>
-          </div>
-        )}
 
         {event.activities && event.activities.length > 0 && (
           <div className="mt-6 p-6 border bg-card">
