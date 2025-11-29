@@ -298,8 +298,8 @@ const HotelDetail = () => {
   return <div className="min-h-screen bg-background pb-20 md:pb-0">
       <Header />
       
-      <main className="container px-4 py-6 max-w-6xl mx-auto">
-        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
+      <main className="container max-w-6xl mx-auto py-[2px] px-[24px]">
+        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4 text-xs font-mono text-right font-thin border-solid rounded-none">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back
         </Button>
@@ -339,7 +339,7 @@ const HotelDetail = () => {
               </div>
             </div>
 
-            <div className="space-y-3 p-4 border bg-card">
+            <div className="space-y-3 p-4 border bg-card px-px py-[5px]">
               {(hotel.opening_hours || hotel.closing_hours) && <div className="flex items-center gap-2">
                   <Clock className="h-5 w-5 text-primary" />
                   <div>
