@@ -113,22 +113,22 @@ export const ListingCard = ({
 
         {onSave && (
           <Button
-            variant="ghost"
+            // Removed variant="ghost" to allow custom border styling
             size="icon"
             onClick={handleSaveClick}
             className={cn(
-              "absolute top-2 right-2 z-20 h-10 w-10 md:h-8 md:w-8 rounded-full backdrop-blur touch-manipulation active:scale-95 transition-transform",
-              // Changed base background to be transparent and removed specific hover classes
-              "bg-transparent hover:bg-transparent" 
+              "absolute top-2 right-2 z-20 h-10 w-10 md:h-8 md:w-8 rounded-full p-0 bg-transparent touch-manipulation active:scale-95 transition-transform",
+              // --- New Border Styling ---
+              "**border border-black hover:border-red-500**",
+              "**shadow-sm**" // Added shadow for better visibility of the border
             )}
           >
             <Heart
               className={cn(
                 "h-5 w-5 md:h-4 md:w-4",
-                // Conditional styling now applies red fill/color to the icon itself
                 isSaved 
-                  ? "**text-red-500 fill-red-500**" // Saved: Icon is red (text-red-500) and filled (fill-red-500)
-                  : "**text-white drop-shadow-sm**" // Not Saved: Icon is white (for contrast on image)
+                  ? "text-red-500 fill-red-500" 
+                  : "text-white drop-shadow-sm" 
               )}
             />
           </Button>
