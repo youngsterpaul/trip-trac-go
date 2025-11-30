@@ -260,12 +260,19 @@ const TripDetail = () => {
               )}
             </Carousel>
             
+            {/* START: Modified Description Section for slide-down and border radius */}
             {trip.description && (
-              <div className="absolute bottom-0 left-0 right-0 bg-black/70 backdrop-blur-sm text-white p-4 z-10">
+              <div 
+                className="absolute bottom-0 left-0 right-0 bg-black/70 backdrop-blur-sm text-white p-4 z-10 
+                           rounded-b-2xl 
+                           shadow-lg 
+                           transform translate-y-2" // The key styling for the "slide down" effect
+              >
                 <h2 className="text-lg font-semibold mb-2">About This Trip</h2>
                 <p className="text-sm line-clamp-3">{trip.description}</p>
               </div>
             )}
+            {/* END: Modified Description Section */}
           </div>
 
           <div className="space-y-4">
@@ -404,6 +411,11 @@ const TripDetail = () => {
           <ReviewSection itemId={trip.id} itemType="trip" />
         </div>
 
+        {/* Note on SimilarItems: 
+            To make the location icon teal (#008080) and the price red (e.g., text-red-600) 
+            in the SimilarItems cards, you must modify the internal implementation of the 
+            <SimilarItems /> component itself, as it is an external import here.
+        */}
         {trip && <SimilarItems currentItemId={trip.id} itemType="trip" country={trip.country} />}
       </main>
 
