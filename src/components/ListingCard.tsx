@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn, optimizeSupabaseImage, generateImageSrcSet } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 
-// ... (Interface and component definition remain the same)
+// ... (Interface and other imports remain the same)
 
 export const ListingCard = ({
   id,
@@ -103,8 +103,8 @@ export const ListingCard = ({
             className={cn(
               "absolute top-2 right-2 z-20 h-10 w-10 md:h-8 md:w-8 rounded-full p-0 bg-transparent touch-manipulation active:scale-95 transition-transform",
               "border border-black hover:border-red-500 shadow-sm",
-              // --- New Focus Removal Styling ---
-              "**outline-none focus-visible:ring-0**" 
+              // *** Aggressive style overrides to remove all rings and blue/gray hover background ***
+              "**outline-none focus-visible:ring-0 focus-visible:bg-transparent hover:bg-transparent**" 
             )}
           >
             <Heart
