@@ -429,19 +429,24 @@ const TripDetail = () => {
             </div>
 
             <div className="flex gap-2">
-              <Button variant="outline" onClick={openInMaps} className="flex-1">
-                <MapPin className="h-4 w-4 mr-2" />
-                Map
+              <Button variant="outline" size="sm" onClick={openInMaps} className="flex-1 md:size-lg">
+                <MapPin className="h-4 w-4 md:mr-2" />
+                <span className="hidden md:inline">Map</span>
               </Button>
-              <Button variant="outline" onClick={handleCopyLink} className="flex-1">
-                <Copy className="h-4 w-4 mr-2" />
-                Copy Link
+              <Button variant="outline" size="sm" onClick={handleCopyLink} className="flex-1 md:size-lg">
+                <Copy className="h-4 w-4 md:mr-2" />
+                <span className="hidden md:inline">Copy Link</span>
               </Button>
-              <Button variant="outline" onClick={handleShare} className="flex-1">
-                <Share2 className="h-4 w-4 mr-2" />
-                Share
+              <Button variant="outline" size="sm" onClick={handleShare} className="flex-1 md:size-lg">
+                <Share2 className="h-4 w-4 md:mr-2" />
+                <span className="hidden md:inline">Share</span>
               </Button>
-              <Button variant="outline" onClick={handleSave} className={isSaved ? "bg-red-500 text-white hover:bg-red-600" : ""}>
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={handleSave} 
+                className={isSaved ? "bg-red-500 text-white hover:bg-red-600" : ""}
+              >
                 <Heart className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
               </Button>
             </div>
