@@ -513,6 +513,54 @@ export type Database = {
         }
         Relationships: []
       }
+      mpesa_callback_log: {
+        Row: {
+          checkout_request_id: string
+          created_at: string | null
+          id: string
+          merchant_request_id: string | null
+          pending_payment_id: string | null
+          raw_payload: Json
+          result_code: string
+          result_desc: string | null
+        }
+        Insert: {
+          checkout_request_id: string
+          created_at?: string | null
+          id?: string
+          merchant_request_id?: string | null
+          pending_payment_id?: string | null
+          raw_payload: Json
+          result_code: string
+          result_desc?: string | null
+        }
+        Update: {
+          checkout_request_id?: string
+          created_at?: string | null
+          id?: string
+          merchant_request_id?: string | null
+          pending_payment_id?: string | null
+          raw_payload?: Json
+          result_code?: string
+          result_desc?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_pending_payment"
+            columns: ["pending_payment_id"]
+            isOneToOne: false
+            referencedRelation: "pending_payments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mpesa_callback_log_pending_payment_id_fkey"
+            columns: ["pending_payment_id"]
+            isOneToOne: false
+            referencedRelation: "pending_payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string | null
@@ -556,15 +604,19 @@ export type Database = {
           booking_data: Json
           checkout_request_id: string
           created_at: string | null
+          host_id: string | null
           id: string
+          initiated_at: string | null
           merchant_request_id: string | null
           mpesa_receipt_number: string | null
           payment_status: string
           phone_number: string
           result_code: string | null
           result_desc: string | null
+          stk_push_sent: boolean | null
           transaction_desc: string | null
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
           account_reference: string
@@ -572,15 +624,19 @@ export type Database = {
           booking_data: Json
           checkout_request_id: string
           created_at?: string | null
+          host_id?: string | null
           id?: string
+          initiated_at?: string | null
           merchant_request_id?: string | null
           mpesa_receipt_number?: string | null
           payment_status?: string
           phone_number: string
           result_code?: string | null
           result_desc?: string | null
+          stk_push_sent?: boolean | null
           transaction_desc?: string | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
           account_reference?: string
@@ -588,15 +644,19 @@ export type Database = {
           booking_data?: Json
           checkout_request_id?: string
           created_at?: string | null
+          host_id?: string | null
           id?: string
+          initiated_at?: string | null
           merchant_request_id?: string | null
           mpesa_receipt_number?: string | null
           payment_status?: string
           phone_number?: string
           result_code?: string | null
           result_desc?: string | null
+          stk_push_sent?: boolean | null
           transaction_desc?: string | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -1033,33 +1093,6 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
-        }
-        Relationships: []
-      }
-      vlogs: {
-        Row: {
-          created_at: string
-          description: string | null
-          id: string
-          image_url: string
-          title: string
-          video_url: string | null
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          image_url: string
-          title: string
-          video_url?: string | null
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          image_url?: string
-          title?: string
-          video_url?: string | null
         }
         Relationships: []
       }
