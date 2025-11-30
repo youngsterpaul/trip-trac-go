@@ -93,9 +93,12 @@ export const ListingCard = ({
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 m-0 p-0"
         />
         
-        {/* Unified Badge: Red background for all types when showBadge is true */}
+        {/*
+          This consolidated block ensures all card types display a red badge 
+          on the top-left if the 'showBadge' prop is true.
+        */}
         {showBadge && (
-          <Badge className="absolute top-2 left-2 bg-red-600 text-primary-foreground backdrop-blur text-xs font-bold z-10 px-2 py-1">
+          <Badge className="absolute top-2 left-2 **bg-red-600** text-primary-foreground backdrop-blur text-xs font-bold z-10 px-2 py-1">
             {type}
           </Badge>
         )}
@@ -121,9 +124,10 @@ export const ListingCard = ({
           </Button>
         )}
 
-        {/* Price Tag (remains red for TRIP/EVENT, as in original code) */}
+        {/* Price badge for TRIP and EVENT remains red (bg-red-600) on the bottom-left. 
+        */}
         {!hidePrice && price !== undefined && (type === "TRIP" || type === "EVENT") && (
-          <div className="absolute bottom-2 left-2 bg-red-600 text-primary-foreground px-3 py-1.5 md:px-2 md:py-1 rounded-none shadow-lg z-10">
+          <div className="absolute bottom-2 left-2 **bg-red-600** text-primary-foreground px-3 py-1.5 md:px-2 md:py-1 rounded-none shadow-lg z-10">
             <p className="font-bold text-sm md:text-xs whitespace-nowrap">
               KSh {price}
             </p>
