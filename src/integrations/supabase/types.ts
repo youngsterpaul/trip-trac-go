@@ -803,6 +803,8 @@ export type Database = {
           host_commission_duration_days: number
           host_commission_rate: number
           id: string
+          platform_referral_commission_rate: number
+          platform_service_fee: number
           updated_at: string | null
         }
         Insert: {
@@ -811,6 +813,8 @@ export type Database = {
           host_commission_duration_days?: number
           host_commission_rate?: number
           id?: string
+          platform_referral_commission_rate?: number
+          platform_service_fee?: number
           updated_at?: string | null
         }
         Update: {
@@ -819,6 +823,8 @@ export type Database = {
           host_commission_duration_days?: number
           host_commission_rate?: number
           id?: string
+          platform_referral_commission_rate?: number
+          platform_service_fee?: number
           updated_at?: string | null
         }
         Relationships: []

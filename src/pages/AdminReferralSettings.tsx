@@ -24,6 +24,8 @@ export default function AdminReferralSettings() {
     bookingCommissionRate: 5.0,
     hostCommissionRate: 10.0,
     hostCommissionDurationDays: 15,
+    platformServiceFee: 20.0,
+    platformReferralCommissionRate: 5.0,
   });
 
   useEffect(() => {
@@ -61,6 +63,8 @@ export default function AdminReferralSettings() {
             bookingCommissionRate: Number(settingsData.booking_commission_rate),
             hostCommissionRate: Number(settingsData.host_commission_rate),
             hostCommissionDurationDays: settingsData.host_commission_duration_days,
+            platformServiceFee: Number(settingsData.platform_service_fee || 20.0),
+            platformReferralCommissionRate: Number(settingsData.platform_referral_commission_rate || 5.0),
           });
         }
 
@@ -83,6 +87,8 @@ export default function AdminReferralSettings() {
           booking_commission_rate: settings.bookingCommissionRate,
           host_commission_rate: settings.hostCommissionRate,
           host_commission_duration_days: settings.hostCommissionDurationDays,
+          platform_service_fee: settings.platformServiceFee,
+          platform_referral_commission_rate: settings.platformReferralCommissionRate,
         })
         .eq("id", (await supabase.from("referral_settings").select("id").single()).data?.id);
 
@@ -122,6 +128,13 @@ export default function AdminReferralSettings() {
     return null;
   }
 
+  // Calculate payout breakdown based on $100 example
+  const exampleGrossAmount = 100;
+  const totalPlatformFee = (exampleGrossAmount * settings.platformServiceFee) / 100;
+  const referralCommissionDeduction = (totalPlatformFee * settings.platformReferralCommissionRate) / 100;
+  const platformNetRevenue = totalPlatformFee - referralCommissionDeduction;
+  const hostFinalPayout = exampleGrossAmount - totalPlatformFee;
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -141,94 +154,180 @@ export default function AdminReferralSettings() {
             Set Referral Commission
           </h1>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Commission Settings</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Configure commission rates for booking and host referrals
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <Label htmlFor="bookingRate">
-                  Booking Referral Commission Rate (%)
-                </Label>
-                <Input
-                  id="bookingRate"
-                  type="number"
-                  value={settings.bookingCommissionRate}
-                  onChange={(e) =>
-                    setSettings({
-                      ...settings,
-                      bookingCommissionRate: parseFloat(e.target.value) || 0,
-                    })
-                  }
-                  min="0"
-                  max="100"
-                  step="0.1"
-                  className="mt-2"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Commission earned when someone books through a referral link
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Commission Settings</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Configure commission rates for booking and host referrals
                 </p>
-              </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div>
+                  <Label htmlFor="bookingRate">
+                    Booking Referral Commission Rate (%)
+                  </Label>
+                  <Input
+                    id="bookingRate"
+                    type="number"
+                    value={settings.bookingCommissionRate}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        bookingCommissionRate: parseFloat(e.target.value) || 0,
+                      })
+                    }
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    className="mt-2"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Commission earned when someone books through a referral link
+                  </p>
+                </div>
 
-              <div>
-                <Label htmlFor="hostRate">
-                  Host Referral Commission Rate (%)
-                </Label>
-                <Input
-                  id="hostRate"
-                  type="number"
-                  value={settings.hostCommissionRate}
-                  onChange={(e) =>
-                    setSettings({
-                      ...settings,
-                      hostCommissionRate: parseFloat(e.target.value) || 0,
-                    })
-                  }
-                  min="0"
-                  max="100"
-                  step="0.1"
-                  className="mt-2"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Commission earned on new host's bookings during the commission period
+                <div>
+                  <Label htmlFor="hostRate">
+                    Host Referral Commission Rate (%)
+                  </Label>
+                  <Input
+                    id="hostRate"
+                    type="number"
+                    value={settings.hostCommissionRate}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        hostCommissionRate: parseFloat(e.target.value) || 0,
+                      })
+                    }
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    className="mt-2"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Commission earned on new host's bookings during the commission period
+                  </p>
+                </div>
+
+                <div>
+                  <Label htmlFor="duration">
+                    Host Commission Duration (Days)
+                  </Label>
+                  <Input
+                    id="duration"
+                    type="number"
+                    value={settings.hostCommissionDurationDays}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        hostCommissionDurationDays: parseInt(e.target.value) || 0,
+                      })
+                    }
+                    min="1"
+                    max="365"
+                    className="mt-2"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    How many days after the first booking the referrer continues to earn commission
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Host Fee and Payout Configuration</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Configure platform service fee and referral commission deduction
                 </p>
-              </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div>
+                  <Label htmlFor="platformServiceFee">
+                    Platform Service Fee (Gross) (%)
+                  </Label>
+                  <Input
+                    id="platformServiceFee"
+                    type="number"
+                    value={settings.platformServiceFee}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        platformServiceFee: parseFloat(e.target.value) || 0,
+                      })
+                    }
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    className="mt-2"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Percentage deducted from gross transaction amount
+                  </p>
+                </div>
 
-              <div>
-                <Label htmlFor="duration">
-                  Host Commission Duration (Days)
-                </Label>
-                <Input
-                  id="duration"
-                  type="number"
-                  value={settings.hostCommissionDurationDays}
-                  onChange={(e) =>
-                    setSettings({
-                      ...settings,
-                      hostCommissionDurationDays: parseInt(e.target.value) || 0,
-                    })
-                  }
-                  min="1"
-                  max="365"
-                  className="mt-2"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  How many days after the first booking the referrer continues to earn commission
-                </p>
-              </div>
+                <div>
+                  <Label htmlFor="platformReferralRate">
+                    Referral Commission Rate (%)
+                  </Label>
+                  <Input
+                    id="platformReferralRate"
+                    type="number"
+                    value={settings.platformReferralCommissionRate}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        platformReferralCommissionRate: parseFloat(e.target.value) || 0,
+                      })
+                    }
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    className="mt-2"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Percentage of platform fee allocated to referral commission
+                  </p>
+                </div>
 
-              <Button
-                onClick={handleSave}
-                disabled={saving}
-                className="w-full"
-              >
-                {saving ? "Saving..." : "Save Settings"}
-              </Button>
-            </CardContent>
-          </Card>
+                <div className="border-t border-border pt-6">
+                  <h3 className="font-semibold text-foreground mb-4">Calculation Breakdown (Example)</h3>
+                  <div className="space-y-3 bg-muted/50 rounded-lg p-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">1. Gross Transaction Amount (Example)</span>
+                      <span className="font-semibold text-foreground">Sh {exampleGrossAmount.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">2. Total Platform Service Fee (Step 1 × Service Fee %)</span>
+                      <span className="font-semibold text-foreground">Sh {totalPlatformFee.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">3. Referral Commission Deduction (Step 2 × Commission Rate %)</span>
+                      <span className="font-semibold text-foreground">Sh {referralCommissionDeduction.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center border-t border-border pt-3">
+                      <span className="text-sm text-muted-foreground">4. Platform Net Revenue (Step 2 - Step 3)</span>
+                      <span className="font-semibold text-primary">Sh {platformNetRevenue.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center border-t border-border pt-3">
+                      <span className="text-sm text-muted-foreground">5. Host Final Payout (Step 1 - Step 2)</span>
+                      <span className="font-semibold text-success">Sh {hostFinalPayout.toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Button
+              onClick={handleSave}
+              disabled={saving}
+              className="w-full"
+            >
+              {saving ? "Saving..." : "Save All Settings"}
+            </Button>
+          </div>
         </div>
       </main>
       <Footer />
