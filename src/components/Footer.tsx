@@ -2,15 +2,16 @@ import { Link } from "react-router-dom";
 import {
   Compass,
   Download,
+  Facebook,
+  Instagram,
+  X,
   Mail,
-  Youtube, // Retaining Youtube from lucide-react as it's a good generic icon
+  MessageSquare,
+  Send as TikTok,
+  Youtube, // <<< ADDED YOUTUBE IMPORT
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-
-// --- START: Import real social media icons from react-icons ---
-import { FaWhatsapp, FaFacebookF, FaInstagram, FaTiktok, FaXTwitter } from 'react-icons/fa6'; // Using Font Awesome 6 for modern icons
-// --- END: Import real social media icons from react-icons ---
 
 // --- START: Define Social Media Links (Customize these URLs) ---
 const socialLinks = {
@@ -19,7 +20,7 @@ const socialLinks = {
   instagram: "https://instagram.com/YOUR_ACCOUNT",
   tiktok: "https://tiktok.com/@YOUR_ACCOUNT",
   x: "https://x.com/YOUR_ACCOUNT", // Formerly Twitter
-  youtube: "https://youtube.com/YOUR_CHANNEL", // Replace with your YouTube channel
+  youtube: "https://youtube.com/YOUR_CHANNEL", // <<< ADDED YOUTUBE LINK
   email: "mailto:YOUR_EMAIL@example.com", // Replace with your email address
 };
 // --- END: Define Social Media Links ---
@@ -100,39 +101,39 @@ export const Footer = ({
               </Link>}
           </div>
 
-          {/* Social Media and Email - UPDATED SECTION with real icons and colors */}
+          {/* Social Media and Email - UPDATED SECTION */}
           <div>
             <h3 className="font-bold mb-3">Connect With Us</h3>
             <div className="flex space-x-4 mb-4">
               
               {/* WhatsApp */}
               <a href={socialLinks.whatsapp} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
-                <FaWhatsapp className="h-6 w-6 text-[#25D366] hover:opacity-80 transition-opacity" /> {/* WhatsApp Green */}
+                <MessageSquare className="h-6 w-6 text-gray-600 hover:text-green-500 transition-colors" />
               </a>
               
               {/* Instagram */}
               <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-                <FaInstagram className="h-6 w-6 text-[#E4405F] hover:opacity-80 transition-opacity" /> {/* Instagram Pink/Red */}
+                <Instagram className="h-6 w-6 text-gray-600 hover:text-pink-600 transition-colors" />
               </a>
 
-              {/* TikTok */}
+              {/* TikTok (Using 'Send' as a placeholder) */}
               <a href={socialLinks.tiktok} target="_blank" rel="noopener noreferrer" aria-label="TikTok">
-                <FaTiktok className="h-6 w-6 text-[#000000] hover:opacity-80 transition-opacity" /> {/* TikTok Black */}
+                <TikTok className="h-6 w-6 text-gray-600 hover:text-black transition-colors" />
               </a>
               
               {/* YouTube */}
               <a href={socialLinks.youtube} target="_blank" rel="noopener noreferrer" aria-label="YouTube">
-                <Youtube className="h-6 w-6 text-[#FF0000] hover:opacity-80 transition-opacity" /> {/* YouTube Red (from lucide-react) */}
+                <Youtube className="h-6 w-6 text-gray-600 hover:text-red-600 transition-colors" />
               </a>
 
               {/* Facebook */}
               <a href={socialLinks.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook">
-                <FaFacebookF className="h-6 w-6 text-[#1877F2] hover:opacity-80 transition-opacity" /> {/* Facebook Blue */}
+                <Facebook className="h-6 w-6 text-gray-600 hover:text-blue-600 transition-colors" />
               </a>
 
               {/* X (Twitter) */}
               <a href={socialLinks.x} target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)">
-                <FaXTwitter className="h-6 w-6 text-[#000000] hover:opacity-80 transition-opacity" /> {/* X Black */}
+                <X className="h-6 w-6 text-gray-600 hover:text-black transition-colors" />
               </a>
             </div>
             
