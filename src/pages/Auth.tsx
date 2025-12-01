@@ -12,9 +12,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { LoginForm } from "@/components/auth/LoginForm";
 import { SignupForm } from "@/components/auth/SignupForm";
 
-// Define the specified Teal color
-const TEAL_COLOR = "#008080";
-const TEAL_HOVER_COLOR = "#005555"; // A darker shade of teal for hover
+// Define the specified BLUE color
+const BLUE_COLOR = "#1f71f0"; // A common, standard blue
+const BLUE_HOVER_COLOR = "#165ac8"; // A darker shade of blue for hover
 
 const Auth = () => {
   const [activeTab, setActiveTab] = useState("login");
@@ -41,29 +41,25 @@ const Auth = () => {
       <Header />
       
       <main className="container px-4 py-8 max-w-md mx-auto">
-        {/* Back Button styling changed to use Teal color for the icon/text in 'ghost' variant */}
+        {/* Back Button styling changed to use the NEW BLUE color for the icon/text in 'ghost' variant */}
         <Button
           variant="ghost"
           size="sm"
           onClick={() => navigate(-1)}
           className="mb-4"
-          style={{ color: TEAL_COLOR }}
+          style={{ color: BLUE_COLOR }}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
         </Button>
         
-        {/* Pass setActiveTab to Forms */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          {/* Applied 'rounded-none' to TabsList and its children */}
           <TabsList className="grid w-full grid-cols-2 rounded-none">
-            {/* TabsTrigger itself might need custom styling in your CSS/globals to remove its internal rounding if 'rounded-none' on TabsList isn't enough */}
             <TabsTrigger value="login" className="rounded-none">Login</TabsTrigger>
             <TabsTrigger value="signup" className="rounded-none">Sign Up</TabsTrigger>
           </TabsList>
 
           <TabsContent value="login">
-            {/* Applied 'rounded-none' to Card */}
             <Card className="rounded-none">
               <CardHeader>
                 <CardTitle>Login to your account</CardTitle>
@@ -72,18 +68,18 @@ const Auth = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {/* Pass the function to switch to the signup tab */}
+                {/* Pass the new blue color properties to the LoginForm component */}
                 <LoginForm 
                   onSwitchToSignup={() => handleSwitchTab("signup")} 
-                  tealColor={TEAL_COLOR} 
-                  tealHoverColor={TEAL_HOVER_COLOR}
+                  // Renaming prop keys to be generic (primaryColor, primaryHoverColor) for clarity
+                  primaryColor={BLUE_COLOR} 
+                  primaryHoverColor={BLUE_HOVER_COLOR}
                 />
               </CardContent>
             </Card>
           </TabsContent>
 
           <TabsContent value="signup">
-            {/* Applied 'rounded-none' to Card */}
             <Card className="rounded-none">
               <CardHeader>
                 <CardTitle>Create an account</CardTitle>
@@ -92,11 +88,11 @@ const Auth = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {/* Pass the function to switch to the login tab */}
+                {/* Pass the new blue color properties to the SignupForm component */}
                 <SignupForm 
                   onSwitchToLogin={() => handleSwitchTab("login")} 
-                  tealColor={TEAL_COLOR} 
-                  tealHoverColor={TEAL_HOVER_COLOR}
+                  primaryColor={BLUE_COLOR} 
+                  primaryHoverColor={BLUE_HOVER_COLOR}
                 />
               </CardContent>
             </Card>
@@ -105,7 +101,8 @@ const Auth = () => {
       </main>
 
       <MobileBottomBar />
-      {/* Note: Footer component was imported but not used, I've removed the unused import for cleaner code if it's not needed here, but kept it if you want to add it back: <Footer /> */}
+      {/* Footer component was not used in original return, keeping it commented */}
+      {/* <Footer /> */}
     </div>
   );
 };
