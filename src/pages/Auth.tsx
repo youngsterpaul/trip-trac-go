@@ -9,24 +9,18 @@ import { ArrowLeft } from "lucide-react";
 // Import components. The `rounded-none` class is applied below where possible.
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-// Assuming these forms accept primaryColor and primaryHoverColor props
 import { LoginForm } from "@/components/auth/LoginForm";
 import { SignupForm } from "@/components/auth/SignupForm";
 
-/**
- * Define the specified new color: #080800 (Dark Olive/Khaki)
- * This is an extremely dark shade.
- */
-const PRIMARY_COLOR = "#080800"; // RGB (8, 8, 0)
-// A slightly darker shade for hover will be almost imperceptible due to how dark the base color is
-const PRIMARY_HOVER_COLOR = "#040400"; // RGB (4, 4, 0) - Even darker for hover
+// Define the specified TEAL color (#008080)
+const TEAL_COLOR = "#008080";
+const TEAL_HOVER_COLOR = "#005555"; // A darker shade of teal for hover
 
 const Auth = () => {
-  const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
+  const [activeTab, setActiveTab] = useState("login");
   const { user, loading } = useAuth();
   const navigate = useNavigate();
 
-  // Redirects authenticated users to the home page
   useEffect(() => {
     if (!loading && user) {
       navigate("/");
@@ -47,20 +41,19 @@ const Auth = () => {
       <Header />
       
       <main className="container px-4 py-8 max-w-md mx-auto">
-        {/* Back Button styled with the new PRIMARY color */}
+        {/* Back Button styling uses TEAL color */}
         <Button
           variant="ghost"
           size="sm"
           onClick={() => navigate(-1)}
           className="mb-4"
-          // Inlining style for the text color
-          style={{ color: PRIMARY_COLOR }} 
+          style={{ color: TEAL_COLOR }}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
         </Button>
         
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "login" | "signup")}>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2 rounded-none">
             <TabsTrigger value="login" className="rounded-none">Login</TabsTrigger>
             <TabsTrigger value="signup" className="rounded-none">Sign Up</TabsTrigger>
@@ -75,11 +68,11 @@ const Auth = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {/* Passes the new PRIMARY color properties for the Login button */}
+                {/* Passes TEAL color properties for the Login button */}
                 <LoginForm 
                   onSwitchToSignup={() => handleSwitchTab("signup")} 
-                  primaryColor={PRIMARY_COLOR} 
-                  primaryHoverColor={PRIMARY_HOVER_COLOR}
+                  primaryColor={TEAL_COLOR} 
+                  primaryHoverColor={TEAL_HOVER_COLOR}
                 />
               </CardContent>
             </Card>
@@ -94,11 +87,11 @@ const Auth = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {/* Passes the new PRIMARY color properties for the Sign Up button */}
+                {/* Passes TEAL color properties for the Sign Up button */}
                 <SignupForm 
                   onSwitchToLogin={() => handleSwitchTab("login")} 
-                  primaryColor={PRIMARY_COLOR} 
-                  primaryHoverColor={PRIMARY_HOVER_COLOR}
+                  primaryColor={TEAL_COLOR} 
+                  primaryHoverColor={TEAL_HOVER_COLOR}
                 />
               </CardContent>
             </Card>
@@ -107,7 +100,6 @@ const Auth = () => {
       </main>
 
       <MobileBottomBar />
-      <Footer />
     </div>
   );
 };
