@@ -11,6 +11,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
+// Define the specified Teal color
+const TEAL_COLOR = "#008080";
+const TEAL_HOVER_COLOR = "#005555"; // A darker shade of teal for hover
+
 const MyListing = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -51,6 +55,7 @@ const MyListing = () => {
         ...(hotels?.map(h => ({ ...h, type: "hotel", isCreator: true })) || []),
         ...(adventures?.map(a => ({ ...a, type: "adventure", isCreator: true })) || []),
         ...(attractions?.map(a => ({ ...a, type: "attraction", isCreator: true })) || []),
+        // Filter out items already listed as creator to avoid duplicates, though IDs should prevent it
         ...(hotelsAsAdmin?.filter(h => h.created_by !== user.id).map(h => ({ ...h, type: "hotel", isCreator: false })) || []),
         ...(adventuresAsAdmin?.filter(a => a.created_by !== user.id).map(a => ({ ...a, type: "adventure", isCreator: false })) || [])
       ];
@@ -88,6 +93,23 @@ const MyListing = () => {
       return <p className="text-muted-foreground">No {category}s yet</p>;
     }
 
+    // Function to apply teal color styles to the primary button
+    const getTealButtonStyle = () => ({
+      backgroundColor: TEAL_COLOR,
+      borderColor: TEAL_COLOR,
+      color: 'white',
+      transition: 'background-color 0.15s',
+    });
+
+    const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
+      (e.currentTarget.style as any).backgroundColor = TEAL_HOVER_COLOR;
+    };
+
+    const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
+      (e.currentTarget.style as any).backgroundColor = TEAL_COLOR;
+    };
+
+
     return (
       <div className="grid gap-4">
         {items.map((item) => (
@@ -108,7 +130,15 @@ const MyListing = () => {
                     {(item.price_adult || item.entry_fee) && <p className="text-sm font-semibold mt-1">KSh {item.price_adult || item.entry_fee}</p>}
                   </div>
                   <div className="flex flex-col gap-2 items-end">
-                    <Badge variant={item.approval_status === 'approved' ? 'default' : item.approval_status === 'pending' ? 'secondary' : 'destructive'}>
+                    {/* Applying teal style to the 'approved' badge, which usually uses primary/default color */}
+                    <Badge 
+                      variant={item.approval_status === 'approved' ? 'default' : item.approval_status === 'pending' ? 'secondary' : 'destructive'}
+                      style={item.approval_status === 'approved' ? { 
+                        backgroundColor: TEAL_COLOR, 
+                        color: 'white', 
+                        borderColor: TEAL_COLOR 
+                      } : {}}
+                    >
                       {item.approval_status}
                     </Badge>
                     {item.is_hidden && (
@@ -123,6 +153,9 @@ const MyListing = () => {
                   <Button
                     onClick={() => navigate(`/edit-listing/${item.type}/${item.id}`)}
                     size="sm"
+                    style={getTealButtonStyle()}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
                   >
                     Edit
                   </Button>
@@ -131,6 +164,14 @@ const MyListing = () => {
                       onClick={() => navigate(`/edit-listing/${item.type}/${item.id}?resubmit=true`)}
                       size="sm"
                       variant="outline"
+                      // Changing the outline button's text/border color to teal
+                      style={{ 
+                        color: TEAL_COLOR, 
+                        borderColor: TEAL_COLOR,
+                        transition: 'color 0.15s, border-color 0.15s'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.color = TEAL_HOVER_COLOR}
+                      onMouseLeave={(e) => e.currentTarget.style.color = TEAL_COLOR}
                     >
                       Re-submit for Approval
                     </Button>
@@ -173,7 +214,11 @@ const MyListing = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        {/* Loading spinner color changed to Teal */}
+        <div 
+          className="animate-spin rounded-full h-12 w-12 border-b-2" 
+          style={{ borderColor: TEAL_COLOR }}
+        ></div>
       </div>
     );
   }
@@ -185,6 +230,9 @@ const MyListing = () => {
         <h1 className="text-3xl font-bold mb-8">My Listing</h1>
 
         <Tabs defaultValue="listings" className="w-full">
+          {/* Note: TabsList and TabsTrigger styling (active color) is complex to change without theme/CSS, 
+              but applying custom styles to the whole component's accent color would fix it. 
+              I assume you handle the active state style in your global CSS/theme for TabsTrigger. */}
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="listings">My Listings</TabsTrigger>
             <TabsTrigger value="bookings">Received Bookings</TabsTrigger>

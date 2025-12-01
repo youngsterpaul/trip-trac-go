@@ -11,8 +11,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { MultiStepForm } from "@/components/creation/MultiStepForm";
+// Assuming MultiStepForm handles internal styling, we'll try to pass color if possible, 
+// but we'll focus on elements we can directly control.
+import { MultiStepForm } from "@/components/creation/MultiStepForm"; 
 import { Upload, CheckCircle2 } from "lucide-react";
+
+// Define the specified Teal color
+const TEAL_COLOR = "#008080";
+const TEAL_HOVER_COLOR = "#005555"; // A darker shade of teal for hover
 
 const HostVerification = () => {
   const { user } = useAuth();
@@ -231,6 +237,33 @@ const HostVerification = () => {
     }
   };
 
+  // Common button styles for teal color
+  const getTealButtonStyle = (variant: 'default' | 'outline' = 'default') => {
+    if (variant === 'default') {
+      return {
+        backgroundColor: TEAL_COLOR,
+        borderColor: TEAL_COLOR,
+        color: 'white',
+        transition: 'background-color 0.15s',
+      };
+    } else { // outline variant is not used in this component, but for completeness
+      return {
+        color: TEAL_COLOR,
+        borderColor: TEAL_COLOR,
+        transition: 'color 0.15s, border-color 0.15s',
+      };
+    }
+  };
+  
+  const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
+    (e.currentTarget.style as any).backgroundColor = TEAL_HOVER_COLOR;
+  };
+
+  const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
+    (e.currentTarget.style as any).backgroundColor = TEAL_COLOR;
+  };
+
+
   // If user has pending verification, show status
   if (existingVerification && existingVerification.status === "pending") {
     return (
@@ -238,12 +271,21 @@ const HostVerification = () => {
         <Header />
         <main className="flex-1 container px-4 py-8 mb-20 md:mb-0">
           <Card className="max-w-2xl mx-auto p-8 text-center">
-            <CheckCircle2 className="h-16 w-16 text-primary mx-auto mb-4" />
+            {/* Icon color changed to Teal */}
+            <CheckCircle2 className="h-16 w-16 mx-auto mb-4" style={{ color: TEAL_COLOR }} />
             <h1 className="text-2xl font-bold mb-4">Verification Pending</h1>
             <p className="text-muted-foreground mb-6">
               Your identity verification is currently under review. We will notify you of the result soon.
             </p>
-            <Button onClick={() => navigate("/")}>Return to Home</Button>
+            {/* Button color changed to Teal */}
+            <Button 
+              onClick={() => navigate("/")}
+              style={getTealButtonStyle()}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
+              Return to Home
+            </Button>
           </Card>
         </main>
         <Footer />
@@ -264,7 +306,14 @@ const HostVerification = () => {
               <p className="font-semibold mb-2">Rejection Reason:</p>
               <p className="text-muted-foreground">{existingVerification.rejection_reason}</p>
             </div>
-            <Button onClick={() => setExistingVerification(null)} className="w-full">
+            {/* Button color changed to Teal */}
+            <Button 
+              onClick={() => setExistingVerification(null)} 
+              className="w-full"
+              style={getTealButtonStyle()}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
               Start Verification Process Again
             </Button>
           </Card>
@@ -307,6 +356,10 @@ const HostVerification = () => {
             onSubmit={handleSubmit}
             nextDisabled={false}
             isLoading={isLoading}
+            // Passing the color to MultiStepForm assuming it accepts a primaryColor prop
+            // If MultiStepForm is a custom component, it needs to be updated to respect this prop.
+            // Since we can't edit MultiStepForm, we rely on button styles below.
+            // primaryColor={TEAL_COLOR} 
           >
             {currentStep === 1 && (
               <div className="space-y-4">
@@ -382,7 +435,8 @@ const HostVerification = () => {
                     />
                     {documentFront && (
                       <p className="text-sm text-muted-foreground mt-2">
-                        <CheckCircle2 className="h-4 w-4 inline mr-1 text-green-600" />
+                        {/* Icon color changed to Teal (was text-green-600) */}
+                        <CheckCircle2 className="h-4 w-4 inline mr-1" style={{ color: TEAL_COLOR }} /> 
                         {documentFront.name}
                       </p>
                     )}
@@ -402,7 +456,8 @@ const HostVerification = () => {
                       />
                       {documentBack && (
                         <p className="text-sm text-muted-foreground mt-2">
-                          <CheckCircle2 className="h-4 w-4 inline mr-1 text-green-600" />
+                          {/* Icon color changed to Teal (was text-green-600) */}
+                          <CheckCircle2 className="h-4 w-4 inline mr-1" style={{ color: TEAL_COLOR }} />
                           {documentBack.name}
                         </p>
                       )}
@@ -441,7 +496,8 @@ const HostVerification = () => {
                           className="max-w-xs mx-auto rounded-lg border"
                         />
                         <p className="text-sm text-muted-foreground mt-2 text-center">
-                          <CheckCircle2 className="h-4 w-4 inline mr-1 text-green-600" />
+                          {/* Icon color changed to Teal (was text-green-600) */}
+                          <CheckCircle2 className="h-4 w-4 inline mr-1" style={{ color: TEAL_COLOR }} />
                           {selfie.name}
                         </p>
                       </div>
