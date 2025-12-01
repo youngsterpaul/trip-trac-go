@@ -71,10 +71,39 @@ const CategoryDetail = () => {
     const initializeData = async () => {
       const uid = await getUserId();
       setUserId(uid);
-      fetchData();
+      loadInitialData();
     };
     initializeData();
   }, [category]);
+
+  // Infinite scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (loading) return;
+      
+      const scrollHeight = document.documentElement.scrollHeight;
+      const scrollTop = document.documentElement.scrollTop;
+      const clientHeight = document.documentElement.clientHeight;
+      
+      if (scrollTop + clientHeight >= scrollHeight - 500) {
+        loadMore();
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [loading, items.length]);
+
+  const loadMore = async () => {
+    if (loading) return;
+    
+    setLoading(true);
+    const moreData = await fetchData(items.length, 20);
+    if (moreData.length > 0) {
+      setItems(prev => [...prev, ...moreData]);
+    }
+    setLoading(false);
+  };
 
   useEffect(() => {
     setFilteredItems(items);
@@ -106,10 +135,9 @@ const CategoryDetail = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const fetchData = async () => {
-    if (!config) return;
+  const fetchData = async (offset: number = 0, limit: number = 20) => {
+    if (!config) return [];
 
-    setLoading(true);
     const allData: any[] = [];
     
     for (const table of config.tables) {
@@ -130,6 +158,8 @@ const CategoryDetail = () => {
         // For trips category, only show trips (not events)
         query = query.eq("type", "trip");
       }
+      
+      query = query.range(offset, offset + limit - 1);
       
       const { data } = await query;
       
@@ -153,7 +183,7 @@ const CategoryDetail = () => {
           const current = stats.get(booking.item_id) || 0;
           stats.set(booking.item_id, current + (booking.slots_booked || 0));
         });
-        setBookingStats(stats);
+        setBookingStats(prevStats => new Map([...prevStats, ...stats]));
       }
     }
     
@@ -179,7 +209,13 @@ const CategoryDetail = () => {
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
 
-    setItems(sortedData);
+    return sortedData;
+  };
+
+  const loadInitialData = async () => {
+    setLoading(true);
+    const data = await fetchData(0, 15);
+    setItems(data);
     setLoading(false);
   };
 

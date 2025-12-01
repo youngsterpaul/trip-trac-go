@@ -54,20 +54,49 @@ const Saved = () => {
   // Refetch when savedItems changes (realtime updates)
   useEffect(() => {
     if (userId) {
-      fetchSavedItems(userId);
+      fetchSavedItems(userId, 0, 15);
     }
   }, [savedItems, userId]);
 
-  const fetchSavedItems = async (uid: string) => {
+  // Infinite scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (isLoading) return;
+      
+      const scrollHeight = document.documentElement.scrollHeight;
+      const scrollTop = document.documentElement.scrollTop;
+      const clientHeight = document.documentElement.clientHeight;
+      
+      if (scrollTop + clientHeight >= scrollHeight - 500 && userId) {
+        loadMore();
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isLoading, savedListings.length, userId]);
+
+  const loadMore = async () => {
+    if (isLoading || !userId) return;
+    
+    const moreData = await fetchSavedItems(userId, savedListings.length, 20);
+    if (moreData.length === 0) {
+      // No more items to load
+    }
+  };
+
+  const fetchSavedItems = async (uid: string, offset: number = 0, limit: number = 15) => {
     setIsLoading(true);
     const { data: savedData } = await supabase
       .from("saved_items")
       .select("*")
-      .eq("user_id", uid);
+      .eq("user_id", uid)
+      .range(offset, offset + limit - 1)
+      .order('created_at', { ascending: false });
 
     if (!savedData) {
       setIsLoading(false);
-      return;
+      return [];
     }
 
     const items: any[] = [];
@@ -101,8 +130,14 @@ const Saved = () => {
       }
     }
 
-    setSavedListings(items);
+    if (offset === 0) {
+      setSavedListings(items);
+    } else {
+      setSavedListings(prev => [...prev, ...items]);
+    }
+    
     setIsLoading(false);
+    return items;
   };
 
 

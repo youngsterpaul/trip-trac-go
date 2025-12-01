@@ -119,7 +119,7 @@ const Index = () => {
   const fetchScrollableRows = async () => {
     setLoadingScrollable(true);
     try {
-      const [tripsData, hotelsData, attractionsData, campsitesData, eventsData] = await Promise.all([supabase.from("trips").select("*").eq("approval_status", "approved").eq("is_hidden", false).eq("type", "trip").limit(10), supabase.from("hotels").select("*").eq("approval_status", "approved").eq("is_hidden", false).limit(10), supabase.from("attractions").select("*").eq("approval_status", "approved").eq("is_hidden", false).limit(10), supabase.from("adventure_places").select("*").eq("approval_status", "approved").eq("is_hidden", false).limit(10), supabase.from("trips").select("*").eq("approval_status", "approved").eq("is_hidden", false).eq("type", "event").limit(10)]);
+      const [tripsData, hotelsData, attractionsData, campsitesData, eventsData] = await Promise.all([supabase.from("trips").select("*").eq("approval_status", "approved").eq("is_hidden", false).eq("type", "trip").limit(8), supabase.from("hotels").select("*").eq("approval_status", "approved").eq("is_hidden", false).limit(8), supabase.from("attractions").select("*").eq("approval_status", "approved").eq("is_hidden", false).limit(8), supabase.from("adventure_places").select("*").eq("approval_status", "approved").eq("is_hidden", false).limit(8), supabase.from("trips").select("*").eq("approval_status", "approved").eq("is_hidden", false).eq("type", "event").limit(8)]);
       console.log("Fetched scrollable data:", {
         trips: {
           count: tripsData.data?.length || 0,
@@ -182,7 +182,7 @@ const Index = () => {
       // Keep loading true if position is not available yet
       return;
     }
-    const [placesData, hotelsData, attractionsData] = await Promise.all([supabase.from("adventure_places").select("*").eq("approval_status", "approved").eq("is_hidden", false).limit(20), supabase.from("hotels").select("*").eq("approval_status", "approved").eq("is_hidden", false).limit(20), supabase.from("attractions").select("*").eq("approval_status", "approved").eq("is_hidden", false).limit(20)]);
+    const [placesData, hotelsData, attractionsData] = await Promise.all([supabase.from("adventure_places").select("*").eq("approval_status", "approved").eq("is_hidden", false).limit(12), supabase.from("hotels").select("*").eq("approval_status", "approved").eq("is_hidden", false).limit(12), supabase.from("attractions").select("*").eq("approval_status", "approved").eq("is_hidden", false).limit(12)]);
     const combined = [...(placesData.data || []).map(item => ({
       ...item,
       type: "ADVENTURE PLACE",
@@ -209,7 +209,7 @@ const Index = () => {
       setLoadingNearby(false);
     }
   };
-  const fetchAllData = async (query?: string) => {
+  const fetchAllData = async (query?: string, offset: number = 0, limit: number = 15) => {
     setLoading(true);
     const fetchEvents = async () => {
       let dbQuery = supabase.from("trips").select("*").eq("approval_status", "approved").eq("is_hidden", false).eq("type", "event");
@@ -217,6 +217,7 @@ const Index = () => {
         const searchPattern = `%${query}%`;
         dbQuery = dbQuery.or(`name.ilike.${searchPattern},location.ilike.${searchPattern},country.ilike.${searchPattern}`);
       }
+      dbQuery = dbQuery.range(offset, offset + limit - 1);
       const {
         data
       } = await dbQuery;
@@ -235,6 +236,7 @@ const Index = () => {
           dbQuery = dbQuery.or(`name.ilike.${searchPattern},location.ilike.${searchPattern},country.ilike.${searchPattern}`);
         }
       }
+      dbQuery = dbQuery.range(offset, offset + limit - 1);
       const {
         data
       } = await dbQuery;
@@ -279,8 +281,40 @@ const Index = () => {
     } else {
       combined = combined.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     }
-    setListings(combined);
+    
+    if (offset === 0) {
+      setListings(combined);
+    } else {
+      setListings(prev => [...prev, ...combined]);
+    }
+    
     setLoading(false);
+    return combined;
+  };
+
+  // Infinite scroll for search results
+  useEffect(() => {
+    if (!searchQuery) return;
+    
+    const handleScroll = () => {
+      if (loading) return;
+      
+      const scrollHeight = document.documentElement.scrollHeight;
+      const scrollTop = document.documentElement.scrollTop;
+      const clientHeight = document.documentElement.clientHeight;
+      
+      if (scrollTop + clientHeight >= scrollHeight - 500) {
+        loadMoreSearchResults();
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [loading, searchQuery, listings.length]);
+
+  const loadMoreSearchResults = async () => {
+    if (loading || !searchQuery) return;
+    await fetchAllData(searchQuery, listings.length, 20);
   };
   useEffect(() => {
     fetchAllData();
