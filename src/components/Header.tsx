@@ -179,15 +179,27 @@ export const Header = ({ onSearchClick, showSearchIcon = true }: HeaderProps) =>
 
           {/* Desktop Auth Actions (Right Side) - Notification, Theme, Account */}
           <div className="hidden md:flex items-center gap-2">
-            {/* MODIFIED: Wrapped NotificationBell for consistent hover effect */}
-            <div className="rounded-full h-10 w-10 flex items-center justify-center bg-white/10 hover:bg-white group transition-colors">
-              <NotificationBell className="group-hover:text-[#008080]" />
-            </div>
+            
+            {/* Notification Bell Button */}
+            <button 
+              // Add your onClick handler for notifications here
+              className="rounded-full h-10 w-10 flex items-center justify-center bg-white/10 hover:bg-white group transition-colors"
+              aria-label="Notifications"
+            >
+              <NotificationBell className="h-5 w-5 text-white group-hover:text-[#008080]" />
+            </button>
 
-            {/* MODIFIED: Wrapped ThemeToggle for consistent hover effect */}
-            <div className="rounded-full h-10 w-10 flex items-center justify-center bg-white/10 hover:bg-white group transition-colors">
-              <ThemeToggle className="group-hover:text-[#008080]" />
-            </div>
+            {/* Theme Toggle Button */}
+            <button 
+              // ThemeToggle usually handles its own click, but if it's just the icon, 
+              // you'd add the toggle logic here.
+              className="rounded-full h-10 w-10 flex items-center justify-center bg-white/10 hover:bg-white group transition-colors"
+              aria-label="Toggle Theme"
+            >
+              {/* Note: ThemeToggle component must accept or be wrapped to apply these classes */}
+              <ThemeToggle className="h-5 w-5 text-white group-hover:text-[#008080]" />
+            </button>
+          
 
             <button 
               onClick={() => user ? navigate('/account') : navigate('/auth')}
