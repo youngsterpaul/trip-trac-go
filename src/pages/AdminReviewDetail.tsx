@@ -61,29 +61,37 @@ const AdminReviewDetail = () => {
       let itemData: any = null;
       let tableName = "";
 
-      if (type === "trip") {
+      if (type === "trip" || type === "event") {
         tableName = "trips";
-        const { data, error } = await supabase.from("trips").select("*").eq("id", id).single();
+        const { data, error } = await supabase.from("trips").select("*").eq("id", id).maybeSingle();
         if (error) throw error;
         itemData = data;
       } else if (type === "hotel") {
         tableName = "hotels";
-        const { data, error } = await supabase.from("hotels").select("*").eq("id", id).single();
+        const { data, error } = await supabase.from("hotels").select("*").eq("id", id).maybeSingle();
         if (error) throw error;
         itemData = data;
-      } else if (type === "adventure") {
+      } else if (type === "adventure" || type === "adventure_place") {
         tableName = "adventure_places";
-        const { data, error } = await supabase.from("adventure_places").select("*").eq("id", id).single();
+        const { data, error } = await supabase.from("adventure_places").select("*").eq("id", id).maybeSingle();
         if (error) throw error;
         itemData = data;
       } else if (type === "attraction") {
         tableName = "attractions";
-        const { data, error } = await supabase.from("attractions").select("*").eq("id", id).single();
+        const { data, error } = await supabase.from("attractions").select("*").eq("id", id).maybeSingle();
         if (error) throw error;
         itemData = data;
       }
 
-      if (!itemData) throw new Error("Item not found");
+      if (!itemData) {
+        toast({
+          title: "Not Found",
+          description: "Item not found or you don't have permission to view it",
+          variant: "destructive",
+        });
+        navigate("/admin");
+        return;
+      }
       
       setItem({ ...itemData, type, tableName });
 
@@ -93,7 +101,7 @@ const AdminReviewDetail = () => {
           .from("profiles")
           .select("*")
           .eq("id", itemData.created_by)
-          .single();
+          .maybeSingle();
 
         setCreator(profileData);
       }
