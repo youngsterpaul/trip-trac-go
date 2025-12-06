@@ -36,19 +36,34 @@ Deno.serve(async (req) => {
     const resultCode = stkCallback.ResultCode.toString();
     const resultDesc = stkCallback.ResultDesc;
 
-    // Extract receipt number from CallbackMetadata if payment successful
+    // Extract receipt number and amount from CallbackMetadata if payment successful
     let mpesaReceiptNumber = null;
+    let paidAmount = null;
+    let transactionDate = null;
+    let phoneNumber = null;
+    
     if (resultCode === '0' && stkCallback.CallbackMetadata?.Item) {
-      const receiptItem = stkCallback.CallbackMetadata.Item.find(
-        (item: any) => item.Name === 'MpesaReceiptNumber'
-      );
-      if (receiptItem) {
-        mpesaReceiptNumber = receiptItem.Value;
+      for (const item of stkCallback.CallbackMetadata.Item) {
+        switch (item.Name) {
+          case 'MpesaReceiptNumber':
+            mpesaReceiptNumber = item.Value;
+            break;
+          case 'Amount':
+            paidAmount = item.Value;
+            break;
+          case 'TransactionDate':
+            transactionDate = item.Value;
+            break;
+          case 'PhoneNumber':
+            phoneNumber = item.Value?.toString();
+            break;
+        }
       }
     }
 
     // Determine payment status based on result code
-    const paymentStatus = resultCode === '0' ? 'completed' : 'failed';
+    const paymentStatus = resultCode === '0' ? 'paid' : 'failed';
+    const bookingStatus = resultCode === '0' ? 'confirmed' : 'cancelled';
 
     // First, get the pending payment to access booking_data
     const { data: pendingPayment, error: fetchError } = await supabaseClient
@@ -79,64 +94,41 @@ Deno.serve(async (req) => {
       console.log(`✅ Payment status updated to ${paymentStatus} for ${checkoutRequestId}`);
     }
 
-    // If payment was successful, create booking and send notifications
-    if (resultCode === '0' && pendingPayment) {
-      const bookingData = pendingPayment.booking_data;
+    // Update the existing booking with payment result
+    if (pendingPayment?.booking_data?.booking_id) {
+      const bookingId = pendingPayment.booking_data.booking_id;
       
-      console.log('Creating booking for successful payment:', bookingData);
-
-      // Check if booking already exists for this payment
-      const { data: existingBooking } = await supabaseClient
+      console.log(`Updating booking ${bookingId} with status: ${paymentStatus}`);
+      
+      const { error: bookingUpdateError } = await supabaseClient
         .from('bookings')
-        .select('id')
-        .eq('payment_phone', pendingPayment.phone_number)
-        .eq('item_id', bookingData.item_id)
-        .eq('payment_status', 'paid')
-        .gte('created_at', new Date(Date.now() - 5 * 60 * 1000).toISOString()) // Within last 5 mins
-        .maybeSingle();
+        .update({
+          payment_status: paymentStatus,
+          status: bookingStatus,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', bookingId);
 
-      if (existingBooking) {
-        console.log('Booking already exists, skipping creation:', existingBooking.id);
+      if (bookingUpdateError) {
+        console.error('Error updating booking:', bookingUpdateError);
       } else {
-        // Insert booking with paid status
-        const { data: booking, error: bookingError } = await supabaseClient
-          .from('bookings')
-          .insert({
-            item_id: bookingData.item_id,
-            booking_type: bookingData.booking_type,
-            total_amount: bookingData.total_amount,
-            booking_details: bookingData.booking_details,
-            user_id: bookingData.user_id || null,
-            is_guest_booking: bookingData.is_guest_booking || !bookingData.user_id,
-            guest_name: bookingData.guest_name,
-            guest_email: bookingData.guest_email,
-            guest_phone: bookingData.guest_phone || null,
-            visit_date: bookingData.visit_date || null,
-            slots_booked: bookingData.slots_booked || 1,
-            payment_status: 'paid',
-            payment_method: 'mpesa',
-            payment_phone: pendingPayment.phone_number,
-            status: 'confirmed',
-            referral_tracking_id: bookingData.referral_tracking_id || null,
-          })
-          .select()
-          .single();
-
-        if (bookingError) {
-          console.error('Error creating booking:', bookingError);
-        } else {
-          console.log('✅ Booking created successfully:', booking.id);
-
-          // Send notifications and emails
+        console.log(`✅ Booking ${bookingId} updated to ${paymentStatus}/${bookingStatus}`);
+        
+        // If payment was successful, send notifications
+        if (resultCode === '0') {
+          const bookingData = pendingPayment.booking_data;
+          
           await sendNotificationsAndEmails(
             supabaseClient,
-            booking,
+            { id: bookingId, ...bookingData },
             bookingData,
             pendingPayment,
             mpesaReceiptNumber
           );
         }
       }
+    } else {
+      console.error('No booking_id found in pending payment data');
     }
 
     // Log callback for audit
@@ -148,7 +140,10 @@ Deno.serve(async (req) => {
           merchant_request_id: merchantRequestId,
           result_code: resultCode,
           result_desc: resultDesc,
-          raw_payload: callbackData,
+          mpesa_receipt_number: mpesaReceiptNumber,
+          amount: paidAmount,
+          phone_number: phoneNumber || pendingPayment?.phone_number,
+          raw_callback: callbackData,
         });
     } catch (logError) {
       console.error('Error inserting callback log:', logError);
@@ -213,7 +208,7 @@ async function sendNotificationsAndEmails(
       }
     }
 
-    // Create notification for user if logged in (using service role bypasses RLS)
+    // Create notification for user if logged in
     if (bookingData.user_id) {
       const { error: userNotifError } = await supabase
         .from('notifications')

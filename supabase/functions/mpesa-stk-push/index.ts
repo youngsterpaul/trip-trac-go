@@ -37,6 +37,12 @@ serve(async (req) => {
       throw new Error('M-Pesa credentials not configured');
     }
 
+    // Initialize Supabase client
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
     // Step 1: Get OAuth token
     const auth = btoa(`${consumerKey}:${consumerSecret}`);
     const tokenResponse = await fetch(
@@ -106,12 +112,6 @@ serve(async (req) => {
     const stkData = await stkResponse.json();
     console.log('STK Push response:', stkData);
 
-    // Initialize Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
     // Handle non-zero ResponseCode - FAILED immediately
     if (!stkResponse.ok || stkData.ResponseCode !== '0') {
       console.error('❌ STK Push failed with ResponseCode:', stkData.ResponseCode);
@@ -143,9 +143,40 @@ serve(async (req) => {
       );
     }
 
-    // ResponseCode = 0: Success - Set status to PENDING and wait for callback
-    console.log('✅ STK Push successful, setting status to PENDING');
+    // ResponseCode = 0: Success - Create booking with PENDING status and save to pending_payments
+    console.log('✅ STK Push successful, creating pending booking');
     
+    // Create booking with pending payment status
+    const { data: booking, error: bookingError } = await supabaseClient
+      .from('bookings')
+      .insert({
+        item_id: bookingData.item_id,
+        booking_type: bookingData.booking_type,
+        total_amount: bookingData.total_amount,
+        booking_details: bookingData.booking_details,
+        user_id: bookingData.user_id || null,
+        is_guest_booking: bookingData.is_guest_booking || !bookingData.user_id,
+        guest_name: bookingData.guest_name,
+        guest_email: bookingData.guest_email,
+        guest_phone: bookingData.guest_phone || null,
+        visit_date: bookingData.visit_date || null,
+        slots_booked: bookingData.slots_booked || 1,
+        payment_status: 'pending',
+        payment_method: 'mpesa',
+        payment_phone: formattedPhone,
+        status: 'pending',
+        referral_tracking_id: bookingData.referral_tracking_id || null,
+      })
+      .select()
+      .single();
+
+    if (bookingError) {
+      console.error('Error creating pending booking:', bookingError);
+    } else {
+      console.log('✅ Pending booking created:', booking.id);
+    }
+
+    // Save to pending_payments for callback tracking (include booking_id)
     const { error: dbError } = await supabaseClient.from('pending_payments').insert({
       checkout_request_id: stkData.CheckoutRequestID,
       merchant_request_id: stkData.MerchantRequestID,
@@ -153,8 +184,13 @@ serve(async (req) => {
       amount: Math.round(amount),
       account_reference: accountReference,
       transaction_desc: transactionDesc,
-      booking_data: bookingData,
+      booking_data: {
+        ...bookingData,
+        booking_id: booking?.id, // Include the created booking ID
+      },
       payment_status: 'pending',
+      user_id: bookingData.user_id || null,
+      host_id: bookingData.host_id || null,
     });
 
     if (dbError) {
@@ -185,6 +221,7 @@ serve(async (req) => {
         message: 'STK Push initiated successfully',
         checkoutRequestId: stkData.CheckoutRequestID,
         merchantRequestId: stkData.MerchantRequestID,
+        bookingId: booking?.id,
         data: {
           MerchantRequestID: stkData.MerchantRequestID,
           CheckoutRequestID: stkData.CheckoutRequestID,
