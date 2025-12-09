@@ -104,10 +104,12 @@ export const ListingCard = ({
         remainingTickets > 0 && 
         remainingTickets <= 20;
 
-    // The original showTicketsRemaining logic is now obsolete, but the variable is removed below.
-
     // --- MODIFICATION: Define a fixed height for the activities container to ensure height consistency ---
     const activityContainerClass = "h-6 md:h-7";
+
+    // --- MODIFICATION: Define a consistent class for the warning slot container ---
+    // This container must maintain its height (pt-1) even when the content is hidden.
+    const warningSlotClass = "pt-1 h-[28px] md:h-[32px] overflow-hidden"; // Fixed height based on typical text/padding (e.g., pt-1 + line-height)
 
     return (
         <Card
@@ -184,14 +186,12 @@ export const ListingCard = ({
                     </p>
                 </div>
 
-                {/* --- MODIFICATION: New Section for "Few slots remaining" --- */}
-                {fewSlotsRemaining && (
-                    <div className="pt-1">
-                        <span className="text-xs md:text-sm font-semibold text-destructive px-2 py-1 bg-destructive/10 rounded-sm">
-                            Few slots remaining!
-                        </span>
-                    </div>
-                )}
+                {/* --- MODIFICATION: New Section for "Few slots remaining" - Always renders to maintain height --- */}
+                <div className={cn(warningSlotClass, fewSlotsRemaining ? "opacity-100" : "opacity-0")}>
+                    <span className="text-xs md:text-sm font-semibold text-destructive px-2 py-1 bg-destructive/10 rounded-sm">
+                        Few slots remaining!
+                    </span>
+                </div>
                 {/* ----------------------------------------------------------- */}
 
                 {/* Price and Date Info for Trips/Events */}
@@ -228,11 +228,6 @@ export const ListingCard = ({
                         ))
                     )}
                 </div>
-                
-                {/* --- REMOVED THE OLD showTicketsRemaining SECTION --- */}
-                {/* The previous code for displaying 'Tickets Remaining: X' has been completely removed
-                   as it is replaced by the 'Few slots remaining' message above. 
-                */}
             </div>
         </Card>
     );
