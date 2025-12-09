@@ -94,8 +94,17 @@ export const ListingCard = ({
     const tealBgClass = "bg-[rgb(0,128,128)] text-white";
     const tealTextClass = "text-[rgb(0,128,128)]";
 
-    // --- MODIFICATION: Determine if the Tickets Remaining section will be shown ---
-    const showTicketsRemaining = type === "TRIP" && availableTickets !== undefined && (availableTickets - (bookedTickets || 0)) < 20;
+    // --- MODIFICATION: Determine if "Few slots remaining" will be shown ---
+    const remainingTickets = availableTickets !== undefined ? availableTickets - (bookedTickets || 0) : undefined;
+    
+    // Show "Few slots remaining" if it's a TRIP or EVENT and remaining tickets are 20 or less.
+    const fewSlotsRemaining = 
+        (type === "TRIP" || type === "EVENT") && 
+        remainingTickets !== undefined && 
+        remainingTickets > 0 && 
+        remainingTickets <= 20;
+
+    // The original showTicketsRemaining logic is now obsolete, but the variable is removed below.
 
     // --- MODIFICATION: Define a fixed height for the activities container to ensure height consistency ---
     const activityContainerClass = "h-6 md:h-7";
@@ -160,32 +169,6 @@ export const ListingCard = ({
                         />
                     </Button>
                 )}
-
-                {/* --- START OF REMOVALS --- */}
-                {/* // Removed the Price Button over the image: 
-                {!hidePrice && price !== undefined && (type === "TRIP" || type === "EVENT") && (
-                    <Button
-                        className="absolute bottom-2 left-2 bg-[rgb(200,0,0)] hover:bg-[rgb(255,0,0)] text-primary-foreground px-3 py-1.5 md:px-2 md:py-1 rounded-md shadow-lg z-10 h-auto"
-                        onClick={(e) => e.stopPropagation()} // Prevent card click
-                    >
-                        <p className="font-bold text-sm md:text-xs whitespace-nowrap">
-                            KSh {price}
-                        </p>
-                    </Button>
-                )}
-                */}
-
-                {/* // Removed the Date/Custom Date overlay: 
-                {(date || isCustomDate) && (
-                    <div className="absolute bottom-2 right-2 bg-background/90 backdrop-blur text-foreground px-2 py-1 rounded-md shadow-md z-10">
-                        <p className="text-xs font-semibold">
-                            {isCustomDate ? "Custom Date" : formatDate(date)}
-                        </p>
-                    </div>
-                )}
-                */}
-                {/* --- END OF REMOVALS --- */}
-
             </div>
             
             <div className="p-2 md:p-4 flex flex-col space-y-1 md:space-y-2">
@@ -201,7 +184,17 @@ export const ListingCard = ({
                     </p>
                 </div>
 
-                {/* Price and Date Info for Trips/Events - now only displayed here */}
+                {/* --- MODIFICATION: New Section for "Few slots remaining" --- */}
+                {fewSlotsRemaining && (
+                    <div className="pt-1">
+                        <span className="text-xs md:text-sm font-semibold text-destructive px-2 py-1 bg-destructive/10 rounded-sm">
+                            Few slots remaining!
+                        </span>
+                    </div>
+                )}
+                {/* ----------------------------------------------------------- */}
+
+                {/* Price and Date Info for Trips/Events */}
                 {(type === "TRIP" || type === "EVENT") && (
                     <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-border/50">
                         {!hidePrice && price !== undefined && price > 0 && (
@@ -236,19 +229,10 @@ export const ListingCard = ({
                     )}
                 </div>
                 
-                {showTicketsRemaining && (
-                    <div className="flex items-center justify-between pt-1 border-t border-border/50">
-                        <p className="text-xs md:text-sm font-medium text-muted-foreground">
-                            Tickets Remaining:
-                        </p>
-                        <p className={cn(
-                            "text-xs md:text-sm font-bold",
-                            (availableTickets - (bookedTickets || 0)) <= 5 ? "text-destructive" : "text-green-600 dark:text-green-400"
-                        )}>
-                            {Math.max(0, availableTickets - (bookedTickets || 0))}
-                        </p>
-                    </div>
-                )}
+                {/* --- REMOVED THE OLD showTicketsRemaining SECTION --- */}
+                {/* The previous code for displaying 'Tickets Remaining: X' has been completely removed
+                   as it is replaced by the 'Few slots remaining' message above. 
+                */}
             </div>
         </Card>
     );
