@@ -54,7 +54,7 @@ export const ListingCard = ({
         return activities
             .map(item => typeof item === 'object' && item.name ? item.name : (typeof item === 'string' ? item : null))
             .filter(Boolean)
-            .slice(0, 4) as string[];
+            .slice(0, 5) as string[]; // <-- MODIFIED: Changed 4 to 5
     };
 
     const activityNames = getActivityNames(activities);
@@ -104,12 +104,11 @@ export const ListingCard = ({
         remainingTickets > 0 && 
         remainingTickets <= 20;
 
-    // --- MODIFICATION: Define a fixed height for the activities container to ensure height consistency ---
-    const activityContainerClass = "h-6 md:h-7";
+    // --- MODIFICATION: Remove fixed-height classes for activity container and warning slot
+    const warningSlotClass = "pt-1 overflow-hidden"; 
 
-    // --- MODIFICATION: Define a consistent class for the warning slot container ---
-    // This container must maintain its height (pt-1) even when the content is hidden.
-    const warningSlotClass = "pt-1 h-[28px] md:h-[32px] overflow-hidden"; // Fixed height based on typical text/padding (e.g., pt-1 + line-height)
+    // Determine if the card is a type that uses the special price/date and ticket warning logic
+    const isTripOrEvent = type === "TRIP" || type === "EVENT";
 
     return (
         <Card
@@ -178,6 +177,7 @@ export const ListingCard = ({
                     {name}
                 </h3>
                 
+                {/* Location - Placed below Name */}
                 <div className="flex items-center gap-1">
                     {/* MapPin Icon Color now uses custom Teal (0, 128, 128) */}
                     <MapPin className={cn("h-3 w-3 flex-shrink-0", tealTextClass)} />
@@ -186,16 +186,36 @@ export const ListingCard = ({
                     </p>
                 </div>
 
-                {/* --- MODIFICATION: New Section for "Few slots remaining" - Always renders to maintain height --- */}
-                <div className={cn(warningSlotClass, fewSlotsRemaining ? "opacity-100" : "opacity-0")}>
-                    <span className="text-xs md:text-sm font-semibold text-destructive px-2 py-1 bg-destructive/10 rounded-sm">
-                        Few slots remaining!
-                    </span>
-                </div>
+                {/* --- Activities Section for NON-TRIP/EVENT types --- */}
+                {/* Only render if NOT Trip/Event AND activities exist. */}
+                {!isTripOrEvent && activityNames.length > 0 && (
+                    <div className="flex flex-wrap gap-0.5 md:gap-1 pt-0.5 md:pt-1">
+                        {activityNames.map((activity, index) => (
+                            <span
+                                key={index}
+                                className={cn("text-[8px] md:text-xs px-1 md:px-1.5 py-0.5 rounded-full bg-muted", tealTextClass)}
+                            >
+                                {activity}
+                            </span>
+                        ))}
+                    </div>
+                )}
+                {/* ------------------------------------------------------------------ */}
+                
+                {/* --- New Section for "Few slots remaining" for TRIP/EVENT types --- */}
+                {isTripOrEvent && (
+                    <div className={cn(warningSlotClass, fewSlotsRemaining ? "opacity-100" : "h-0 opacity-0")}>
+                        {fewSlotsRemaining && (
+                            <span className="text-xs md:text-sm font-semibold text-destructive px-2 py-1 bg-destructive/10 rounded-sm">
+                                Few slots remaining!
+                            </span>
+                        )}
+                    </div>
+                )}
                 {/* ----------------------------------------------------------- */}
 
-                {/* Price and Date Info for Trips/Events */}
-                {(type === "TRIP" || type === "EVENT") && (
+                {/* Price and Date Info for Trips/Events - Only render for these types */}
+                {isTripOrEvent && (
                     <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-border/50">
                         {!hidePrice && price !== undefined && price > 0 && (
                             <span className="text-[10px] md:text-xs font-bold text-[rgb(200,0,0)]">
@@ -214,20 +234,6 @@ export const ListingCard = ({
                         )}
                     </div>
                 )}
-
-                {/* Activities Section - MODIFIED for fixed height */}
-                <div className={cn("flex flex-wrap gap-0.5 md:gap-1 pt-0.5 md:pt-1", activityContainerClass)}>
-                    {activityNames.length > 0 && (
-                        activityNames.map((activity, index) => (
-                            <span
-                                key={index}
-                                className={cn("text-[8px] md:text-xs px-1 md:px-1.5 py-0.5 rounded-full bg-muted", tealTextClass)}
-                            >
-                                {activity}
-                            </span>
-                        ))
-                    )}
-                </div>
             </div>
         </Card>
     );
