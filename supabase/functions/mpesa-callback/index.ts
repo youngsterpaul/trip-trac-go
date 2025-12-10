@@ -207,17 +207,33 @@ async function sendNotificationsAndEmails(
 
     // Create notification for user if logged in
     if (bookingData.user_id) {
+      const details = bookingData.booking_details || {};
+      const totalPeople = (details.adults || 0) + (details.children || 0);
+      const facilitiesList = details.selectedFacilities?.map((f: any) => f.name).join(', ') || '';
+      const activitiesList = details.selectedActivities?.map((a: any) => a.name).join(', ') || '';
+      
+      let userMessage = `Payment confirmed for ${itemName}. Booked by: ${bookingData.guest_name || 'Guest'}. People: ${totalPeople} (${details.adults || 0} adults, ${details.children || 0} children).`;
+      if (facilitiesList) userMessage += ` Facilities: ${facilitiesList}.`;
+      if (activitiesList) userMessage += ` Activities: ${activitiesList}.`;
+      userMessage += ` Total: KES ${bookingData.total_amount}`;
+      
       const { error: userNotifError } = await supabase
         .from('notifications')
         .insert({
           user_id: bookingData.user_id,
           type: 'payment_confirmed',
           title: 'Payment Successful',
-          message: `Your payment of KES ${bookingData.total_amount} for ${itemName} has been confirmed.`,
+          message: userMessage,
           data: { 
             booking_id: booking.id, 
             amount: bookingData.total_amount,
-            mpesa_receipt: mpesaReceiptNumber 
+            mpesa_receipt: mpesaReceiptNumber,
+            guest_name: bookingData.guest_name,
+            total_people: totalPeople,
+            adults: details.adults || 0,
+            children: details.children || 0,
+            facilities: details.selectedFacilities || [],
+            activities: details.selectedActivities || []
           },
         });
 
@@ -231,6 +247,16 @@ async function sendNotificationsAndEmails(
     // Create notification for host and send email
     const hostId = bookingData.host_id || payment.host_id;
     if (hostId) {
+      const details = bookingData.booking_details || {};
+      const totalPeople = (details.adults || 0) + (details.children || 0);
+      const facilitiesList = details.selectedFacilities?.map((f: any) => f.name).join(', ') || '';
+      const activitiesList = details.selectedActivities?.map((a: any) => a.name).join(', ') || '';
+      
+      let hostMessage = `New paid booking for ${itemName}. Booked by: ${bookingData.guest_name || 'Guest'}. People: ${totalPeople} (${details.adults || 0} adults, ${details.children || 0} children).`;
+      if (facilitiesList) hostMessage += ` Facilities: ${facilitiesList}.`;
+      if (activitiesList) hostMessage += ` Activities: ${activitiesList}.`;
+      hostMessage += ` Amount: KES ${bookingData.total_amount}`;
+      
       // Create in-app notification for host
       const { error: hostNotifError } = await supabase
         .from('notifications')
@@ -238,11 +264,16 @@ async function sendNotificationsAndEmails(
           user_id: hostId,
           type: 'new_booking',
           title: 'New Paid Booking',
-          message: `You have a new paid booking for ${itemName}. Amount: KES ${bookingData.total_amount}`,
+          message: hostMessage,
           data: { 
             booking_id: booking.id, 
             amount: bookingData.total_amount, 
-            guest_name: bookingData.guest_name 
+            guest_name: bookingData.guest_name,
+            total_people: totalPeople,
+            adults: details.adults || 0,
+            children: details.children || 0,
+            facilities: details.selectedFacilities || [],
+            activities: details.selectedActivities || []
           },
         });
 
