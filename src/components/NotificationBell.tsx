@@ -26,9 +26,6 @@ interface Notification {
   created_at: string;
 }
 
-// Custom Teal color based on rgba(0, 128, 128, 1) which is #008080
-const UNREAD_TEAL_CLASS = "bg-[#008080] text-white";
-
 export const NotificationBell = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -133,13 +130,12 @@ export const NotificationBell = () => {
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        {/* All hover classes (hover:bg-white, group, group-hover:...) were previously removed. */}
-        <button className="rounded-full h-10 w-10 flex items-center justify-center transition-colors bg-white/10 relative">
-          <Bell className="h-5 w-5 text-white" />
+        <button className="rounded-full h-10 w-10 flex items-center justify-center transition-colors bg-white/10 hover:bg-white group relative">
+          <Bell className="h-5 w-5 text-white group-hover:text-[#008080]" />
           {unreadCount > 0 && (
             <Badge
-              // Uses the custom Teal color
-              className={`absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs ${UNREAD_TEAL_CLASS}`}
+              variant="destructive"
+              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
             >
               {unreadCount > 99 ? '99+' : unreadCount}
             </Badge>
@@ -184,10 +180,7 @@ export const NotificationBell = () => {
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <h4 className="font-semibold text-sm">{notification.title}</h4>
                     {!notification.is_read && (
-                      <div 
-                        // Uses the custom Teal color for the unread dot
-                        className={`h-2 w-2 rounded-full flex-shrink-0 mt-1 ${UNREAD_TEAL_CLASS.split(' ')[0]}`} 
-                      />
+                      <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0 mt-1" />
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground mb-2">
