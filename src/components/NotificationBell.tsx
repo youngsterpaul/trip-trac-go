@@ -133,13 +133,12 @@ export const NotificationBell = () => {
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        {/* Hover over notification removed: removed hover:bg-white and group relative */}
+        {/* All hover classes (hover:bg-white, group, group-hover:...) were previously removed. */}
         <button className="rounded-full h-10 w-10 flex items-center justify-center transition-colors bg-white/10 relative">
-          {/* Removed group-hover:text-[#008080] */}
           <Bell className="h-5 w-5 text-white" />
           {unreadCount > 0 && (
             <Badge
-              // Replaced variant="destructive" with the custom Teal color class
+              // Uses the custom Teal color
               className={`absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs ${UNREAD_TEAL_CLASS}`}
             >
               {unreadCount > 99 ? '99+' : unreadCount}
@@ -186,7 +185,7 @@ export const NotificationBell = () => {
                     <h4 className="font-semibold text-sm">{notification.title}</h4>
                     {!notification.is_read && (
                       <div 
-                        // Updated from bg-primary to the custom Teal color
+                        // Uses the custom Teal color for the unread dot
                         className={`h-2 w-2 rounded-full flex-shrink-0 mt-1 ${UNREAD_TEAL_CLASS.split(' ')[0]}`} 
                       />
                     )}
