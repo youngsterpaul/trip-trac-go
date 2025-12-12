@@ -130,8 +130,8 @@ export const NotificationBell = () => {
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <button className="rounded-full h-10 w-10 flex items-center justify-center transition-colors bg-white/10 hover:bg-white group relative">
-          <Bell className="h-5 w-5 text-white group-hover:text-[#008080]" />
+        <button className="rounded-full h-10 w-10 flex items-center justify-center transition-colors bg-header-foreground/10 hover:bg-header-foreground group relative">
+          <Bell className="h-5 w-5 text-header-foreground group-hover:text-header" />
           {unreadCount > 0 && (
             <Badge
               variant="destructive"
@@ -173,8 +173,8 @@ export const NotificationBell = () => {
                   onClick={() => handleNotificationClick(notification)}
                   className={`w-full text-left p-4 rounded-lg border transition-colors ${
                     notification.is_read
-                      ? 'bg-background hover:bg-accent'
-                      : 'bg-accent/50 hover:bg-accent'
+                      ? 'bg-background hover:bg-header/10'
+                      : 'bg-header/20 hover:bg-header/30'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2 mb-1">
