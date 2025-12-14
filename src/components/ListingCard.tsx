@@ -101,10 +101,10 @@ export const ListingCard = ({
 
   // Determine if the card is a type that uses the special price/date and ticket warning logic
   const isTripOrEvent = type === "TRIP" || type === "EVENT";
-  return <Card onClick={handleCardClick} className={cn("group overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border rounded-lg bg-card shadow-sm w-full flex flex-col", compact ? "h-[180px] sm:h-[200px]" : "h-[280px] sm:h-[300px] lg:h-[320px]")}>
-            {/* Image Container */}
+  return <Card onClick={handleCardClick} className={cn("group overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border rounded-lg bg-card shadow-sm w-full flex flex-col", compact ? "h-auto" : "h-auto")}>
+            {/* Image Container - reduced height */}
             <div className="relative overflow-hidden m-0" style={{
-      paddingBottom: '65%'
+      paddingBottom: '50%'
     }}>
                 <img src={optimizeSupabaseImage(imageUrl, {
         width: 640,
@@ -113,21 +113,21 @@ export const ListingCard = ({
       })} srcSet={generateImageSrcSet(imageUrl, [320, 640, 960])} sizes="(max-width: 640px) 320px, (max-width: 1024px) 640px, 640px" alt={name} width={640} height={480} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 m-0 p-0" />
                 
                 {/* Category Badges use Teal BG (0, 128, 128) */}
-                {type === "TRIP" && <Badge className={cn("absolute top-2 left-2 backdrop-blur text-xs font-bold z-10 px-2 py-1", tealBgClass)}>
+                {type === "TRIP" && <Badge className={cn("absolute top-1.5 left-1.5 backdrop-blur text-[10px] md:text-xs font-bold z-10 px-1.5 py-0.5 md:px-2 md:py-1", tealBgClass)}>
                         TRIP
                     </Badge>}
 
-                {type === "EVENT" && <Badge className={cn("absolute top-2 left-2 backdrop-blur text-xs font-bold z-10 px-2 py-1", tealBgClass)}>
+                {type === "EVENT" && <Badge className={cn("absolute top-1.5 left-1.5 backdrop-blur text-[10px] md:text-xs font-bold z-10 px-1.5 py-0.5 md:px-2 md:py-1", tealBgClass)}>
                         EVENT
                     </Badge>}
 
-                {type !== "EVENT" && type !== "TRIP" && showBadge && <Badge className={cn("absolute top-2 left-2 backdrop-blur text-[0.6rem] z-10 p-1", tealBgClass)}>
+                {type !== "EVENT" && type !== "TRIP" && showBadge && <Badge className={cn("absolute top-1.5 left-1.5 backdrop-blur text-[8px] md:text-[0.6rem] z-10 px-1 py-0.5 md:p-1", tealBgClass)}>
                         {type}
                     </Badge>}
 
 
-                {onSave && <Button size="icon" onClick={handleSaveClick} aria-label={isSaved ? "Remove from wishlist" : "Add to wishlist"} className={cn("absolute top-2 right-2 z-20 h-10 w-10 md:h-8 md:w-8 p-0 bg-transparent touch-manipulation active:scale-95 transition-transform", "border-none shadow-none", "outline-none focus-visible:ring-0 focus-visible:bg-transparent hover:bg-transparent")}>
-                        <Heart className={cn("h-5 w-5 md:h-4 md:w-4", isSaved ? "text-red-500 fill-red-500" : "text-black stroke-[2.5] drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)]")} />
+                {onSave && <Button size="icon" onClick={handleSaveClick} aria-label={isSaved ? "Remove from wishlist" : "Add to wishlist"} className={cn("absolute top-1.5 right-1.5 z-20 h-8 w-8 md:h-8 md:w-8 p-0 bg-transparent touch-manipulation active:scale-95 transition-transform", "border-none shadow-none", "outline-none focus-visible:ring-0 focus-visible:bg-transparent hover:bg-transparent")}>
+                        <Heart className={cn("h-4 w-4 md:h-4 md:w-4", isSaved ? "text-red-500 fill-red-500" : "text-black stroke-[2.5] drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)]")} />
                     </Button>}
             </div>
             
