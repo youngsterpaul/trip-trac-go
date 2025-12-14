@@ -460,7 +460,7 @@ const Index = () => {
                 {/* Hero and Categories - Hide when search is focused */}
                 <section className={`flex flex-col gap-1 md:gap-3 ${isSearchFocused ? 'hidden' : ''}`}>
                 {/* Hero Section with Background Image */}
-                    <div className="w-full">
+                    <div className="w-full -mt-6 md:-mt-8">
                         <div className="relative w-full overflow-hidden flex flex-col items-center justify-center p-4 md:p-12 py-12 md:py-[80px]">
                             {/* Hero background image with high priority for faster LCP */}
                             <img src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1920&h=800&fit=crop&auto=format&q=80" alt="" fetchPriority="high" loading="eager" decoding="async" className="absolute inset-0 w-full h-full object-cover" width={1920} height={800} />
@@ -492,15 +492,15 @@ const Index = () => {
                     
                     {/* Categories Section - Below on all screens */}
                     <div className="w-full px-2 md:px-0">
-                        <div className="grid grid-cols-2 lg:grid-cols-5 gap-1.5 md:gap-4">
-                            {categories.map(cat => <div key={cat.title} onClick={() => navigate(cat.path)} className="relative h-16 md:h-40 lg:h-48 cursor-pointer overflow-hidden group rounded-lg" style={{
+                        <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 md:gap-4">
+                            {categories.map(cat => <div key={cat.title} onClick={() => navigate(cat.path)} className="relative h-20 md:h-40 lg:h-48 cursor-pointer overflow-hidden group rounded-lg" style={{
               backgroundImage: `url(${cat.bgImage})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center'
             }}>
-                                    <div className="absolute inset-0 bg-black/50 group-hover:bg-black/40 transition-all flex flex-col items-center justify-center p-2 md:p-4">
-                                        <cat.icon className="h-4 w-4 md:h-12 md:w-12 lg:h-16 lg:w-16 text-white mb-0.5 md:mb-3" />
-                                        <span className="font-bold text-white text-3xs md:text-base lg:text-lg" role="heading" aria-level={3}>{cat.title}</span>
+                                    <div className="absolute inset-0 bg-black/50 group-hover:bg-black/40 transition-all flex flex-col items-center justify-center text-center p-2 md:p-4">
+                                        <cat.icon className="h-5 w-5 md:h-12 md:w-12 lg:h-16 lg:w-16 text-white mb-1 md:mb-3" />
+                                        <span className="font-bold text-white text-xs md:text-base lg:text-lg leading-tight" role="heading" aria-level={3}>{cat.title}</span>
                                         <p className="text-white/80 text-2xs md:text-sm text-center mt-0.5 md:mt-1 hidden md:block">{cat.description}</p>
                                     </div>
                                 </div>)}
@@ -515,7 +515,7 @@ const Index = () => {
                         </h2>
                         {loading ? <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 md:gap-4">
                                 {[...Array(6)].map((_, i) => <div key={i} className="w-full"><ListingSkeleton /></div>)}
-                            </div> : listings.length > 0 ? <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 md:gap-4">
+                            </div> : listings.length > 0 ? <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-5">
                                 {listings.map((listing, index) => {
             const itemDistance = position && listing.latitude && listing.longitude ? calculateDistance(position.latitude, position.longitude, listing.latitude, listing.longitude) : undefined;
             return <div key={listing.id} className="w-full">
@@ -546,7 +546,7 @@ const Index = () => {
                         
                         {searchQuery && viewMode === 'map' ? <Suspense fallback={<div className="h-[400px] bg-muted animate-pulse rounded-lg" />}><MapView listings={listings} /></Suspense> : searchQuery ?
           // Column grid view for search results
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1.5 md:gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-5">
                                 {loading ? [...Array(12)].map((_, i) => <div key={i} className="w-full"><ListingSkeleton /></div>) : listings.length === 0 ? <div className="col-span-full text-center py-12">
                                         <p className="text-muted-foreground text-lg">No results found for "{searchQuery}"</p>
                                         <p className="text-muted-foreground text-sm mt-2">Try searching with different keywords</p>
@@ -567,7 +567,7 @@ const Index = () => {
                                             <ChevronRight className="h-5 w-5 md:h-6 md:w-6" />
                                         </Button>
                                     </>}
-                                <div ref={featuredForYouRef} onScroll={handleScroll('featuredForYou')} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={() => onTouchEnd(featuredForYouRef)} className="gap-1.5 overflow-x-auto pb-2 scrollbar-hide md:gap-2 flex items-start justify-start pl-1 pr-8 md:pl-2 md:pr-12 scroll-smooth">
+                                <div ref={featuredForYouRef} onScroll={handleScroll('featuredForYou')} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={() => onTouchEnd(featuredForYouRef)} className="gap-3 overflow-x-auto pb-2 scrollbar-hide md:gap-4 flex items-start justify-start pl-1 pr-8 md:pl-2 md:pr-12 scroll-smooth">
                                 {/* Show nearby items if location is on, otherwise show latest */}
                                 {(position ? loadingNearby : loading) || (position ? nearbyPlacesHotels : listings).length === 0 ? [...Array(10)].map((_, i) => <div key={i} className="flex-shrink-0 w-[45vw] md:w-56 rounded-lg overflow-hidden shadow-md">
                                             <div className="aspect-[2/1] bg-muted animate-pulse" />
@@ -604,7 +604,7 @@ const Index = () => {
                                         <ChevronRight className="h-5 w-5 md:h-6 md:w-6" />
                                     </Button>
                                 </>}
-                            <div ref={featuredEventsRef} onScroll={handleScroll('featuredEvents')} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={() => onTouchEnd(featuredEventsRef)} className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-hide md:gap-2 pl-1 pr-8 md:pl-2 md:pr-12 scroll-smooth">
+                            <div ref={featuredEventsRef} onScroll={handleScroll('featuredEvents')} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={() => onTouchEnd(featuredEventsRef)} className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide md:gap-4 pl-1 pr-8 md:pl-2 md:pr-12 scroll-smooth">
                             {loadingScrollable ? <div className="flex gap-1.5 md:gap-2">
                                     {[...Array(5)].map((_, i) => <div key={i} className="flex-shrink-0 w-[45vw] md:w-56">
                                             <ListingSkeleton />
@@ -637,7 +637,7 @@ const Index = () => {
                                         <ChevronRight className="h-5 w-5 md:h-6 md:w-6" />
                                     </Button>
                                 </>}
-                            <div ref={featuredCampsitesRef} onScroll={handleScroll('featuredCampsites')} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={() => onTouchEnd(featuredCampsitesRef)} className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-hide md:gap-2 pl-1 pr-8 md:pl-2 md:pr-12 scroll-smooth">
+                            <div ref={featuredCampsitesRef} onScroll={handleScroll('featuredCampsites')} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={() => onTouchEnd(featuredCampsitesRef)} className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide md:gap-4 pl-1 pr-8 md:pl-2 md:pr-12 scroll-smooth">
                             {loadingScrollable ? <div className="flex gap-1.5 md:gap-2">
                                     {[...Array(5)].map((_, i) => <div key={i} className="flex-shrink-0 w-[45vw] md:w-56">
                                             <ListingSkeleton />
@@ -676,7 +676,7 @@ const Index = () => {
                                         <ChevronRight className="h-5 w-5 md:h-6 md:w-6" />
                                     </Button>
                                 </>}
-                            <div ref={featuredHotelsRef} onScroll={handleScroll('featuredHotels')} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={() => onTouchEnd(featuredHotelsRef)} className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-hide md:gap-2 pl-1 pr-8 md:pl-2 md:pr-12 scroll-smooth">
+                            <div ref={featuredHotelsRef} onScroll={handleScroll('featuredHotels')} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={() => onTouchEnd(featuredHotelsRef)} className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide md:gap-4 pl-1 pr-8 md:pl-2 md:pr-12 scroll-smooth">
                             {loadingScrollable ? <div className="flex gap-1.5 md:gap-2">
                                     {[...Array(5)].map((_, i) => <div key={i} className="flex-shrink-0 w-[45vw] md:w-56">
                                             <ListingSkeleton />
@@ -723,7 +723,7 @@ const Index = () => {
                                         <ChevronRight className="h-5 w-5 md:h-6 md:w-6" />
                                     </Button>
                                 </>}
-                            <div ref={featuredTripsRef} onScroll={handleScroll('featuredTrips')} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={() => onTouchEnd(featuredTripsRef)} className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-hide md:gap-2 pl-1 pr-8 md:pl-2 md:pr-12 scroll-smooth">
+                            <div ref={featuredTripsRef} onScroll={handleScroll('featuredTrips')} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={() => onTouchEnd(featuredTripsRef)} className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide md:gap-4 pl-1 pr-8 md:pl-2 md:pr-12 scroll-smooth">
                             {loadingScrollable ? <div className="flex gap-1.5 md:gap-2">
                                     {[...Array(5)].map((_, i) => <div key={i} className="flex-shrink-0 w-[45vw] md:w-56">
                                             <ListingSkeleton />
