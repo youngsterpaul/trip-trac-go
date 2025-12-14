@@ -493,11 +493,18 @@ const Index = () => {
                 <section className={`flex flex-col gap-1 md:gap-3 ${isSearchFocused ? 'hidden' : ''}`}>
                 {/* Hero Section with Background Image */}
                     <div className="w-full">
-                        <div style={{
-            backgroundImage: 'url(https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1920&h=800&fit=crop&auto=format&q=80)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
-          }} className="relative w-full overflow-hidden flex flex-col items-center justify-center p-4 md:p-12 py-12 md:py-[80px]">
+                        <div className="relative w-full overflow-hidden flex flex-col items-center justify-center p-4 md:p-12 py-12 md:py-[80px]">
+                            {/* Hero background image with high priority for faster LCP */}
+                            <img 
+                              src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1920&h=800&fit=crop&auto=format&q=80"
+                              alt=""
+                              fetchPriority="high"
+                              loading="eager"
+                              decoding="async"
+                              className="absolute inset-0 w-full h-full object-cover"
+                              width={1920}
+                              height={800}
+                            />
                             {/* Overlay for better text readability */}
                             <div className="absolute inset-0 bg-black/40" />
                             
