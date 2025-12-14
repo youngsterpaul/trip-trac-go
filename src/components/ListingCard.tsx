@@ -69,11 +69,6 @@ export const ListingCard = ({
   // For priority images, always load immediately
   const shouldLoadImage = priority || isIntersecting;
 
-  // REMOVED: getActivityNames function is no longer needed
-
-  // REMOVED: activityNames variable is no longer needed
-  // const activityNames = getActivityNames(activities);
-
   const navigate = useNavigate();
   
   const handleCardClick = () => {
@@ -124,12 +119,14 @@ export const ListingCard = ({
     <Card 
       onClick={handleCardClick} 
       className={cn(
-        "group overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border bg-card shadow-sm w-[320px] flex flex-col", // Increased width (w-[320px])
-        "rounded-none", // REMOVED border radius
-        compact ? "h-auto" : "h-auto" // Retained h-auto but card will be generally taller due to increased width
+        "group overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border bg-card shadow-sm w-[320px] flex flex-col",
+        "rounded-none",
+        "mb-4", // ADDED: Margin bottom for gap between cards
+        compact ? "h-auto" : "h-auto"
       )}
     >
             {/* Image Container with intersection observer */}
+            {/* The m-0 class here ensures the image container has zero margin on its top */}
             <div ref={imageContainerRef} className="relative overflow-hidden m-0 bg-muted" style={{ paddingBottom: '50%' }}>
                 {/* Skeleton placeholder - show when not loading or image not loaded */}
                 {(!shouldLoadImage || (!imageLoaded && !imageError)) && (
@@ -198,22 +195,6 @@ export const ListingCard = ({
                         </span>
                     )}
                 </div>
-
-                {/* Activities Section - REMOVED to meet the requirement */}
-                {/* {activityNames.length > 0 && (
-                    <div className="flex flex-wrap gap-0.5 md:gap-1 flex-1 min-h-0 overflow-hidden items-start justify-start">
-                        {activityNames.slice(0, 3).map((activity, index) => (
-                            <span key={index} className={cn("text-[7px] md:text-[10px] px-1 md:px-1.5 py-0.5 rounded-full bg-muted", tealTextClass)}>
-                                {activity}
-                            </span>
-                        ))}
-                        {activityNames.length > 3 && (
-                            <span className={cn("text-[7px] md:text-[10px] px-1 md:px-1.5 py-0.5 rounded-full bg-muted", tealTextClass)}>
-                                +{activityNames.length - 3}
-                            </span>
-                        )}
-                    </div>
-                )} */}
                 
                 {/* Price, Date and Few slots remaining for Trips/Events - on same row */}
                 {isTripOrEvent && !minimalDisplay && <div className={`flex items-center justify-between gap-1 pt-1 border-t border-border/50 mt-auto ${hideEmptySpace && hidePrice && !date ? 'hidden' : ''}`}> 
