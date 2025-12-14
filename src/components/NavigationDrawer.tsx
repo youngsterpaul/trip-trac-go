@@ -1,7 +1,6 @@
-import { Home, Ticket, Heart, Phone, Info, Video, LogIn, LogOut, Sun, Moon, User, FileText, Shield } from "lucide-react";
+import { Home, Ticket, Heart, Phone, Info, LogIn, LogOut, Sun, Moon, User, FileText, Shield, Video } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,8 +38,6 @@ const MobileThemeToggle = () => {
 export const NavigationDrawer = ({ onClose }: NavigationDrawerProps) => {
   const { user, signOut } = useAuth();
   const [userName, setUserName] = useState("");
-
-  // Removed isInstalled and deferredPrompt state, and all associated effects/handlers
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -85,8 +82,6 @@ export const NavigationDrawer = ({ onClose }: NavigationDrawerProps) => {
     { icon: Shield, label: "Privacy Policy", path: "/privacy-policy" },
   ];
 
-  // Removed appNavItems
-
   const topContentItems = [
     { icon: Home, label: "Home", path: "/", protected: false },
     { icon: Ticket, label: "My Bookings", path: "/bookings", protected: true },
@@ -101,7 +96,8 @@ export const NavigationDrawer = ({ onClose }: NavigationDrawerProps) => {
 
   // Auth Display with blue Login button
   const AuthDisplay = user ? (
-    <li className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800">
+    // Removed border-t from this li
+    <li className="mt-4 pt-4">
       <p className="px-4 py-2 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Account</p>
       <Link
         to="/profile"
@@ -122,7 +118,8 @@ export const NavigationDrawer = ({ onClose }: NavigationDrawerProps) => {
       </button>
     </li>
   ) : (
-    <li className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800">
+    // Removed border-t from this li
+    <li className="mt-4 pt-4">
       <Link
         to="/auth"
         onClick={onClose}
@@ -162,7 +159,6 @@ export const NavigationDrawer = ({ onClose }: NavigationDrawerProps) => {
 
           {/* 1. HOME, MY BOOKINGS, WISHLIST (TOP SECTION) */}
           <li className="mb-4 pt-2">
-            <p className="px-4 py-2 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Navigation</p>
             <ul className="space-y-1">
               {topContentItems.map((item, index) => {
                 return (
@@ -193,7 +189,7 @@ export const NavigationDrawer = ({ onClose }: NavigationDrawerProps) => {
                     {/* ADD DARK MODE TOGGLE */}
                     {item.label === "Wishlist" && (
                       <>
-                        {/* Dark/Light Mode Toggle */}
+                        {/* Dark/Light Mode Toggle - Note: This one still has a line from the MobileThemeToggle component */}
                         <MobileThemeToggle />
                       </>
                     )}
@@ -204,8 +200,8 @@ export const NavigationDrawer = ({ onClose }: NavigationDrawerProps) => {
           </li>
 
           {/* 2. VLOG, CONTACT, ABOUT (COMPANY SECTION) */}
-          <li className="mb-4 pt-4 border-t border-gray-200 dark:border-gray-800">
-            <p className="px-4 py-2 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Company</p>
+          {/* Removed border-t from this li */}
+          <li className="mb-4 pt-4">
             <ul className="space-y-1">
               {bottomNavItems.map((item) => (
                 <li key={item.path}>
@@ -225,8 +221,8 @@ export const NavigationDrawer = ({ onClose }: NavigationDrawerProps) => {
           </li>
 
           {/* 3. LEGAL SECTION */}
-          <li className="mb-4 pt-4 border-t border-gray-200 dark:border-gray-800">
-            <p className="px-4 py-2 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Legal</p>
+          {/* Removed border-t from this li */}
+          <li className="mb-4 pt-4">
             <ul className="space-y-1">
               {legalItems.map((item) => (
                 <li key={item.path}>
@@ -250,8 +246,6 @@ export const NavigationDrawer = ({ onClose }: NavigationDrawerProps) => {
 
         </ul>
       </nav>
-
-      {/* Removed Install App Bottom Banner */}
     </div>
    );
 };
