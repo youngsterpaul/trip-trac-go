@@ -399,7 +399,7 @@ export default function CreateAttraction() {
             </div>
 
             <div>
-              <Label htmlFor="description">Description *</Label>
+              <Label htmlFor="description">Description </Label>
               <Textarea
                 id="description"
                 required
@@ -423,7 +423,7 @@ export default function CreateAttraction() {
             />
 
             <div>
-              <Label htmlFor="phone_number">Phone Number *</Label>
+              <Label htmlFor="phone_number">Phone Number </Label>
               <PhoneInput
                 value={formData.phone_number}
                 onChange={(value) => setFormData({...formData, phone_number: value})}
@@ -476,7 +476,7 @@ export default function CreateAttraction() {
               </div>
 
               <div>
-                <Label htmlFor="closing_hours">Closing Hours *</Label>
+                <Label htmlFor="closing_hours">Closing Hours </Label>
                 <Input
                   id="closing_hours"
                   type="time"

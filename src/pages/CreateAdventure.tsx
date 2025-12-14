@@ -358,7 +358,7 @@ const CreateAdventure = () => {
               <h3 className="text-lg font-semibold">Registration & Contact</h3>
               
               <div className="space-y-2">
-                <Label htmlFor="registrationName">Registration Name (as per government documentation) *</Label>
+                <Label htmlFor="registrationName">Registration Name (as per government documentation) </Label>
                 <Input
                   id="registrationName"
                   required
@@ -369,7 +369,7 @@ const CreateAdventure = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="registrationNumber">Registration Number *</Label>
+                <Label htmlFor="registrationNumber">Registration Number </Label>
                 <Input
                   id="registrationNumber"
                   required
@@ -380,7 +380,7 @@ const CreateAdventure = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="locationName">Location Name *</Label>
+                <Label htmlFor="locationName">Location Name </Label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -395,7 +395,7 @@ const CreateAdventure = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="place">Place *</Label>
+                <Label htmlFor="place">Place</Label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -420,7 +420,7 @@ const CreateAdventure = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="country">Country *</Label>
+                <Label htmlFor="country">Country </Label>
                 <CountrySelector
                   value={formData.country}
                   onChange={(value) => setFormData({...formData, country: value})}
@@ -428,7 +428,7 @@ const CreateAdventure = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Description (100 words max) *</Label>
+                <Label htmlFor="description">Description (100 words max) </Label>
                 <Textarea
                   id="description"
                   required
@@ -447,7 +447,7 @@ const CreateAdventure = () => {
               />
 
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number *</Label>
+                <Label htmlFor="phone">Phone Number </Label>
                 <PhoneInput
                   value={formData.phoneNumber}
                   onChange={(value) => setFormData({...formData, phoneNumber: value})}
@@ -463,7 +463,7 @@ const CreateAdventure = () => {
               <h3 className="text-lg font-semibold">Operational Details</h3>
 
               <div className="space-y-2">
-                <Label htmlFor="locationLink">Location Coordinates *</Label>
+                <Label htmlFor="locationLink">Location Coordinates</Label>
                 <div className="flex flex-col gap-2">
                   <Button type="button" variant="outline" onClick={getCurrentLocation} className="w-full sm:w-auto">
                     <Navigation className="h-4 w-4 mr-2" />
@@ -485,7 +485,7 @@ const CreateAdventure = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="openingHours">Opening Hours *</Label>
+                  <Label htmlFor="openingHours">Opening Hours</Label>
                   <div className="relative">
                     <Clock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -500,7 +500,7 @@ const CreateAdventure = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="closingHours">Closing Hours *</Label>
+                  <Label htmlFor="closingHours">Closing Hours </Label>
                   <div className="relative">
                     <Clock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input

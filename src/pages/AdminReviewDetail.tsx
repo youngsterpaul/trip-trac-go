@@ -580,50 +580,6 @@ const AdminReviewDetail = () => {
             </p>
           )}
         </div>
-
-        {/* --- Bookings Section --- */}
-        <div className="mt-6 p-6 border bg-card rounded-lg">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Bookings</h2>
-            <Badge variant="secondary">{bookings.length}</Badge>
-          </div>
-          
-          {bookings.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">No bookings yet</p>
-          ) : (
-            <>
-              <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-                {bookings.slice(0, 6).map((booking) => (
-                  <div key={booking.id} className="p-3 border rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <Badge variant={booking.status === "confirmed" ? "default" : "secondary"}>
-                        {booking.status}
-                      </Badge>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(booking.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <p className="text-sm font-medium">KSh {booking.total_amount}</p>
-                    {booking.guest_name && (
-                      <p className="text-xs text-muted-foreground">{booking.guest_name}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-              {bookings.length > 6 && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="w-full mt-4"
-                  onClick={() => navigate(`/admin/bookings`)}
-                  style={{ borderColor: TEAL_COLOR, color: TEAL_COLOR }}
-                >
-                  See All Bookings ({bookings.length})
-                </Button>
-              )}
-            </>
-          )}
-        </div>
       </main>
       <MobileBottomBar />
     </div>

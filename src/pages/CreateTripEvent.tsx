@@ -280,7 +280,7 @@ const CreateTripEvent = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="name">Name *</Label>
+                <Label htmlFor="name">Name </Label>
                 <Input
                   id="name"
                   required
@@ -291,7 +291,7 @@ const CreateTripEvent = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="country">Country *</Label>
+                <Label htmlFor="country">Country </Label>
                 <CountrySelector
                   value={formData.country}
                   onChange={(value) => setFormData({...formData, country: value})}
@@ -299,7 +299,7 @@ const CreateTripEvent = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="place">Place *</Label>
+                <Label htmlFor="place">Place </Label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -314,7 +314,7 @@ const CreateTripEvent = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="location">Location Details *</Label>
+                <Label htmlFor="location">Location Details</Label>
                 <Input
                   id="location"
                   required
@@ -363,7 +363,7 @@ const CreateTripEvent = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="price">Price (Adult) *</Label>
+                <Label htmlFor="price">Price (Adult)</Label>
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -380,7 +380,7 @@ const CreateTripEvent = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="price_child">Price (Child) *</Label>
+                <Label htmlFor="price_child">Price (Child) </Label>
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -397,7 +397,7 @@ const CreateTripEvent = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="available_tickets">Available Tickets *</Label>
+                <Label htmlFor="available_tickets">Available Tickets </Label>
                 <div className="relative">
                   <Users className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -420,7 +420,7 @@ const CreateTripEvent = () => {
               />
 
               <div className="space-y-2">
-                <Label htmlFor="phone_number">Contact Phone *</Label>
+                <Label htmlFor="phone_number">Contact Phone </Label>
                 <PhoneInput
                   value={formData.phone_number}
                   onChange={(value) => setFormData({...formData, phone_number: value})}
@@ -432,7 +432,7 @@ const CreateTripEvent = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description *</Label>
+              <Label htmlFor="description">Description </Label>
               <Textarea
                 id="description"
                 required
@@ -444,7 +444,7 @@ const CreateTripEvent = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="map_link">Map Location Link *</Label>
+              <Label htmlFor="map_link">Map Location Link </Label>
               <div className="flex gap-2">
                 <Input
                   id="map_link"
@@ -462,7 +462,7 @@ const CreateTripEvent = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Gallery Images (Max 5) *</Label>
+              <Label>Gallery Images (Max 5) </Label>
               <Label htmlFor="gallery-images-trip" className="cursor-pointer">
                 <div className="border-2 border-dashed rounded-lg p-6 text-center hover:bg-accent/50 transition-colors">
                   <div className="mx-auto h-12 w-12 text-muted-foreground mb-2">📁</div>
