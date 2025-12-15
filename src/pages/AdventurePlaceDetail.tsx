@@ -235,264 +235,278 @@ const AdventurePlaceDetail = () => {
     }
   };
 
-  if (loading || !place) return <div className="min-h-screen bg-background"><Header /><div className="h-96 bg-muted animate-pulse" /><MobileBottomBar /></div>;
+  if (loading || !place) return <div className="min-h-screen bg-background"><Header /><div className="h-64 sm:h-96 bg-muted animate-pulse" /><MobileBottomBar /></div>;
 
   const displayImages = [place.image_url, ...(place.gallery_images || []), ...(place.images || [])].filter(Boolean);
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
       <Header />
-      <main>
-        {/* Image Slideshow Section (Full-width on mobile, with back button overlay) */}
-        <div className="relative w-full">
-          <Carousel 
-            opts={{ loop: true }} 
-            plugins={[Autoplay({ delay: 3000 })]} 
-            className="w-full overflow-hidden" // Removed rounded-2xl
-          >
-            <CarouselContent>
-              {displayImages.map((img, idx) => 
-                <CarouselItem key={idx}>
-                  <img 
-                    src={img} 
-                    alt={`${place.name} ${idx + 1}`} 
-                    loading="lazy" 
-                    decoding="async" 
-                    className="w-full h-64 md:h-96 object-cover" // Ensures full width on small screen
-                  />
-                </CarouselItem>
+      
+      {/* Image Slideshow (Full Width on Mobile) */}
+      <div className="relative w-full lg:max-w-6xl lg:mx-auto"> 
+        {/* Back Button Overlayed */}
+        <Button 
+          variant="ghost" 
+          size="icon"
+          onClick={() => navigate(-1)} 
+          className="absolute top-4 left-4 z-20 h-10 w-10 bg-black/50 hover:bg-black/70 text-white rounded-full"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+
+        {/* Slideshow: No rounded-2xl on the Carousel component */}
+        <Carousel 
+          opts={{ loop: true }} 
+          plugins={[Autoplay({ delay: 3000 })]} 
+          className="w-full overflow-hidden" // Removed rounded-2xl
+        >
+          <CarouselContent>
+            {displayImages.map((img, idx) => (
+              <CarouselItem key={idx}>
+                <img 
+                  src={img} 
+                  alt={`${place.name} ${idx + 1}`} 
+                  loading="lazy" 
+                  decoding="async" 
+                  className="w-full h-64 md:h-96 object-cover" 
+                />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          {displayImages.length > 1 && (
+            <>
+              {/* Carousel Navigation Buttons */}
+              <CarouselPrevious className="left-4 z-10 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white border-none" />
+              <CarouselNext className="right-4 z-10 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white border-none" />
+            </>
+          )}
+
+          {/* START: Description Section with slide-down effect */}
+          {place.description && (
+            <div 
+              className="absolute bottom-0 left-0 right-0 bg-black/70 backdrop-blur-sm text-white p-4 sm:p-3 z-10 
+                         shadow-lg 
+                         transform translate-y-2" // The key styling for the "slide down" effect
+            >
+              <h2 className="text-lg sm:text-base font-semibold mb-2 sm:mb-1">About This Place</h2>
+              <p className="text-sm line-clamp-3">{place.description}</p>
+            </div>
+          )}
+          {/* END: Description Section */}
+        </Carousel>
+      </div>
+      
+      {/* Main Content (Containerized for large screens) */}
+      <main className="container px-4 py-6 sm:py-4 max-w-6xl mx-auto">
+        {/* The main content starts here, now contained */}
+        <div className="grid lg:grid-cols-[2fr,1fr] gap-6 sm:gap-4">
+          <div> {/* Left Column: Details */}
+            <div>
+              <h1 className="text-3xl sm:text-2xl font-bold mb-2">{place.name}</h1>
+              {place.local_name && (
+                <p className="text-lg sm:text-base text-muted-foreground mb-2">"{place.local_name}"</p>
               )}
-            </CarouselContent>
-            {displayImages.length > 1 && (
-              <>
-                <CarouselPrevious className="left-4 z-10 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white border-none" />
-                <CarouselNext className="right-4 z-10 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white border-none" />
-              </>
-            )}
-          </Carousel>
-          
-          {/* BACK BUTTON OVERLAY (New Position) */}
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate(-1)} 
-            className="absolute top-4 left-4 z-20 h-10 w-10 p-0 rounded-full bg-black/40 hover:bg-black/60 text-white"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-
-          {/* START: Description Section with slide-down effect (Removed bottom-border-radius) */}
-          {place.description && (
-            <div 
-              className="absolute bottom-0 left-0 right-0 bg-black/70 backdrop-blur-sm text-white p-4 sm:p-3 z-10 
-                           shadow-lg transform translate-y-2" // Removed rounded-b-2xl
-            >
-              <h2 className="text-lg sm:text-base font-semibold mb-2 sm:mb-1">About This Place</h2>
-              <p className="text-sm line-clamp-3">{place.description}</p>
-            </div>
-          )}
-          {/* END: Description Section */}
-        </div>
-
-        {/* Main Content Wrapper (Applies padding/max-width to detail sections) */}
-        <div className="container px-4 py-6 sm:py-4 max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-[2fr,1fr] gap-6 sm:gap-4">
-            {/* Left Column: Details */}
-            <div className="w-full">
-              <div>
-                <h1 className="text-3xl sm:text-2xl font-bold mb-2">{place.name}</h1>
-                {place.local_name && (
-                  <p className="text-lg sm:text-base text-muted-foreground mb-2">"{place.local_name}"</p>
-                )}
-                <div className="flex items-center gap-2 text-muted-foreground mb-2">
-                  <MapPin className="h-4 w-4" style={{ color: TEAL_COLOR }} />
-                  <span className="sm:text-sm">{place.location}, {place.country}</span>
-                  {distance !== undefined && (
-                    <span className="text-xs font-medium ml-auto" style={{ color: TEAL_COLOR }}>
-                      {distance < 1 ? `${Math.round(distance * 1000)}m away` : `${distance.toFixed(1)}km away`}
-                    </span>
-                  )}
-                </div>
-                {place.place && (
-                  <p className="text-sm sm:text-xs text-muted-foreground mb-4 sm:mb-2">Place: {place.place}</p>
+              <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                {/* Location Icon Teal */}
+                <MapPin className="h-4 w-4" style={{ color: TEAL_COLOR }} />
+                <span className="sm:text-sm">{place.location}, {place.country}</span>
+                {distance !== undefined && (
+                  <span className="text-xs font-medium ml-auto" style={{ color: TEAL_COLOR }}>
+                    {distance < 1 ? `${Math.round(distance * 1000)}m away` : `${distance.toFixed(1)}km away`}
+                  </span>
                 )}
               </div>
-
-              {/* --- Amenities Section (RED) --- */}
-              {place.amenities && place.amenities.length > 0 && (
-                <div className="mt-6 sm:mt-4 p-6 sm:p-3 border bg-card">
-                  <h2 className="text-xl sm:text-lg font-semibold mb-4 sm:mb-2">Amenities</h2>
-                  <div className="flex flex-wrap gap-2 sm:gap-1">
-                    {place.amenities.map((amenity: any, idx: number) => (
-                      <div 
-                        key={idx} 
-                        className="px-4 py-2 sm:px-3 sm:py-1 text-primary-foreground rounded-full text-sm sm:text-xs"
-                        style={{ backgroundColor: RED_COLOR }} 
-                      >
-                        {amenity}
-                      </div>
-                    ))}
-                  </div>
-                </div>
+              {place.place && (
+                <p className="text-sm sm:text-xs text-muted-foreground mb-4 sm:mb-2">Place: {place.place}</p>
               )}
-
-              {/* --- Facilities Section (TEAL) --- */}
-              {place.facilities && place.facilities.length > 0 && (
-                <div className="mt-6 sm:mt-4 p-6 sm:p-3 border bg-card">
-                  <h2 className="text-xl sm:text-lg font-semibold mb-4 sm:mb-2">Facilities (Rentable Spaces)</h2>
-                  <div className="flex flex-wrap gap-2 sm:gap-1">
-                    {place.facilities.map((facility: Facility, idx: number) => (
-                      <div 
-                        key={idx} 
-                        className="px-4 py-2 sm:px-3 sm:py-1 text-primary-foreground rounded-full text-sm sm:text-xs flex items-center gap-2 sm:gap-1"
-                        style={{ backgroundColor: TEAL_COLOR }} 
-                      >
-                        <span className="font-medium">{facility.name}</span>
-                        <span className="text-xs opacity-90">{facility.price === 0 ? 'Free' : `KSh ${facility.price}/day`}</span>
-                        {facility.capacity && <span className="text-xs opacity-90">• Capacity: {facility.capacity}</span>}
-                      </div>
-                    ))}
-                </div>
-                </div>
-              )}
-
-              {/* --- Activities Section (ORANGE) --- */}
-              {place.activities && place.activities.length > 0 && (
-                <div className="mt-6 sm:mt-4 p-6 sm:p-3 border bg-card">
-                  <h2 className="text-xl sm:text-lg font-semibold mb-4 sm:mb-2">Activities (Bookable Experiences)</h2>
-                  <div className="flex flex-wrap gap-2 sm:gap-1">
-                    {place.activities.map((activity: Activity, idx: number) => (
-                      <div 
-                        key={idx} 
-                        className="px-4 py-2 sm:px-3 sm:py-1 text-primary-foreground rounded-full text-sm sm:text-xs flex items-center gap-2 sm:gap-1"
-                        style={{ backgroundColor: ORANGE_COLOR }}
-                      >
-                        <span className="font-medium">{activity.name}</span>
-                        <span className="text-xs opacity-90">{activity.price === 0 ? 'Free' : `KSh ${activity.price}/person`}</span>
-                      </div>
-                    ))}
-                </div>
-                </div>
-              )}
-
-              {/* --- Contact Information Section --- */}
-              {(place.phone_numbers || place.email) && (
-                <div className="mt-6 sm:mt-4 p-6 sm:p-3 border bg-card">
-                  <h2 className="text-xl sm:text-lg font-semibold mb-3 sm:mb-2">Contact Information</h2>
-                  <div className="space-y-2 sm:space-y-1">
-                    {place.phone_numbers?.map((phone, idx) => (
-                      <p key={idx} className="flex items-center gap-2 sm:text-sm">
-                        <Phone className="h-4 w-4" style={{ color: TEAL_COLOR }} />
-                        <a href={`tel:${phone}`} className="hover:underline" style={{ color: TEAL_COLOR }}>{phone}</a>
-                      </p>
-                    ))}
-                    {place.email && (
-                      <p className="flex items-center gap-2 sm:text-sm">
-                        <Mail className="h-4 w-4" style={{ color: TEAL_COLOR }} />
-                        <a href={`mailto:${place.email}`} className="hover:underline" style={{ color: TEAL_COLOR }}>{place.email}</a>
-                      </p>
+            </div>
+          </div>
+          
+            
+          <div className="space-y-4 sm:space-y-3 lg:col-start-2 lg:row-start-1"> {/* Right Column: Booking/Price Box */}
+            <div className="space-y-3 p-4 sm:p-3 border bg-card">
+              {(place.opening_hours || place.closing_hours) && (
+                <div className="flex items-center gap-2">
+                  {/* Clock Icon Teal */}
+                  <Clock className="h-5 w-5" style={{ color: TEAL_COLOR }} />
+                  <div>
+                    <p className="text-sm sm:text-xs text-muted-foreground">Operating Hours</p>
+                    <p className="font-semibold sm:text-sm">{place.opening_hours} - {place.closing_hours}</p>
+                    {place.days_opened && place.days_opened.length > 0 && (
+                      <p className="text-xs text-muted-foreground mt-1">{place.days_opened.join(', ')}</p>
                     )}
-                </div>
+                  </div>
                 </div>
               )}
-
-              {/* --- Review Section --- */}
-              <div className="mt-6 sm:mt-4">
-                <ReviewSection itemId={place.id} itemType="adventure_place" />
+              
+              <div className={`${place.opening_hours || place.closing_hours ? 'border-t pt-3 sm:pt-2' : ''}`}>
+                <p className="text-sm sm:text-xs text-muted-foreground mb-1">Entry Fee</p>
+                <p 
+                  className="text-2xl sm:text-xl font-bold"
+                  style={{ color: RED_COLOR }} 
+                >
+                  {place.entry_fee_type === 'free' ? 'Free Entry' : 
+                   place.entry_fee ? `KSh ${place.entry_fee}` : 'Contact for pricing'}
+                </p>
+                {place.available_slots !== null && place.available_slots !== undefined && (
+                   <p className="text-sm sm:text-xs text-muted-foreground mt-2 sm:mt-1">Available Slots: {place.available_slots}</p>
+                )}
               </div>
 
+              {/* Book Now Button Teal and dark hover */}
+              <Button 
+                size="lg" 
+                className="w-full text-white h-10 sm:h-9" 
+                onClick={() => { setIsCompleted(false); setBookingOpen(true); }}
+                style={{ backgroundColor: TEAL_COLOR }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#005555')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = TEAL_COLOR)}
+              >
+                Book Now
+              </Button>
             </div>
 
-            {/* Right Column: Booking/Action block */}
-            <div className="space-y-4 sm:space-y-3 lg:pt-0 pt-4">
-              <div className="space-y-3 p-4 sm:p-3 border bg-card">
-                {(place.opening_hours || place.closing_hours) && (
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-5 w-5" style={{ color: TEAL_COLOR }} />
-                    <div>
-                      <p className="text-sm sm:text-xs text-muted-foreground">Operating Hours</p>
-                      <p className="font-semibold sm:text-sm">{place.opening_hours} - {place.closing_hours}</p>
-                      {place.days_opened && place.days_opened.length > 0 && (
-                        <p className="text-xs text-muted-foreground mt-1">{place.days_opened.join(', ')}</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-                
-                <div className={`${place.opening_hours || place.closing_hours ? 'border-t pt-3 sm:pt-2' : ''}`}>
-                  <p className="text-sm sm:text-xs text-muted-foreground mb-1">Entry Fee</p>
-                  <p 
-                    className="text-2xl sm:text-xl font-bold"
-                    style={{ color: RED_COLOR }}
-                  >
-                    {place.entry_fee_type === 'free' ? 'Free Entry' : 
-                     place.entry_fee ? `KSh ${place.entry_fee}` : 'Contact for pricing'}
-                  </p>
-                  {place.available_slots !== null && place.available_slots !== undefined && (
-                     <p className="text-sm sm:text-xs text-muted-foreground mt-2 sm:mt-1">Available Slots: {place.available_slots}</p>
-                  )}
-                </div>
-
-                {/* Book Now Button */}
-                <Button 
-                  size="lg" 
-                  className="w-full text-white h-10 sm:h-9" 
-                  onClick={() => { setIsCompleted(false); setBookingOpen(true); }}
-                  style={{ backgroundColor: TEAL_COLOR }}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#005555')}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = TEAL_COLOR)}
-                >
-                  Book Now
-                </Button>
-              </div>
-
-              <div className="flex gap-2">
-                {/* Action Buttons */}
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={openInMaps} 
-                  className="flex-1 h-9"
-                  style={{ borderColor: TEAL_COLOR, color: TEAL_COLOR }}
-                >
-                  <MapPin className="h-4 w-4 md:mr-2" style={{ color: TEAL_COLOR }} />
-                  <span className="hidden md:inline">Map</span>
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleCopyLink} 
-                  className="flex-1 h-9"
-                  style={{ borderColor: TEAL_COLOR, color: TEAL_COLOR }}
-                >
-                  <Copy className="h-4 w-4 md:mr-2" style={{ color: TEAL_COLOR }} />
-                  <span className="hidden md:inline">Copy Link</span>
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleShare} 
-                  className="flex-1 h-9"
-                  style={{ borderColor: TEAL_COLOR, color: TEAL_COLOR }}
-                >
-                  <Share2 className="h-4 w-4 md:mr-2" style={{ color: TEAL_COLOR }} />
-                  <span className="hidden md:inline">Share</span>
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  onClick={handleSave} 
-                  className={`h-9 w-9 ${isSaved ? "bg-red-500 text-white hover:bg-red-600" : ""}`}
-                  style={{ borderColor: TEAL_COLOR, color: isSaved ? 'white' : TEAL_COLOR }}
-                >
-                  <Heart className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
-                </Button>
-              </div>
+            <div className="flex gap-2">
+              {/* Map Button: Border/Icon Teal */}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={openInMaps} 
+                className="flex-1 h-9"
+                style={{ borderColor: TEAL_COLOR, color: TEAL_COLOR }}
+              >
+                <MapPin className="h-4 w-4 md:mr-2" style={{ color: TEAL_COLOR }} />
+                <span className="hidden md:inline">Map</span>
+              </Button>
+              {/* Copy Link Button: Border/Icon Teal */}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleCopyLink} 
+                className="flex-1 h-9"
+                style={{ borderColor: TEAL_COLOR, color: TEAL_COLOR }}
+              >
+                <Copy className="h-4 w-4 md:mr-2" style={{ color: TEAL_COLOR }} />
+                <span className="hidden md:inline">Copy Link</span>
+              </Button>
+              {/* Share Button: Border/Icon Teal */}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleShare} 
+                className="flex-1 h-9"
+                style={{ borderColor: TEAL_COLOR, color: TEAL_COLOR }}
+              >
+                <Share2 className="h-4 w-4 md:mr-2" style={{ color: TEAL_COLOR }} />
+                <span className="hidden md:inline">Share</span>
+              </Button>
+              {/* Save Button: Border/Icon Teal (and filled red if saved) */}
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={handleSave} 
+                className={`h-9 w-9 ${isSaved ? "bg-red-500 text-white hover:bg-red-600" : ""}`}
+                style={{ borderColor: TEAL_COLOR, color: isSaved ? 'white' : TEAL_COLOR }}
+              >
+                <Heart className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
+              </Button>
             </div>
           </div>
-
-          {/* --- Similar Items Section --- */}
-          {place && <SimilarItems currentItemId={place.id} itemType="adventure" country={place.country} />}
         </div>
+
+        {/* --- Amenities Section (RED) --- */}
+        {place.amenities && place.amenities.length > 0 && (
+          <div className="mt-6 sm:mt-4 p-6 sm:p-3 border bg-card">
+            <h2 className="text-xl sm:text-lg font-semibold mb-4 sm:mb-2">Amenities</h2>
+            <div className="flex flex-wrap gap-2 sm:gap-1">
+              {place.amenities.map((amenity: any, idx: number) => (
+                // Amenities Badge RED
+                <div 
+                  key={idx} 
+                  className="px-4 py-2 sm:px-3 sm:py-1 text-primary-foreground rounded-full text-sm sm:text-xs"
+                  style={{ backgroundColor: RED_COLOR }} 
+                >
+                  {amenity}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* --- Facilities Section (TEAL) --- */}
+        {place.facilities && place.facilities.length > 0 && (
+          <div className="mt-6 sm:mt-4 p-6 sm:p-3 border bg-card">
+            <h2 className="text-xl sm:text-lg font-semibold mb-4 sm:mb-2">Facilities (Rentable Spaces)</h2>
+            <div className="flex flex-wrap gap-2 sm:gap-1">
+              {place.facilities.map((facility: Facility, idx: number) => (
+                // Facilities Badge TEAL
+                <div 
+                  key={idx} 
+                  className="px-4 py-2 sm:px-3 sm:py-1 text-primary-foreground rounded-full text-sm sm:text-xs flex items-center gap-2 sm:gap-1"
+                  style={{ backgroundColor: TEAL_COLOR }} 
+                >
+                  <span className="font-medium">{facility.name}</span>
+                  <span className="text-xs opacity-90">{facility.price === 0 ? 'Free' : `KSh ${facility.price}/day`}</span>
+                  {facility.capacity && <span className="text-xs opacity-90">• Capacity: {facility.capacity}</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* --- Activities Section (ORANGE) --- */}
+        {place.activities && place.activities.length > 0 && (
+          <div className="mt-6 sm:mt-4 p-6 sm:p-3 border bg-card">
+            <h2 className="text-xl sm:text-lg font-semibold mb-4 sm:mb-2">Activities (Bookable Experiences)</h2>
+            <div className="flex flex-wrap gap-2 sm:gap-1">
+              {place.activities.map((activity: Activity, idx: number) => (
+                // Activities Badge Orange
+                <div 
+                  key={idx} 
+                  className="px-4 py-2 sm:px-3 sm:py-1 text-primary-foreground rounded-full text-sm sm:text-xs flex items-center gap-2 sm:gap-1"
+                  style={{ backgroundColor: ORANGE_COLOR }}
+                >
+                  <span className="font-medium">{activity.name}</span>
+                  <span className="text-xs opacity-90">{activity.price === 0 ? 'Free' : `KSh ${activity.price}/person`}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* --- Contact Information Section --- */}
+        {(place.phone_numbers || place.email) && (
+          <div className="mt-6 sm:mt-4 p-6 sm:p-3 border bg-card">
+            <h2 className="text-xl sm:text-lg font-semibold mb-3 sm:mb-2">Contact Information</h2>
+            <div className="space-y-2 sm:space-y-1">
+              {place.phone_numbers?.map((phone, idx) => (
+                <p key={idx} className="flex items-center gap-2 sm:text-sm">
+                  {/* Phone Icon Teal */}
+                  <Phone className="h-4 w-4" style={{ color: TEAL_COLOR }} />
+                  {/* Phone Link Teal */}
+                  <a href={`tel:${phone}`} className="hover:underline" style={{ color: TEAL_COLOR }}>{phone}</a>
+                </p>
+              ))}
+              {place.email && (
+                <p className="flex items-center gap-2 sm:text-sm">
+                  {/* Mail Icon Teal */}
+                  <Mail className="h-4 w-4" style={{ color: TEAL_COLOR }} />
+                  {/* Mail Link Teal */}
+                  <a href={`mailto:${place.email}`} className="hover:underline" style={{ color: TEAL_COLOR }}>{place.email}</a>
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* --- Review Section --- */}
+        <div className="mt-6 sm:mt-4">
+          <ReviewSection itemId={place.id} itemType="adventure_place" />
+        </div>
+
+        {/* --- Similar Items Section --- */}
+        {place && <SimilarItems currentItemId={place.id} itemType="adventure" country={place.country} />}
       </main>
 
       <Dialog open={bookingOpen} onOpenChange={setBookingOpen}>
