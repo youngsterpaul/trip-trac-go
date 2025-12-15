@@ -402,15 +402,15 @@ const TripDetail = () => {
         {trip.activities && trip.activities.length > 0 && (
           <div className="mt-6 sm:mt-4 p-4 sm:p-3 border bg-card rounded-lg">
             <h2 className="text-xl sm:text-lg font-semibold mb-4 sm:mb-3">Included Activities</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+            <div className="flex flex-wrap gap-2">
               {trip.activities.map((activity, idx) => (
                 <div 
                   key={idx} 
-                  className="px-3 py-2 text-white rounded-lg text-sm flex flex-col items-center justify-center text-center min-h-[60px]"
+                  className="px-3 py-1.5 text-white rounded-full text-xs flex flex-col items-center justify-center text-center"
                   style={{ backgroundColor: ORANGE_COLOR }}
                 >
                   <span className="font-medium">{activity.name}</span>
-                  <span className="text-xs opacity-90 mt-1">{activity.price === 0 ? 'Free' : `KSh ${activity.price}`}</span>
+                  <span className="text-[10px] opacity-90">{activity.price === 0 ? 'Free' : `KSh ${activity.price}`}</span>
                 </div>
               ))}
             </div>

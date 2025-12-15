@@ -241,13 +241,10 @@ const AdventurePlaceDetail = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
-      <Header />
-      {/* MODIFICATION 1: Removed max-w-6xl mx-auto from main container. Increased sm:px-8 for desktop side padding. */}
-      <main className="px-4 sm:px-8 py-6 sm:py-4"> 
-        
-        {/* The main grid layout for image/details */}
-        {/* MODIFICATION 2: Adjusted grid for a wider look. Using a standard container for contents below the grid. */}
-        <div className="grid lg:grid-cols-[2fr,1fr] gap-6 sm:gap-4">
+      <Header />
+      
+      <main className="container px-4 py-6 sm:py-4 max-w-6xl mx-auto">
+        <div className="grid lg:grid-cols-[2fr,1fr] gap-6 sm:gap-4">
           <div className="w-full relative">
             
             {/* START: BACK BUTTON - Now positioned absolutely over the carousel */}
@@ -410,11 +407,11 @@ const AdventurePlaceDetail = () => {
         {place.amenities && place.amenities.length > 0 && (
           <div className="mt-6 sm:mt-4 p-4 sm:p-3 border bg-card rounded-lg">
             <h2 className="text-xl sm:text-lg font-semibold mb-4 sm:mb-3">Amenities</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+            <div className="flex flex-wrap gap-2">
               {place.amenities.map((amenity: any, idx: number) => (
                 <div 
                   key={idx} 
-                  className="px-3 py-2 text-white rounded-lg text-sm flex items-center justify-center text-center min-h-[44px]"
+                  className="px-3 py-1.5 text-white rounded-full text-xs flex items-center justify-center text-center"
                   style={{ backgroundColor: RED_COLOR }} 
                 >
                   <span className="font-medium">{amenity}</span>
@@ -428,16 +425,16 @@ const AdventurePlaceDetail = () => {
         {place.facilities && place.facilities.length > 0 && (
           <div className="mt-6 sm:mt-4 p-4 sm:p-3 border bg-card rounded-lg">
             <h2 className="text-xl sm:text-lg font-semibold mb-4 sm:mb-3">Facilities (Rentable Spaces)</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+            <div className="flex flex-wrap gap-2">
               {place.facilities.map((facility: Facility, idx: number) => (
                 <div 
                   key={idx} 
-                  className="px-3 py-2 text-white rounded-lg text-sm flex flex-col items-center justify-center text-center min-h-[60px]"
+                  className="px-3 py-1.5 text-white rounded-full text-xs flex flex-col items-center justify-center text-center"
                   style={{ backgroundColor: TEAL_COLOR }} 
                 >
                   <span className="font-medium">{facility.name}</span>
-                  <span className="text-xs opacity-90 mt-1">{facility.price === 0 ? 'Free' : `KSh ${facility.price}/day`}</span>
-                  {facility.capacity && <span className="text-xs opacity-90">Capacity: {facility.capacity}</span>}
+                  <span className="text-[10px] opacity-90">{facility.price === 0 ? 'Free' : `KSh ${facility.price}/day`}</span>
+                  {facility.capacity && <span className="text-[10px] opacity-90">Cap: {facility.capacity}</span>}
                 </div>
               ))}
             </div>
@@ -448,15 +445,15 @@ const AdventurePlaceDetail = () => {
         {place.activities && place.activities.length > 0 && (
           <div className="mt-6 sm:mt-4 p-4 sm:p-3 border bg-card rounded-lg">
             <h2 className="text-xl sm:text-lg font-semibold mb-4 sm:mb-3">Activities (Bookable Experiences)</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+            <div className="flex flex-wrap gap-2">
               {place.activities.map((activity: Activity, idx: number) => (
                 <div 
                   key={idx} 
-                  className="px-3 py-2 text-white rounded-lg text-sm flex flex-col items-center justify-center text-center min-h-[60px]"
+                  className="px-3 py-1.5 text-white rounded-full text-xs flex flex-col items-center justify-center text-center"
                   style={{ backgroundColor: ORANGE_COLOR }}
                 >
                   <span className="font-medium">{activity.name}</span>
-                  <span className="text-xs opacity-90 mt-1">{activity.price === 0 ? 'Free' : `KSh ${activity.price}/person`}</span>
+                  <span className="text-[10px] opacity-90">{activity.price === 0 ? 'Free' : `KSh ${activity.price}/person`}</span>
                 </div>
               ))}
             </div>

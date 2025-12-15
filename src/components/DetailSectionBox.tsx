@@ -30,22 +30,22 @@ export const ItemGrid = ({ items, color, showPrice = true, showCapacity = false 
   if (!items || items.length === 0) return null;
   
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+    <div className="flex flex-wrap gap-2">
       {items.map((item, idx) => (
         <div
           key={idx}
-          className="px-3 py-2 text-white rounded-lg text-sm flex flex-col items-center justify-center text-center min-h-[60px]"
+          className="px-3 py-1.5 text-white rounded-full text-xs flex flex-col items-center justify-center text-center"
           style={{ backgroundColor: color }}
         >
           <span className="font-medium">{item.name}</span>
           {showPrice && item.price !== undefined && (
-            <span className="text-xs opacity-90 mt-1">
+            <span className="text-[10px] opacity-90">
               {item.price === 0 ? "Free" : `KSh ${item.price}`}
             </span>
           )}
           {showCapacity && item.capacity !== undefined && (
-            <span className="text-xs opacity-90 mt-1">
-              Capacity: {item.capacity}
+            <span className="text-[10px] opacity-90">
+              Cap: {item.capacity}
             </span>
           )}
         </div>
@@ -63,11 +63,11 @@ export const AmenityGrid = ({ items, color }: AmenityGridProps) => {
   if (!items || items.length === 0) return null;
   
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+    <div className="flex flex-wrap gap-2">
       {items.map((item, idx) => (
         <div
           key={idx}
-          className="px-3 py-2 text-white rounded-lg text-sm flex items-center justify-center text-center min-h-[44px]"
+          className="px-3 py-1.5 text-white rounded-full text-xs flex items-center justify-center text-center"
           style={{ backgroundColor: color }}
         >
           <span className="font-medium">{item}</span>
