@@ -18,6 +18,7 @@ import { MultiStepBooking, BookingFormData } from "@/components/booking/MultiSte
 import { generateReferralLink, trackReferralClick } from "@/lib/referralUtils";
 import { useBookingSubmit } from "@/hooks/useBookingSubmit";
 import { extractIdFromSlug } from "@/lib/slugUtils";
+
 interface Activity {
   name: string;
   price: number;
@@ -47,6 +48,7 @@ interface Event {
 // Define the Teal and Orange colors
 const TEAL_COLOR = "#008080";
 const ORANGE_COLOR = "#FF9800";
+
 const EventDetail = () => {
   const {
     slug
@@ -70,6 +72,7 @@ const EventDetail = () => {
   const isSaved = savedItems.has(id || "");
   const [isProcessing, setIsProcessing] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+
   useEffect(() => {
     if (id) {
       fetchEvent();
@@ -82,6 +85,7 @@ const EventDetail = () => {
       trackReferralClick(refSlug, id, "event", "booking");
     }
   }, [id]);
+
   const fetchEvent = async () => {
     if (!id) return;
     try {
@@ -111,11 +115,13 @@ const EventDetail = () => {
       setLoading(false);
     }
   };
+
   const handleSave = () => {
     if (id) {
       handleSaveItem(id, "event");
     }
   };
+
   const handleCopyLink = async () => {
     if (!event) {
       toast({
@@ -140,6 +146,7 @@ const EventDetail = () => {
       });
     }
   };
+
   const handleShare = async () => {
     if (!event) {
       toast({
@@ -164,6 +171,7 @@ const EventDetail = () => {
       await handleCopyLink();
     }
   };
+
   const openInMaps = () => {
     if (event?.map_link) {
       window.open(event.map_link, "_blank");
@@ -172,9 +180,11 @@ const EventDetail = () => {
       window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, "_blank");
     }
   };
+
   const {
     submitBooking
   } = useBookingSubmit();
+
   const handleBookingSubmit = async (data: BookingFormData) => {
     if (!event) return;
     setIsProcessing(true);
@@ -216,6 +226,7 @@ const EventDetail = () => {
       setIsProcessing(false);
     }
   };
+
   if (loading) {
     return <div className="min-h-screen bg-background pb-20 md:pb-0">
         <Header />
@@ -225,6 +236,7 @@ const EventDetail = () => {
         <MobileBottomBar />
       </div>;
   }
+
   if (!event) {
     return <div className="min-h-screen bg-background">
         <Header />
@@ -234,34 +246,48 @@ const EventDetail = () => {
         <MobileBottomBar />
       </div>;
   }
+
   const allImages = [event.image_url, ...(event.images || [])].filter(Boolean);
+
   return <div className="min-h-screen bg-background pb-20 md:pb-0">
       <Header />
       
       <main className="container px-4 py-6 max-w-6xl mx-auto">
-        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
+        
+        {/* Removed original back button from here */}
 
         <div className="grid lg:grid-cols-[2fr,1fr] gap-6">
+          
           {/* --- Image Carousel Section --- */}
           <div className="w-full relative opacity-100">
             
-            <Carousel className="w-full rounded-2xl overflow-hidden">
+            {/* START: BACK BUTTON - Now positioned absolutely over the carousel */}
+            <Button 
+                variant="ghost" 
+                onClick={() => navigate(-1)} 
+                className="absolute top-4 left-4 z-20 h-10 w-10 p-0 rounded-full bg-black/50 hover:bg-black/70 text-white"
+                size="icon"
+            >
+                <ArrowLeft className="h-5 w-5" />
+            </Button>
+            {/* END: BACK BUTTON */}
+
+            {/* START: CAROUSEL - Removed rounded-2xl class */}
+            <Carousel className="w-full overflow-hidden">
               <CarouselContent>
                 {allImages.map((img, idx) => <CarouselItem key={idx}>
                     <img src={img} alt={`${event.name} ${idx + 1}`} loading="lazy" decoding="async" className="w-full h-64 md:h-96 object-cover" />
                   </CarouselItem>)}
               </CarouselContent>
               {allImages.length > 1 && <>
-                  <CarouselPrevious className="left-2" />
-                  <CarouselNext className="right-2" />
+                  <CarouselPrevious className="left-4 z-10 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white border-none" />
+                  <CarouselNext className="right-4 z-10 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white border-none" />
                 </>}
             </Carousel>
+            {/* END: CAROUSEL */}
             
-            {event.description && <div className="absolute bottom-0 left-0 right-0 bg-black/70 backdrop-blur-sm text-white p-4 z-10 **sm:p-2**">
-                <h2 className="text-lg **sm:text-base** font-semibold mb-2 text-justify">About This Event</h2>
+            {event.description && <div className="absolute bottom-0 left-0 right-0 bg-black/70 backdrop-blur-sm text-white p-4 z-10 sm:p-2">
+                <h2 className="text-lg sm:text-base font-semibold mb-2 text-justify">About This Event</h2>
                 <p className="text-sm line-clamp-3">{event.description}</p>
               </div>}
           </div>
@@ -269,39 +295,39 @@ const EventDetail = () => {
           {/* --- Detail/Booking Section (Right Column on large screens, Stacked on small) --- */}
           <div className="space-y-4">
             <div>
-              <h1 className="text-3xl **sm:text-2xl** font-bold mb-2">{event.name}</h1>
-              <div className="flex items-center gap-2 text-muted-foreground mb-4 **sm:mb-2**">
+              <h1 className="text-3xl sm:text-2xl font-bold mb-2">{event.name}</h1>
+              <div className="flex items-center gap-2 text-muted-foreground mb-4 sm:mb-2">
                 {/* Map Pin Icon Teal */}
                 <MapPin className="h-4 w-4" style={{
                 color: TEAL_COLOR
               }} />
-                <span className="**sm:text-sm**">{event.location}, {event.country}</span>
+                <span className="sm:text-sm">{event.location}, {event.country}</span>
               </div>
             </div>
 
             {/* Price and Booking Card */}
-            <div className="space-y-3 **sm:space-y-2** p-4 **sm:p-2** border bg-card">
+            <div className="space-y-3 sm:space-y-2 p-4 sm:p-2 border bg-card">
               <div className="flex items-center gap-2">
                 {/* Calendar Icon Teal */}
                 <Calendar className="h-5 w-5" style={{
                 color: TEAL_COLOR
               }} />
                 <div>
-                  <p className="text-sm **sm:text-xs** text-muted-foreground">Event Date</p>
-                  <p className="font-semibold **sm:text-sm**">{new Date(event.date).toLocaleDateString()}</p>
+                  <p className="text-sm sm:text-xs text-muted-foreground">Event Date</p>
+                  <p className="font-semibold sm:text-sm">{new Date(event.date).toLocaleDateString()}</p>
                 </div>
               </div>
               
-              <div className="border-t pt-3 **sm:pt-2**">
-                <p className="text-sm **sm:text-xs** text-muted-foreground mb-1">Entrance Fee</p>
-                <p className="text-2xl **sm:text-xl** font-bold">KSh {event.price}</p>
-                {event.price_child > 0 && <p className="text-sm **sm:text-xs** text-muted-foreground">Child: KSh {event.price_child}</p>}
-                <p className="text-sm **sm:text-xs** text-muted-foreground mt-2 **sm:mt-1**">Available Tickets: {event.available_tickets}</p>
+              <div className="border-t pt-3 sm:pt-2">
+                <p className="text-sm sm:text-xs text-muted-foreground mb-1">Entrance Fee</p>
+                <p className="text-2xl sm:text-xl font-bold">KSh {event.price}</p>
+                {event.price_child > 0 && <p className="text-sm sm:text-xs text-muted-foreground">Child: KSh {event.price_child}</p>}
+                <p className="text-sm sm:text-xs text-muted-foreground mt-2 sm:mt-1">Available Tickets: {event.available_tickets}</p>
               </div>
 
               {/* Book Now Button Teal and dark hover */}
-              <Button size="lg" className="w-full text-white **h-10 sm:h-9**" // Reduced height for small screens
-            onClick={() => setShowBooking(true)} disabled={event.available_tickets <= 0} style={{
+              <Button size="lg" className="w-full text-white h-10 sm:h-9" // Reduced height for small screens
+            onClick={() => { setIsCompleted(false); setShowBooking(true); }} disabled={event.available_tickets <= 0} style={{
               backgroundColor: TEAL_COLOR
             }} onMouseEnter={e => e.currentTarget.style.backgroundColor = '#005555'} onMouseLeave={e => e.currentTarget.style.backgroundColor = TEAL_COLOR}>
                 {event.available_tickets <= 0 ? "Sold Out" : "Book Now"}
@@ -311,7 +337,7 @@ const EventDetail = () => {
             {/* Action Buttons */}
             <div className="flex gap-2">
               {/* Map Button: Border/Icon Teal */}
-              <Button variant="outline" size="sm" onClick={openInMaps} className="flex-1 **h-9**" // Reduced height for small screens
+              <Button variant="outline" size="sm" onClick={openInMaps} className="flex-1 h-9" // Reduced height for small screens
             style={{
               borderColor: TEAL_COLOR,
               color: TEAL_COLOR
@@ -322,7 +348,7 @@ const EventDetail = () => {
                 <span className="hidden md:inline">Map</span>
               </Button>
               {/* Copy Link Button: Border/Icon Teal */}
-              <Button variant="outline" size="sm" onClick={handleCopyLink} className="flex-1 **h-9**" // Reduced height for small screens
+              <Button variant="outline" size="sm" onClick={handleCopyLink} className="flex-1 h-9" // Reduced height for small screens
             style={{
               borderColor: TEAL_COLOR,
               color: TEAL_COLOR
@@ -333,7 +359,7 @@ const EventDetail = () => {
                 <span className="hidden md:inline">Copy Link</span>
               </Button>
               {/* Share Button: Border/Icon Teal */}
-              <Button variant="outline" size="sm" onClick={handleShare} className="flex-1 **h-9**" // Reduced height for small screens
+              <Button variant="outline" size="sm" onClick={handleShare} className="flex-1 h-9" // Reduced height for small screens
             style={{
               borderColor: TEAL_COLOR,
               color: TEAL_COLOR
@@ -344,7 +370,7 @@ const EventDetail = () => {
                 <span className="hidden md:inline">Share</span>
               </Button>
               {/* Save Button: Border/Icon Teal (and filled red if saved) */}
-              <Button variant="outline" size="icon" onClick={handleSave} className={`**h-9 w-9** ${isSaved ? "bg-red-500 text-white hover:bg-red-600" : ""}`} // Reduced size for small screens
+              <Button variant="outline" size="icon" onClick={handleSave} className={`h-9 w-9 ${isSaved ? "bg-red-500 text-white hover:bg-red-600" : ""}`} // Reduced size for small screens
             style={{
               borderColor: TEAL_COLOR,
               color: isSaved ? 'white' : TEAL_COLOR
@@ -356,12 +382,12 @@ const EventDetail = () => {
         </div>
 
         {/* --- Activities Section --- */}
-        {event.activities && event.activities.length > 0 && <div className="mt-6 **sm:mt-4** p-6 **sm:p-3** border bg-card">
-            <h2 className="text-xl **sm:text-lg** font-semibold mb-4 **sm:mb-2**">Included Activities</h2>
-            <div className="flex flex-wrap gap-2 **sm:gap-1**">
+        {event.activities && event.activities.length > 0 && <div className="mt-6 sm:mt-4 p-6 sm:p-3 border bg-card">
+            <h2 className="text-xl sm:text-lg font-semibold mb-4 sm:mb-2">Included Activities</h2>
+            <div className="flex flex-wrap gap-2 sm:gap-1">
               {event.activities.map((activity, idx) =>
           // Activities Badge Orange
-          <div key={idx} className="px-4 py-2 **sm:px-3 sm:py-1** text-white rounded-full text-sm **sm:text-xs** flex items-center gap-2 **sm:gap-1**" style={{
+          <div key={idx} className="px-4 py-2 sm:px-3 sm:py-1 text-white rounded-full text-sm sm:text-xs flex items-center gap-2 sm:gap-1" style={{
             backgroundColor: ORANGE_COLOR
           }}>
                   <span className="font-medium">{activity.name}</span>
@@ -371,10 +397,10 @@ const EventDetail = () => {
           </div>}
 
         {/* --- Contact Information Section --- */}
-        {(event.phone_number || event.email) && <div className="mt-6 **sm:mt-4** p-6 **sm:p-3** border bg-card my-[2px] rounded-none">
-            <h2 className="text-xl **sm:text-lg** font-semibold mb-3 **sm:mb-2**">Contact Information</h2>
-            <div className="space-y-2 **sm:space-y-1**">
-              {event.phone_number && <p className="flex items-center gap-2 **sm:text-sm**">
+        {(event.phone_number || event.email) && <div className="mt-6 sm:mt-4 p-6 sm:p-3 border bg-card my-[2px] rounded-none">
+            <h2 className="text-xl sm:text-lg font-semibold mb-3 sm:mb-2">Contact Information</h2>
+            <div className="space-y-2 sm:space-y-1">
+              {event.phone_number && <p className="flex items-center gap-2 sm:text-sm">
                   {/* Phone Icon Teal */}
                   <Phone className="h-4 w-4" style={{
               color: TEAL_COLOR
@@ -384,7 +410,7 @@ const EventDetail = () => {
               color: TEAL_COLOR
             }}>{event.phone_number}</a>
                 </p>}
-              {event.email && <p className="flex items-center gap-2 **sm:text-sm**">
+              {event.email && <p className="flex items-center gap-2 sm:text-sm">
                   {/* Mail Icon Teal */}
                   <Mail className="h-4 w-4" style={{
               color: TEAL_COLOR
@@ -398,7 +424,7 @@ const EventDetail = () => {
           </div>}
 
         {/* --- Review Section --- */}
-        <div className="mt-6 **sm:mt-4** rounded-none my-[10px] **sm:my-[5px]**">
+        <div className="mt-6 sm:mt-4 rounded-none my-[10px] sm:my-[5px]">
           <ReviewSection itemId={event.id} itemType="event" />
         </div>
 
