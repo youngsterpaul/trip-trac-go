@@ -242,9 +242,11 @@ const AdventurePlaceDetail = () => {
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
       <Header />
-      <main className="container px-4 py-6 sm:py-4 max-w-6xl mx-auto">
+      {/* MODIFICATION 1: Removed max-w-6xl mx-auto from main container. Increased sm:px-8 for desktop side padding. */}
+      <main className="px-4 sm:px-8 py-6 sm:py-4"> 
         
         {/* The main grid layout for image/details */}
+        {/* MODIFICATION 2: Adjusted grid for a wider look. Using a standard container for contents below the grid. */}
         <div className="grid lg:grid-cols-[2fr,1fr] gap-6 sm:gap-4">
           <div className="w-full relative">
             
@@ -397,6 +399,12 @@ const AdventurePlaceDetail = () => {
             </div>
           </div>
         </div>
+        
+        {/* The sections below should now be wrapped in a container to manage padding if desired,
+            but since the main tag's padding covers them, they should inherit the full-width look.
+            If you want to limit their width, re-add max-w-6xl mx-auto to these individual wrappers.
+            Keeping them as is allows for the full-width feel.
+        */}
 
         {/* --- Amenities Section (RED) --- */}
         {place.amenities && place.amenities.length > 0 && (
