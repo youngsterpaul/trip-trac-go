@@ -214,9 +214,9 @@ const TripDetail = () => {
         <Header className="hidden md:block" />
         <div className="container mx-auto px-4 py-8">
           <p>Trip not found</p>
-        </div>
+          </div>
         <MobileBottomBar />
-        </div>
+      </div>
     );
   }
 
@@ -251,12 +251,6 @@ const TripDetail = () => {
           <Heart className={`h-5 w-5 ${isSaved ? "fill-white" : ""}`} />
         </Button>
 
-        {/* REMOVED: Badge for 'TRIP' */}
-        {/*         <Badge className="absolute top-4 right-20 sm:top-4 sm:right-20 bg-primary text-primary-foreground z-30 text-xs font-bold px-3 py-1 rounded-full">
-          TRIP
-        </Badge>
-        */}
-
         <Carousel 
           opts={{ loop: true }} 
           plugins={[Autoplay({ delay: 3000 })]} 
@@ -279,7 +273,7 @@ const TripDetail = () => {
                   alt={`${trip.name} ${idx + 1}`} 
                   loading="lazy" 
                   decoding="async" 
-                  className="w-full h-[60vh] md:h-96 lg:h-[500px] object-cover" 
+                  className="w-full h-[42vh] md:h-96 lg:h-[500px] object-cover" // <-- HEIGHT MODIFIED HERE
                 />
               </CarouselItem>
             ))}
@@ -288,12 +282,12 @@ const TripDetail = () => {
 
         {/* Name Overlay: Fading RGBA */}
         <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 z-20 text-white bg-gradient-to-t from-black/80 via-black/50 to-transparent">
-          <h1 className="text-3xl sm:text-2xl font-bold mb-0">{trip.name.toUpperCase()}</h1> {/* <-- MODIFIED: .toUpperCase() added */}
+          <h1 className="text-3xl sm:text-2xl font-bold mb-0">{trip.name.toUpperCase()}</h1> 
         </div>
         
         {/* Dot indicators */}
         {displayImages.length > 1 && (
-          <div className="absolute bottom-4 right-4 flex gap-2 z-30"> {/* <-- MODIFIED: right-4 added, center classes removed */}
+          <div className="absolute bottom-4 right-4 flex gap-2 z-30"> 
             {displayImages.map((_, idx) => (
               <div 
                 key={idx} 
@@ -490,6 +484,6 @@ const TripDetail = () => {
       <MobileBottomBar />
     </div>
   );
-};
+}; 
 
 export default TripDetail;
