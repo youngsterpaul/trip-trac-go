@@ -10,7 +10,7 @@ import { MapPin, Phone, Share2, Mail, Clock, ArrowLeft, Heart, Copy } from "luci
 import { SimilarItems } from "@/components/SimilarItems";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import { ReviewSection } from "@/components/ReviewSection";
 import { useSavedItems } from "@/hooks/useSavedItems";
@@ -22,8 +22,8 @@ import { extractIdFromSlug } from "@/lib/slugUtils";
 import { useGeolocation, calculateDistance } from "@/hooks/useGeolocation";
 
 // Define the specific colors
-const TEAL_COLOR = "#008080"; // Icons, Links, Book Button, and now FACILITIES
-const RED_COLOR = "#FF0000"; // New color for AMENITIES, now also for Entry Fee price
+const TEAL_COLOR = "#008080"; // Icons, Links, Book Button, Facilities, Carousel Border
+const RED_COLOR = "#FF0000"; // Amenities, Entry Fee price
 const ORANGE_COLOR = "#FF9800"; // Activities
 
 interface Facility { name: string; price: number; capacity?: number; }
@@ -66,7 +66,6 @@ const AdventurePlaceDetail = () => {
   const { user } = useAuth();
   const { position, requestLocation } = useGeolocation();
   
-  // Request location on first user interaction
   useEffect(() => {
     const handleInteraction = () => {
       requestLocation();
@@ -89,7 +88,6 @@ const AdventurePlaceDetail = () => {
   const [isCompleted, setIsCompleted] = useState(false);
   const isSaved = savedItems.has(id || "");
 
-  // Calculate distance if position and place coordinates available
   const distance = position && place?.latitude && place?.longitude
     ? calculateDistance(position.latitude, position.longitude, place.latitude, place.longitude)
     : undefined;
@@ -97,7 +95,6 @@ const AdventurePlaceDetail = () => {
   useEffect(() => { 
     fetchPlace(); 
     
-    // Track referral clicks
     const urlParams = new URLSearchParams(window.location.search);
     const refSlug = urlParams.get("ref");
     if (refSlug && id) {
@@ -235,72 +232,102 @@ const AdventurePlaceDetail = () => {
     }
   };
 
-  if (loading || !place) return <div className="min-h-screen bg-background"><Header /><div className="h-96 bg-muted animate-pulse" /><MobileBottomBar /></div>;
+  if (loading || !place) return <div className="min-h-screen bg-background"><Header className="hidden md:block" /><div className="h-96 bg-muted animate-pulse" /><MobileBottomBar /></div>;
 
   const displayImages = [place.image_url, ...(place.gallery_images || []), ...(place.images || [])].filter(Boolean);
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-0">
-      <Header />
-      
-      <main className="container px-4 max-w-6xl mx-auto">
-        <div className="grid lg:grid-cols-[2fr,1fr] gap-6 sm:gap-4">
-          <div className="w-full">
-            <div className="relative">
-              {/* Back Button over carousel */}
-              <Button 
-                variant="ghost" 
-                onClick={() => navigate(-1)} 
-                className="absolute top-4 left-4 z-20 h-10 w-10 p-0 rounded-full text-white"
-                style={{ backgroundColor: '#008080' }}
-                size="icon"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
+    <div className="min-h-screen bg-background pb-20 md:pb-0">
+      {/* Header hidden on small screen / PWA mode */}
+      <Header className="hidden md:block" /> 
+      
+      {/*         FULL-WIDTH SLIDESHOW SECTION: 
+        Moved outside the main container to ensure full screen width on mobile 
+      */}
+      <div className="relative w-full overflow-hidden md:max-w-6xl md:mx-auto">
+        {/* Back Button: Top Left, Dark RGBA */}
+        <Button 
+          variant="ghost" 
+          onClick={() => navigate(-1)} 
+          className="absolute top-4 left-4 z-30 h-10 w-10 p-0 rounded-full text-white md:left-8" // Increased Z-index and adjusted md:left
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }} // Dark RGBA
+          size="icon"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
 
-              <Carousel 
-                opts={{ loop: true }} 
-                plugins={[Autoplay({ delay: 3000 })]} 
-                className="w-full overflow-hidden"
-                setApi={(api) => {
-                  if (api) api.on("select", () => setCurrent(api.selectedScrollSnap()));
-                }}
-              >
-                <CarouselContent>
-                  {displayImages.map((img, idx) => <CarouselItem key={idx}><img src={img} alt={`${place.name} ${idx + 1}`} loading="lazy" decoding="async" className="w-full h-64 md:h-96 object-cover" /></CarouselItem>)}
-                </CarouselContent>
-              </Carousel>
-              
-              {/* Dot indicators */}
-              {displayImages.length > 1 && (
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 z-10">
-                  {displayImages.map((_, idx) => (
-                    <div 
-                      key={idx} 
-                      className={`w-2 h-2 rounded-full transition-all ${current === idx ? 'bg-white w-4' : 'bg-white/50'}`}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-            
-            {/* Description Section below slideshow */}
-            {place.description && (
-              <div className="bg-card border rounded-lg p-4 sm:p-3 mt-4">
-                <h2 className="text-lg sm:text-base font-semibold mb-2 sm:mb-1">About This Place</h2>
-                <p className="text-sm text-muted-foreground">{place.description}</p>
-              </div>
-            )}
-          </div>
+        {/* Save Button: Top Right, Dark RGBA/Red filled */}
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={handleSave} 
+          className={`absolute top-4 right-4 z-30 h-10 w-10 p-0 rounded-full text-white md:right-8 ${isSaved ? "bg-red-500 hover:bg-red-600" : ""}`}
+          style={{ backgroundColor: isSaved ? RED_COLOR : 'rgba(0, 0, 0, 0.5)' }} // Dark RGBA or RED if saved
+        >
+          <Heart className={`h-5 w-5 ${isSaved ? "fill-white" : ""}`} />
+        </Button>
+
+        <Carousel 
+          opts={{ loop: true }} 
+          plugins={[Autoplay({ delay: 3000 })]} 
+          className="w-full overflow-hidden"
+          style={{ 
+            borderBottom: `2px solid ${TEAL_COLOR}`, // Teal bottom border for small/big screen
+            marginTop: 0, 
+            width: '100%', 
+            maxHeight: '600px' // Added max height for larger screens
+          }}
+          setApi={(api) => {
+            if (api) api.on("select", () => setCurrent(api.selectedScrollSnap()));
+          }}
+        >
+          <CarouselContent>
+            {displayImages.map((img, idx) => (
+              <CarouselItem key={idx}>
+                <img 
+                  src={img} 
+                  alt={`${place.name} ${idx + 1}`} 
+                  loading="lazy" 
+                  decoding="async" 
+                  className="w-full h-[60vh] md:h-96 lg:h-[500px] object-cover" // Ensure height consistency
+                />
+              </CarouselItem>
+          ))}
+          </CarouselContent>
+        </Carousel>
+
+        {/* Name Overlay: Fading RGBA, concentrated at center bottom */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 z-20 text-white bg-gradient-to-t from-black/80 via-black/50 to-transparent">
+          <h1 className="text-3xl sm:text-2xl font-bold mb-0">{place.name}</h1>
+          {place.local_name && (
+            <p className="text-lg sm:text-base text-white/90 mb-0">"{place.local_name}"</p>
+          )}
+        </div>
+        
+        {/* Dot indicators */}
+        {displayImages.length > 1 && (
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 z-30">
+            {displayImages.map((_, idx) => (
+              <div 
+                key={idx} 
+                className={`w-2 h-2 rounded-full transition-all ${current === idx ? 'bg-white w-4' : 'bg-white/50'}`}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+      
+      {/* Main Content starts here, contained by the max-width wrapper */}
+      <main className="container px-4 max-w-6xl mx-auto mt-4 sm:mt-6">
+        <div className="grid lg:grid-cols-[2fr,1fr] gap-6 sm:gap-4">
           
-          <div className="space-y-4 sm:space-y-3">
+          {/* LEFT COLUMN (Description, Amenities, Facilities, Activities, Contact) */}
+          <div className="w-full space-y-4">
+            
+            {/* Location/Distance/Details section (Moved from right column, as Name is now an overlay) */}
             <div>
-              <h1 className="text-3xl sm:text-2xl font-bold mb-2">{place.name}</h1>
-              {place.local_name && (
-                <p className="text-lg sm:text-base text-muted-foreground mb-2">"{place.local_name}"</p>
-              )}
+              {/* NOTE: Removed H1 and local_name P tag as they are now in the overlay */}
               <div className="flex items-center gap-2 text-muted-foreground mb-2">
-                {/* Location Icon Teal */}
                 <MapPin className="h-4 w-4" style={{ color: TEAL_COLOR }} />
                 <span className="sm:text-sm">{place.location}, {place.country}</span>
                 {distance !== undefined && (
@@ -314,10 +341,79 @@ const AdventurePlaceDetail = () => {
               )}
             </div>
 
-            <div className="space-y-3 p-4 sm:p-3 border bg-card">
+            {/* Description Section */}
+            {place.description && (
+              <div className="bg-card border rounded-lg p-4 sm:p-3">
+                <h2 className="text-lg sm:text-base font-semibold mb-2 sm:mb-1">About This Place</h2>
+                <p className="text-sm text-muted-foreground">{place.description}</p>
+              </div>
+            )}
+
+            {/* --- Amenities Section (RED) --- */}
+            {place.amenities && place.amenities.length > 0 && (
+              <div className="p-4 sm:p-3 border bg-card rounded-lg">
+                <h2 className="text-xl sm:text-lg font-semibold mb-4 sm:mb-3">Amenities</h2>
+                <div className="flex flex-wrap gap-2">
+                  {place.amenities.map((amenity: any, idx: number) => (
+                    <div 
+                      key={idx} 
+                      className="px-3 py-1.5 text-white rounded-full text-xs flex items-center justify-center text-center"
+                      style={{ backgroundColor: RED_COLOR }} 
+                    >
+                      <span className="font-medium">{amenity}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* --- Facilities Section (TEAL) --- */}
+            {place.facilities && place.facilities.length > 0 && (
+              <div className="p-4 sm:p-3 border bg-card rounded-lg">
+                <h2 className="text-xl sm:text-lg font-semibold mb-4 sm:mb-3">Facilities (Rentable Spaces)</h2>
+                <div className="flex flex-wrap gap-2">
+                  {place.facilities.map((facility: Facility, idx: number) => (
+                    <div 
+                      key={idx} 
+                      className="px-3 py-1.5 text-white rounded-full text-xs flex flex-col items-center justify-center text-center"
+                      style={{ backgroundColor: TEAL_COLOR }} 
+                    >
+                      <span className="font-medium">{facility.name}</span>
+                      <span className="text-[10px] opacity-90">{facility.price === 0 ? 'Free' : `KSh ${facility.price}/day`}</span>
+                      {facility.capacity && <span className="text-[10px] opacity-90">Cap: {facility.capacity}</span>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* --- Activities Section (ORANGE) --- */}
+            {place.activities && place.activities.length > 0 && (
+              <div className="p-4 sm:p-3 border bg-card rounded-lg">
+                <h2 className="text-xl sm:text-lg font-semibold mb-4 sm:mb-3">Activities (Bookable Experiences)</h2>
+                <div className="flex flex-wrap gap-2">
+                  {place.activities.map((activity: Activity, idx: number) => (
+                    <div 
+                      key={idx} 
+                      className="px-3 py-1.5 text-white rounded-full text-xs flex flex-col items-center justify-center text-center"
+                      style={{ backgroundColor: ORANGE_COLOR }}
+                    >
+                      <span className="font-medium">{activity.name}</span>
+                      <span className="text-[10px] opacity-90">{activity.price === 0 ? 'Free' : `KSh ${activity.price}/person`}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* RIGHT COLUMN (Booking Card, Contact, Share Buttons) */}
+          <div className="space-y-4 sm:space-y-3">
+            
+            {/* Booking Card */}
+            <div className="space-y-3 p-4 sm:p-3 border bg-card rounded-lg">
               {(place.opening_hours || place.closing_hours) && (
                 <div className="flex items-center gap-2">
-                  {/* Clock Icon Teal */}
                   <Clock className="h-5 w-5" style={{ color: TEAL_COLOR }} />
                   <div>
                     <p className="text-sm sm:text-xs text-muted-foreground">Operating Hours</p>
@@ -333,7 +429,7 @@ const AdventurePlaceDetail = () => {
                 <p className="text-sm sm:text-xs text-muted-foreground mb-1">Entry Fee</p>
                 <p 
                   className="text-2xl sm:text-xl font-bold"
-                  style={{ color: RED_COLOR }} // **Applied red color here**
+                  style={{ color: RED_COLOR }} 
                 >
                   {place.entry_fee_type === 'free' ? 'Free Entry' : 
                    place.entry_fee ? `KSh ${place.entry_fee}` : 'Contact for pricing'}
@@ -343,7 +439,7 @@ const AdventurePlaceDetail = () => {
                 )}
               </div>
 
-              {/* Book Now Button Teal and dark hover */}
+              {/* Book Now Button */}
               <Button 
                 size="lg" 
                 className="w-full text-white h-10 sm:h-9" 
@@ -356,8 +452,8 @@ const AdventurePlaceDetail = () => {
               </Button>
             </div>
 
+            {/* Action Buttons */}
             <div className="flex gap-2">
-              {/* Map Button: Border/Icon Teal */}
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -368,7 +464,6 @@ const AdventurePlaceDetail = () => {
                 <MapPin className="h-4 w-4 md:mr-2" style={{ color: TEAL_COLOR }} />
                 <span className="hidden md:inline">Map</span>
               </Button>
-              {/* Copy Link Button: Border/Icon Teal */}
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -379,7 +474,6 @@ const AdventurePlaceDetail = () => {
                 <Copy className="h-4 w-4 md:mr-2" style={{ color: TEAL_COLOR }} />
                 <span className="hidden md:inline">Copy Link</span>
               </Button>
-              {/* Share Button: Border/Icon Teal */}
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -390,114 +484,42 @@ const AdventurePlaceDetail = () => {
                 <Share2 className="h-4 w-4 md:mr-2" style={{ color: TEAL_COLOR }} />
                 <span className="hidden md:inline">Share</span>
               </Button>
-              {/* Save Button: Border/Icon Teal (and filled red if saved) */}
-              <Button 
-                variant="outline" 
-                size="icon" 
-                onClick={handleSave} 
-                className={`h-9 w-9 ${isSaved ? "bg-red-500 text-white hover:bg-red-600" : ""}`}
-                style={{ borderColor: TEAL_COLOR, color: isSaved ? 'white' : TEAL_COLOR }}
-              >
-                <Heart className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
-              </Button>
+              {/* Removed the duplicate Save button here, as it's now an overlay */}
             </div>
+
+            {/* --- Contact Information Section --- (Moved to right column on desktop) */}
+            {(place.phone_numbers || place.email) && (
+              <div className="p-4 sm:p-3 border bg-card rounded-lg">
+                <h2 className="text-xl sm:text-lg font-semibold mb-4 sm:mb-3">Contact Information</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {place.phone_numbers?.map((phone, idx) => (
+                    <a 
+                      key={idx} 
+                      href={`tel:${phone}`}
+                      className="flex items-center gap-2 px-4 py-3 border rounded-lg hover:bg-muted transition-colors"
+                      style={{ borderColor: TEAL_COLOR }}
+                    >
+                      <Phone className="h-4 w-4" style={{ color: TEAL_COLOR }} />
+                      <span className="text-sm" style={{ color: TEAL_COLOR }}>{phone}</span>
+                    </a>
+                  ))}
+                  {place.email && (
+                    <a 
+                      href={`mailto:${place.email}`}
+                      className="flex items-center gap-2 px-4 py-3 border rounded-lg hover:bg-muted transition-colors"
+                      style={{ borderColor: TEAL_COLOR }}
+                    >
+                      <Mail className="h-4 w-4" style={{ color: TEAL_COLOR }} />
+                      <span className="text-sm" style={{ color: TEAL_COLOR }}>{place.email}</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
         
-        {/* The sections below should now be wrapped in a container to manage padding if desired,
-            but since the main tag's padding covers them, they should inherit the full-width look.
-            If you want to limit their width, re-add max-w-6xl mx-auto to these individual wrappers.
-            Keeping them as is allows for the full-width feel.
-        */}
-
-        {/* --- Amenities Section (RED) --- */}
-        {place.amenities && place.amenities.length > 0 && (
-          <div className="mt-6 sm:mt-4 p-4 sm:p-3 border bg-card rounded-lg">
-            <h2 className="text-xl sm:text-lg font-semibold mb-4 sm:mb-3">Amenities</h2>
-            <div className="flex flex-wrap gap-2">
-              {place.amenities.map((amenity: any, idx: number) => (
-                <div 
-                  key={idx} 
-                  className="px-3 py-1.5 text-white rounded-full text-xs flex items-center justify-center text-center"
-                  style={{ backgroundColor: RED_COLOR }} 
-                >
-                  <span className="font-medium">{amenity}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* --- Facilities Section (TEAL) --- */}
-        {place.facilities && place.facilities.length > 0 && (
-          <div className="mt-6 sm:mt-4 p-4 sm:p-3 border bg-card rounded-lg">
-            <h2 className="text-xl sm:text-lg font-semibold mb-4 sm:mb-3">Facilities (Rentable Spaces)</h2>
-            <div className="flex flex-wrap gap-2">
-              {place.facilities.map((facility: Facility, idx: number) => (
-                <div 
-                  key={idx} 
-                  className="px-3 py-1.5 text-white rounded-full text-xs flex flex-col items-center justify-center text-center"
-                  style={{ backgroundColor: TEAL_COLOR }} 
-                >
-                  <span className="font-medium">{facility.name}</span>
-                  <span className="text-[10px] opacity-90">{facility.price === 0 ? 'Free' : `KSh ${facility.price}/day`}</span>
-                  {facility.capacity && <span className="text-[10px] opacity-90">Cap: {facility.capacity}</span>}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* --- Activities Section (ORANGE) --- */}
-        {place.activities && place.activities.length > 0 && (
-          <div className="mt-6 sm:mt-4 p-4 sm:p-3 border bg-card rounded-lg">
-            <h2 className="text-xl sm:text-lg font-semibold mb-4 sm:mb-3">Activities (Bookable Experiences)</h2>
-            <div className="flex flex-wrap gap-2">
-              {place.activities.map((activity: Activity, idx: number) => (
-                <div 
-                  key={idx} 
-                  className="px-3 py-1.5 text-white rounded-full text-xs flex flex-col items-center justify-center text-center"
-                  style={{ backgroundColor: ORANGE_COLOR }}
-                >
-                  <span className="font-medium">{activity.name}</span>
-                  <span className="text-[10px] opacity-90">{activity.price === 0 ? 'Free' : `KSh ${activity.price}/person`}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* --- Contact Information Section --- */}
-        {(place.phone_numbers || place.email) && (
-          <div className="mt-6 sm:mt-4 p-4 sm:p-3 border bg-card rounded-lg">
-            <h2 className="text-xl sm:text-lg font-semibold mb-4 sm:mb-3">Contact Information</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {place.phone_numbers?.map((phone, idx) => (
-                <a 
-                  key={idx} 
-                  href={`tel:${phone}`}
-                  className="flex items-center gap-2 px-4 py-3 border rounded-lg hover:bg-muted transition-colors"
-                  style={{ borderColor: TEAL_COLOR }}
-                >
-                  <Phone className="h-4 w-4" style={{ color: TEAL_COLOR }} />
-                  <span className="text-sm" style={{ color: TEAL_COLOR }}>{phone}</span>
-                </a>
-              ))}
-              {place.email && (
-                <a 
-                  href={`mailto:${place.email}`}
-                  className="flex items-center gap-2 px-4 py-3 border rounded-lg hover:bg-muted transition-colors"
-                  style={{ borderColor: TEAL_COLOR }}
-                >
-                  <Mail className="h-4 w-4" style={{ color: TEAL_COLOR }} />
-                  <span className="text-sm" style={{ color: TEAL_COLOR }}>{place.email}</span>
-                </a>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* --- Review Section --- */}
+        {/* --- Review Section --- (Placed outside the grid for full width) */}
         <div className="mt-6 sm:mt-4">
           <ReviewSection itemId={place.id} itemType="adventure_place" />
         </div>
