@@ -446,7 +446,7 @@ export const MultiStepBooking = ({
                                             </div>
                                             {selected && (
                                                 <div className="ml-6 pt-2">
-                                                    <p className="text-sm font-medium mb-2">Rental Period *</p>
+                                                    <p className="text-sm font-medium mb-2">Rental Period</p>
                                                     <div className="grid grid-cols-2 gap-3">
                                                         <div>
                                                             <Label className="text-xs">Start Date</Label>
