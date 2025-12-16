@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Menu, Search } from "lucide-react"; // Only keeping the required icons directly
+import { Menu, Heart, Ticket, Shield, Home, FolderOpen, User, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -7,17 +8,19 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
-// DropdownMenu imports are not strictly needed for this minimized header, but kept if used elsewhere in the component's full logic
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"; 
+} from "@/components/ui/dropdown-menu";
 import { NavigationDrawer } from "./NavigationDrawer";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ThemeToggle } from "./ThemeToggle"; 
-import { NotificationBell } from "./NotificationBell";
+import { NotificationBell } from "./NotificationBell"; 
+
+// Setting the deeper RGBA background color as a constant for clarity
+const MOBILE_ICON_BG = 'rgba(0, 0, 0, 0.5)'; // Deeper semi-transparent black
 
 interface HeaderProps {
   onSearchClick?: () => void;
@@ -26,68 +29,79 @@ interface HeaderProps {
 
 export const Header = ({ onSearchClick, showSearchIcon = true }: HeaderProps) => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const { user } = useAuth();
-  
-  // State for scroll position
-  const [scrollPosition, setScrollPosition] = useState(0);
+  const { user, signOut } = useAuth();
+  const [userRole, setUserRole] = useState<string | null>(null);
 
-  // Check if current page is the index page ('/')
-  const isIndexPage = location.pathname === "/";
-  
-  // Define the scroll handler
-  const handleScroll = () => {
-    setScrollPosition(window.pageYOffset);
-  };
-  
-  // Attach and cleanup scroll listener
+  // --- Start of unchanged functional code ---
   useEffect(() => {
-    if (isIndexPage) {
-      window.addEventListener("scroll", handleScroll, { passive: true });
-    } else {
-      // Ensure non-index pages always show the solid background
-      setScrollPosition(1); 
-    }
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
+    const checkRole = async () => {
+      if (!user) {
+        setUserRole(null);
+        return;
+      }
+
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id);
+
+      if (data && data.length > 0) {
+        const roles = data.map(r => r.role);
+        if (roles.includes("admin")) setUserRole("admin");
+        else setUserRole("user");
+      }
     };
-  }, [isIndexPage]);
 
-  const isScrolled = scrollPosition > 50; // Scroll threshold
+    checkRole();
+  }, [user]);
 
-  // **Header Background Logic (Small Screen Only)**
-  const isSmallScreen = window.innerWidth < 768; // Check if we are below the 'md' breakpoint
-  
-  // Header background is transparent on mobile index top, teal when scrolled or on desktop/other pages
-  const headerBgClass = isIndexPage && !isScrolled && isSmallScreen
-    ? "bg-transparent border-b-transparent" // Transparent on mobile index page at top
-    : "bg-[#008080] border-b-border dark:bg-[#008080]"; // Teal when scrolled or on other pages
+  const [userName, setUserName] = useState<string>("");
 
-  // **Icon Button Background Logic (Small Screen Only)**
-  // On Index Page & Not Scrolled -> rgba darker color (bg-black/30)
-  // Otherwise -> Standard semi-transparent white (bg-white/10)
-  const iconBgClass = isIndexPage && !isScrolled && isSmallScreen
-    ? "bg-black/30 hover:bg-black/40" // rgba darker color for visibility
-    : "bg-white/10 hover:bg-white/20"; // Standard background (also used for desktop icons)
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('name')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (profile?.name) {
+          setUserName(profile.name);
+        }
+      }
+    };
 
-  /* --- User Data and Role Fetching (Trimmed for brevity, keeping only essential setup) --- */
-  // ... (Removed user role and name fetching as they are not relevant to the header UI logic)
-  /* -------------------------------------------------------------------------------------- */
+    fetchUserProfile();
+  }, [user]);
+
+  const getUserInitials = () => {
+    if (userName) {
+      const names = userName.trim().split(' ');
+      if (names.length >= 2) {
+        return (names[0][0] + names[names.length - 1][0]).toUpperCase();
+      }
+      return userName.substring(0, 2).toUpperCase();
+    }
+    return "U";
+  };
+  // --- End of unchanged functional code ---
 
   return (
-    // Only show header on small screens OR if it's the desktop view (lg:block)
-    <header className={`sticky top-0 z-50 w-full text-white h-16 transition-colors duration-300 ${headerBgClass}`}>
-      <div className="container flex h-full items-center justify-between px-4">
+    <header className="fixed top-0 left-0 right-0 z-[100] text-black dark:text-white md:sticky md:h-16 md:border-b md:border-border md:bg-[#008080] md:text-white dark:md:bg-[#008080] dark:md:text-white">
+      <div className="container md:flex md:h-full md:items-center md:justify-between md:px-4">
         
-        {/* LEFT SIDE: Menu Icon Only (visible on all screens to trigger drawer) */}
-        <div className="flex items-center gap-3">
+        {/* Mobile Left Icons (Menu) - Fixed Position */}
+        <div className="absolute top-4 left-4 flex items-center gap-3 md:relative md:top-auto md:left-auto">
           <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
             <SheetTrigger asChild>
-              {/* Menu Icon: Apply conditional background */}
+              {/* Menu Icon: Updated to White Icon and Deeper RGBA Background */}
               <button 
-                className={`inline-flex items-center justify-center h-10 w-10 rounded-md text-white transition-colors lg:bg-white/10 lg:hover:bg-[#006666] ${iconBgClass}`} 
+                className="inline-flex items-center justify-center h-10 w-10 rounded-full text-white transition-colors md:text-white md:hover:bg-[#006666] hover:bg-white/20"
                 aria-label="Open navigation menu"
+                style={{ backgroundColor: MOBILE_ICON_BG }}
               >
                 <Menu className="h-5 w-5" />
               </button>
@@ -97,22 +111,47 @@ export const Header = ({ onSearchClick, showSearchIcon = true }: HeaderProps) =>
             </SheetContent>
           </Sheet>
           
-          {/* Logo/Name/Description: **REMOVED ENTIRELY** from the header structure */}
+          {/* Logo/Description: Hidden on mobile */}
+          <Link to="/" className="hidden md:flex items-center gap-3">
+             <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center text-[#0066cc] font-bold text-lg">
+                T
+              </div>
+              <div>
+                <span className="font-bold text-base md:text-lg text-white block">
+                  TripTrac
+                </span>
+                <p className="text-xs text-white/90 block">Your journey starts now.</p>
+              </div>
+          </Link>
         </div>
 
-        {/* Desktop Navigation (Centered) - Also REMOVED as per the strict requirement */}
-        {/* We'll use a placeholder div that is hidden on mobile to push the icons to the sides on desktop */}
-        <div className="hidden lg:flex w-full justify-center">
-            {/* If you absolutely need a link back to home on desktop, re-insert it here, 
-                but based on the prompt "only the icon menu the search icon and notification bell" 
-                we are removing all non-icon elements. */}
-        </div>
+        {/* Desktop Navigation (Centered) - Visible from lg: breakpoint up */}
+        <nav className="hidden lg:flex items-center gap-6">
+          <Link to="/" className="flex items-center gap-2 font-bold hover:text-muted-foreground transition-colors">
+            <Home className="h-4 w-4" />
+            <span>Home</span>
+          </Link>
+          <Link to="/bookings" className="flex items-center gap-2 font-bold hover:text-muted-foreground transition-colors">
+            <Ticket className="h-4 w-4" />
+            <span>My Bookings</span>
+          </Link>
+          <Link to="/saved" className="flex items-center gap-2 font-bold hover:text-muted-foreground transition-colors">
+            <Heart className="h-4 w-4" />
+            <span>Wishlist</span>
+          </Link>
+          <button 
+            onClick={() => user ? navigate('/become-host') : navigate('/auth')} 
+            className="flex items-center gap-2 font-bold hover:text-muted-foreground transition-colors"
+          >
+            <FolderOpen className="h-4 w-4" />
+            <span>Become a Host</span>
+          </button>
+        </nav>
 
-
-        {/* RIGHT SIDE: Search and Notification Bell */}
-        <div className="flex items-center gap-2">
+        {/* Mobile Right Icons (Search, Notification) - Fixed Position */}
+        <div className="absolute top-4 right-4 flex items-center gap-2 md:relative md:top-auto md:right-auto md:flex">
           
-          {/* Search Icon Button: Apply conditional background */}
+          {/* Search Icon Button: Updated to White Icon and Deeper RGBA Background */}
           {showSearchIcon && (
             <button 
               onClick={() => {
@@ -123,34 +162,40 @@ export const Header = ({ onSearchClick, showSearchIcon = true }: HeaderProps) =>
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
               }}
-              // Applies iconBgClass (transparent/darker on mobile index top)
-              className={`rounded-full h-10 w-10 flex items-center justify-center transition-colors group lg:bg-white/10 lg:hover:bg-white ${iconBgClass}`}
+              className="rounded-full h-10 w-10 flex items-center justify-center transition-colors text-white md:bg-white/10 md:hover:bg-white hover:bg-white/20"
               aria-label="Search"
+              style={{ backgroundColor: MOBILE_ICON_BG }}
             >
-              <Search className="h-5 w-5 text-white group-hover:text-[#008080]" />
+              <Search className="h-5 w-5 md:text-white md:group-hover:text-[#008080]" />
             </button>
           )}
           
-          {/* Notification Bell: Always visible on small screen */}
-          <div className="flex items-center gap-2"> 
-            <NotificationBell buttonClassName={iconBgClass} />
+          {/* Notification Bell with Deeper RGBA Background */}
+          <div className="flex items-center gap-2">
+            {/* Wrapper: Apply Deeper RGBA background and White Icon Color */}
+            <div 
+                className="rounded-full h-10 w-10 flex items-center justify-center transition-colors md:bg-transparent hover:bg-white/20"
+                style={{ backgroundColor: MOBILE_ICON_BG }}
+            >
+                <NotificationBell 
+                    // Set mobile icon class to white
+                    mobileIconClasses="text-white"
+                    desktopIconClasses="md:text-white md:hover:bg-[#006666]"
+                />
+            </div>
           </div>
 
-          {/* Desktop Auth Actions (Right Side) - Hidden or Minimized */}
+          {/* Theme Toggle and Account: Hidden on mobile, shown on desktop */}
           <div className="hidden md:flex items-center gap-2">
-            {/* Desktop Notification Bell (using standard background) */}
-            <NotificationBell buttonClassName="bg-white/10 hover:bg-white/20" /> 
-            
             <ThemeToggle />
             
-            {/* Account Button (If needed on desktop) */}
             <button 
               onClick={() => user ? navigate('/account') : navigate('/auth')}
               className="rounded-full h-10 w-10 flex items-center justify-center transition-colors 
-                                   bg-white/10 hover:bg-white group" 
+                        bg-white/10 hover:bg-white group" 
               aria-label="Account"
             >
-              <User className="h-5 w-5 text-white group-hover:text-[#008080]" /> 
+              <User className="h-5 w-5 text-white group-hover:text-[#008080]" />
             </button>
           </div>
         </div>
