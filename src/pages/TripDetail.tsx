@@ -155,7 +155,7 @@ const TripDetail = () => {
     } else {
       const query = encodeURIComponent(`${trip?.name}, ${trip?.location}, ${trip?.country}`);
       // NOTE: Using the correct Google Maps URL format
-      window.open(`https://maps.google.com/?q=${query}`, '_blank');
+      window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
     }
   };
 
@@ -227,16 +227,14 @@ const TripDetail = () => {
       {/* Header hidden on small screen / PWA mode */}
       <Header className="hidden md:block" /> 
       
-      {/*         FULL-WIDTH SLIDESHOW SECTION: 
-        Moved outside the main container to ensure full screen width on mobile 
-      */}
+      {/* FULL-WIDTH SLIDESHOW SECTION */}
       <div className="relative w-full overflow-hidden md:max-w-6xl md:mx-auto">
         {/* Back Button: Top Left, Dark RGBA */}
         <Button 
           variant="ghost" 
           onClick={() => navigate(-1)} 
-          className="absolute top-4 left-4 z-30 h-10 w-10 p-0 rounded-full text-white md:left-8" // Increased Z-index and adjusted md:left
-          style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }} // Dark RGBA
+          className="absolute top-4 left-4 z-30 h-10 w-10 p-0 rounded-full text-white md:left-8" 
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }} 
           size="icon"
         >
           <ArrowLeft className="h-5 w-5" />
@@ -248,7 +246,7 @@ const TripDetail = () => {
           size="icon" 
           onClick={handleSave} 
           className={`absolute top-4 right-4 z-30 h-10 w-10 p-0 rounded-full text-white md:right-8 ${isSaved ? "bg-red-500 hover:bg-red-600" : ""}`}
-          style={{ backgroundColor: isSaved ? RED_COLOR : 'rgba(0, 0, 0, 0.5)' }} // Dark RGBA or RED if saved
+          style={{ backgroundColor: isSaved ? RED_COLOR : 'rgba(0, 0, 0, 0.5)' }} 
         >
           <Heart className={`h-5 w-5 ${isSaved ? "fill-white" : ""}`} />
         </Button>
@@ -262,10 +260,10 @@ const TripDetail = () => {
           plugins={[Autoplay({ delay: 3000 })]} 
           className="w-full overflow-hidden"
           style={{ 
-            borderBottom: `2px solid ${TEAL_COLOR}`, // Teal bottom border for small/big screen
+            borderBottom: `2px solid ${TEAL_COLOR}`,
             marginTop: 0, 
             width: '100%', 
-            maxHeight: '600px' // Added max height for larger screens
+            maxHeight: '600px' 
           }}
           setApi={(api) => {
             if (api) api.on("select", () => setCurrent(api.selectedScrollSnap()));
@@ -279,17 +277,16 @@ const TripDetail = () => {
                   alt={`${trip.name} ${idx + 1}`} 
                   loading="lazy" 
                   decoding="async" 
-                  className="w-full h-[60vh] md:h-96 lg:h-[500px] object-cover" // Ensure height consistency
+                  className="w-full h-[60vh] md:h-96 lg:h-[500px] object-cover" 
                 />
               </CarouselItem>
             ))}
           </CarouselContent>
         </Carousel>
 
-        {/* Name Overlay: Fading RGBA, concentrated at center bottom */}
+        {/* Name Overlay: Fading RGBA */}
         <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 z-20 text-white bg-gradient-to-t from-black/80 via-black/50 to-transparent">
           <h1 className="text-3xl sm:text-2xl font-bold mb-0">{trip.name}</h1>
-          {/* If there was a local_name, it would go here */}
         </div>
         
         {/* Dot indicators */}
@@ -305,22 +302,101 @@ const TripDetail = () => {
         )}
       </div>
       
-      {/* Main Content starts here, contained by the max-width wrapper */}
+      {/* Main Content starts here, optimized for small screen order */}
       <main className="container px-4 max-w-6xl mx-auto mt-4 sm:mt-6">
         <div className="grid lg:grid-cols-[2fr,1fr] gap-6 sm:gap-4">
           
-          {/* LEFT COLUMN (Description, Activities, CONTACT INFO) */}
-          <div className="w-full space-y-4">
+          {/* --- 1. MOBILE FIRST: BOOKING CARD & ACTION BUTTONS --- (lg:order-2 for desktop) */}
+          <div className="space-y-4 sm:space-y-3 lg:mt-0 lg:order-2"> 
             
-            {/* Location/Details section (Name moved to overlay) */}
+            {/* Booking Card */}
+            <div className="space-y-3 p-4 sm:p-3 border bg-card rounded-lg lg:sticky lg:top-20"> 
+              <div className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" style={{ color: TEAL_COLOR }} />
+                <div>
+                  <p className="text-sm sm:text-xs text-muted-foreground">Trip Date</p>
+                  <p className="font-semibold sm:text-sm">{trip.is_custom_date ? "Flexible" : new Date(trip.date).toLocaleDateString()}</p>
+                </div>
+              </div>
+              
+              <div className="border-t pt-3 sm:pt-2">
+                <p className="text-sm sm:text-xs text-muted-foreground mb-1">Price (Per Adult)</p>
+                <p className="text-2xl sm:text-xl font-bold" style={{ color: RED_COLOR }}>KSh {trip.price}</p>
+                {trip.price_child > 0 && <p className="text-sm sm:text-xs text-muted-foreground">Child: KSh {trip.price_child}</p>}
+                <p className="text-sm sm:text-xs text-muted-foreground mt-2 sm:mt-1">Available Tickets: {trip.available_tickets}</p>
+              </div>
+
+              {/* Book Now Button */}
+              <Button 
+                size="lg" 
+                className="w-full text-white h-10 sm:h-9" 
+                onClick={() => { setIsCompleted(false); setBookingOpen(true); }}
+                disabled={trip.available_tickets <= 0}
+                style={{ backgroundColor: TEAL_COLOR }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#005555')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = TEAL_COLOR)}
+              >
+                {trip.available_tickets <= 0 ? "Sold Out" : "Book Now"}
+              </Button>
+            </div>
+
+            {/* Action Buttons (Map, Copy Link, Share) */}
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={openInMaps} 
+                className="flex-1 h-9"
+                style={{ borderColor: TEAL_COLOR, color: TEAL_COLOR }}
+              >
+                <MapPin className="h-4 w-4 mr-2" style={{ color: TEAL_COLOR }} />
+                <span>Map</span>
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleCopyLink} 
+                className="flex-1 h-9"
+                style={{ borderColor: TEAL_COLOR, color: TEAL_COLOR }}
+              >
+                <Copy className="h-4 w-4 mr-2" style={{ color: TEAL_COLOR }} />
+                <span>Copy Link</span>
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleShare} 
+                className="flex-1 h-9"
+                style={{ borderColor: TEAL_COLOR, color: TEAL_COLOR }}
+              >
+                <Share2 className="h-4 w-4 mr-2" style={{ color: TEAL_COLOR }} />
+                <span>Share</span>
+              </Button>
+            </div>
+            
+          </div> {/* END Booking/Action Group */}
+
+          {/* --- 2. LEFT COLUMN (Details) --- (lg:order-1 for desktop) */}
+          <div className="w-full space-y-4 lg:order-1"> 
+            
+            {/* Location/Map Link Section (Hides location name on small screen) */}
             <div>
               <div className="flex items-center gap-2 text-muted-foreground mb-4 sm:mb-2">
                 <MapPin className="h-4 w-4" style={{ color: TEAL_COLOR }} />
-                <span className="sm:text-sm">{trip.location}, {trip.country}</span>
+                {/* Visible on medium/large screens */}
+                <span className="sm:text-sm hidden md:inline">{trip.location}, {trip.country}</span>
+                {/* Visible only on small screens */}
+                <span 
+                    className="sm:text-sm md:hidden text-sm cursor-pointer"
+                    style={{ color: TEAL_COLOR }}
+                    onClick={openInMaps}
+                >
+                    View on Map
+                </span>
               </div>
             </div>
 
-            {/* Description Section */}
+            {/* Description Section (ABOUT SECTION) */}
             {trip.description && (
               <div className="bg-card border rounded-lg p-4 sm:p-3">
                 <h2 className="text-lg sm:text-base font-semibold mb-2 sm:mb-1">About This Trip</h2>
@@ -328,7 +404,7 @@ const TripDetail = () => {
               </div>
             )}
             
-            {/* --- Included Activities Section (ORANGE) --- */}
+            {/* Included Activities Section (ORANGE) */}
             {trip.activities && trip.activities.length > 0 && (
               <div className="p-4 sm:p-3 border bg-card rounded-lg">
                 <h2 className="text-xl sm:text-lg font-semibold mb-4 sm:mb-3">Included Activities</h2>
@@ -347,7 +423,7 @@ const TripDetail = () => {
               </div>
             )}
             
-            {/* --- Contact Information Section (MOVED TO LEFT COLUMN) --- */}
+            {/* Contact Information Section */}
             {(trip.phone_number || trip.email) && (
               <div className="p-4 sm:p-3 border bg-card rounded-lg">
                 <h2 className="text-xl sm:text-lg font-semibold mb-4 sm:mb-3">Contact Information</h2>
@@ -376,90 +452,15 @@ const TripDetail = () => {
               </div>
             )}
             
-            {/* Review Section is typically full-width or below the main grid, but remains in the flow */}
-            <div className="lg:hidden mt-6 sm:mt-4"> {/* Hide on large screen if moving to main content bottom */}
-               <ReviewSection itemId={trip.id} itemType="trip" />
+            {/* Review Section (Full Width) */}
+            <div className="mt-6 sm:mt-4">
+              <ReviewSection itemId={trip.id} itemType="trip" />
             </div>
 
           </div> {/* END LEFT COLUMN */}
-
-          {/* RIGHT COLUMN (Booking Card, Share Buttons) */}
-          <div className="space-y-4 sm:space-y-3 lg:mt-0"> {/* Adjusted margin for big screens */}
-            
-            {/* Booking Card */}
-            <div className="space-y-3 p-4 sm:p-3 border bg-card rounded-lg sticky top-20"> {/* Made sticky for desktop */}
-              <div className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" style={{ color: TEAL_COLOR }} />
-                <div>
-                  <p className="text-sm sm:text-xs text-muted-foreground">Trip Date</p>
-                  <p className="font-semibold sm:text-sm">{trip.is_custom_date ? "Flexible" : new Date(trip.date).toLocaleDateString()}</p>
-                </div>
-              </div>
-              
-              <div className="border-t pt-3 sm:pt-2">
-                <p className="text-sm sm:text-xs text-muted-foreground mb-1">Price (Per Adult)</p>
-                <p className="text-2xl sm:text-xl font-bold" style={{ color: RED_COLOR }}>KSh {trip.price}</p>
-                {trip.price_child > 0 && <p className="text-sm sm:text-xs text-muted-foreground">Child: KSh {trip.price_child}</p>}
-                <p className="text-sm sm:text-xs text-muted-foreground mt-2 sm:mt-1">Available Tickets: {trip.available_tickets}</p>
-              </div>
-
-              {/* Book Now Button Teal and dark hover */}
-              <Button 
-                size="lg" 
-                className="w-full text-white h-10 sm:h-9" 
-                onClick={() => { setIsCompleted(false); setBookingOpen(true); }}
-                disabled={trip.available_tickets <= 0}
-                style={{ backgroundColor: TEAL_COLOR }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#005555')}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = TEAL_COLOR)}
-              >
-                {trip.available_tickets <= 0 ? "Sold Out" : "Book Now"}
-              </Button>
-            </div>
-
-            {/* Action Buttons (Combined Share/Copy/Map) */}
-            <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={openInMaps} 
-                className="flex-1 h-9"
-                style={{ borderColor: TEAL_COLOR, color: TEAL_COLOR }}
-              >
-                <MapPin className="h-4 w-4 md:mr-2" style={{ color: TEAL_COLOR }} />
-                <span className="hidden md:inline">Map</span>
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleCopyLink} 
-                className="flex-1 h-9"
-                style={{ borderColor: TEAL_COLOR, color: TEAL_COLOR }}
-              >
-                <Copy className="h-4 w-4 md:mr-2" style={{ color: TEAL_COLOR }} />
-                <span className="hidden md:inline">Copy Link</span>
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleShare} 
-                className="flex-1 h-9"
-                style={{ borderColor: TEAL_COLOR, color: TEAL_COLOR }}
-              >
-                <Share2 className="h-4 w-4 md:mr-2" style={{ color: TEAL_COLOR }} />
-                <span className="hidden md:inline">Share</span>
-              </Button>
-            </div>
-            
-          </div> {/* END RIGHT COLUMN */}
-        </div>
+        </div> {/* END GRID */}
         
-        {/* --- Review Section (Full Width on Large Screens) --- */}
-        <div className="hidden lg:block mt-6 sm:mt-4">
-          <ReviewSection itemId={trip.id} itemType="trip" />
-        </div>
-
-        {/* --- Similar Items Section --- */}
+        {/* --- Similar Items Section (Full Width, always last) --- */}
         {trip && <SimilarItems currentItemId={trip.id} itemType="trip" country={trip.country} />}
       </main>
 
@@ -475,7 +476,6 @@ const TripDetail = () => {
             itemName={trip.name}
             skipDateSelection={!trip.is_custom_date}
             fixedDate={trip.date}
-            // Facilities are not relevant for trip, but activities are included in price and cannot be chosen separately
             skipFacilitiesAndActivities={true} 
             itemId={trip.id}
             bookingType="trip"
