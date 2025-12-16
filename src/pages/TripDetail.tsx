@@ -154,7 +154,8 @@ const TripDetail = () => {
       window.open(trip.map_link, '_blank');
     } else {
       const query = encodeURIComponent(`${trip?.name}, ${trip?.location}, ${trip?.country}`);
-      window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
+      // NOTE: Using the correct Google Maps URL format
+      window.open(`https://maps.google.com/?q=${query}`, '_blank');
     }
   };
 
@@ -308,12 +309,11 @@ const TripDetail = () => {
       <main className="container px-4 max-w-6xl mx-auto mt-4 sm:mt-6">
         <div className="grid lg:grid-cols-[2fr,1fr] gap-6 sm:gap-4">
           
-          {/* LEFT COLUMN (Description, Activities) */}
+          {/* LEFT COLUMN (Description, Activities, CONTACT INFO) */}
           <div className="w-full space-y-4">
             
             {/* Location/Details section (Name moved to overlay) */}
             <div>
-              {/* NOTE: Removed H1 as it is now in the overlay */}
               <div className="flex items-center gap-2 text-muted-foreground mb-4 sm:mb-2">
                 <MapPin className="h-4 w-4" style={{ color: TEAL_COLOR }} />
                 <span className="sm:text-sm">{trip.location}, {trip.country}</span>
@@ -346,13 +346,48 @@ const TripDetail = () => {
                 </div>
               </div>
             )}
-          </div>
+            
+            {/* --- Contact Information Section (MOVED TO LEFT COLUMN) --- */}
+            {(trip.phone_number || trip.email) && (
+              <div className="p-4 sm:p-3 border bg-card rounded-lg">
+                <h2 className="text-xl sm:text-lg font-semibold mb-4 sm:mb-3">Contact Information</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {trip.phone_number && (
+                    <a 
+                      href={`tel:${trip.phone_number}`}
+                      className="flex items-center gap-2 px-4 py-3 border rounded-lg hover:bg-muted transition-colors"
+                      style={{ borderColor: TEAL_COLOR }}
+                    >
+                      <Phone className="h-4 w-4" style={{ color: TEAL_COLOR }} />
+                      <span className="text-sm" style={{ color: TEAL_COLOR }}>{trip.phone_number}</span>
+                    </a>
+                  )}
+                  {trip.email && (
+                    <a 
+                      href={`mailto:${trip.email}`}
+                      className="flex items-center gap-2 px-4 py-3 border rounded-lg hover:bg-muted transition-colors"
+                      style={{ borderColor: TEAL_COLOR }}
+                    >
+                      <Mail className="h-4 w-4" style={{ color: TEAL_COLOR }} />
+                      <span className="text-sm" style={{ color: TEAL_COLOR }}>{trip.email}</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {/* Review Section is typically full-width or below the main grid, but remains in the flow */}
+            <div className="lg:hidden mt-6 sm:mt-4"> {/* Hide on large screen if moving to main content bottom */}
+               <ReviewSection itemId={trip.id} itemType="trip" />
+            </div>
 
-          {/* RIGHT COLUMN (Booking Card, Contact, Share Buttons) */}
-          <div className="space-y-4 sm:space-y-3">
+          </div> {/* END LEFT COLUMN */}
+
+          {/* RIGHT COLUMN (Booking Card, Share Buttons) */}
+          <div className="space-y-4 sm:space-y-3 lg:mt-0"> {/* Adjusted margin for big screens */}
             
             {/* Booking Card */}
-            <div className="space-y-3 p-4 sm:p-3 border bg-card rounded-lg">
+            <div className="space-y-3 p-4 sm:p-3 border bg-card rounded-lg sticky top-20"> {/* Made sticky for desktop */}
               <div className="flex items-center gap-2">
                 <Calendar className="h-5 w-5" style={{ color: TEAL_COLOR }} />
                 <div>
@@ -414,42 +449,13 @@ const TripDetail = () => {
                 <Share2 className="h-4 w-4 md:mr-2" style={{ color: TEAL_COLOR }} />
                 <span className="hidden md:inline">Share</span>
               </Button>
-              {/* Removed the small Save button here as it's now an overlay */}
             </div>
-
-            {/* --- Contact Information Section --- */}
-            {(trip.phone_number || trip.email) && (
-              <div className="p-4 sm:p-3 border bg-card rounded-lg">
-                <h2 className="text-xl sm:text-lg font-semibold mb-4 sm:mb-3">Contact Information</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {trip.phone_number && (
-                    <a 
-                      href={`tel:${trip.phone_number}`}
-                      className="flex items-center gap-2 px-4 py-3 border rounded-lg hover:bg-muted transition-colors"
-                      style={{ borderColor: TEAL_COLOR }}
-                    >
-                      <Phone className="h-4 w-4" style={{ color: TEAL_COLOR }} />
-                      <span className="text-sm" style={{ color: TEAL_COLOR }}>{trip.phone_number}</span>
-                    </a>
-                  )}
-                  {trip.email && (
-                    <a 
-                      href={`mailto:${trip.email}`}
-                      className="flex items-center gap-2 px-4 py-3 border rounded-lg hover:bg-muted transition-colors"
-                      style={{ borderColor: TEAL_COLOR }}
-                    >
-                      <Mail className="h-4 w-4" style={{ color: TEAL_COLOR }} />
-                      <span className="text-sm" style={{ color: TEAL_COLOR }}>{trip.email}</span>
-                    </a>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+            
+          </div> {/* END RIGHT COLUMN */}
         </div>
-
-        {/* --- Review Section --- */}
-        <div className="mt-6 sm:mt-4">
+        
+        {/* --- Review Section (Full Width on Large Screens) --- */}
+        <div className="hidden lg:block mt-6 sm:mt-4">
           <ReviewSection itemId={trip.id} itemType="trip" />
         </div>
 
