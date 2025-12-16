@@ -15,9 +15,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { NavigationDrawer } from "./NavigationDrawer";
-import { Link, useNavigate } from "react-router-dom";
-import { ThemeToggle } from "./ThemeToggle"; // <--- Component to update
-import { NotificationBell } from "./NotificationBell"; // <--- Component to update
+import { Link, useNavigate, useLocation } from "react-router-dom"; // <-- useLocation added
+import { ThemeToggle } from "./ThemeToggle"; 
+import { NotificationBell } from "./NotificationBell"; 
 
 interface HeaderProps {
   onSearchClick?: () => void;
@@ -26,9 +26,53 @@ interface HeaderProps {
 
 export const Header = ({ onSearchClick, showSearchIcon = true }: HeaderProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isIndexPage = location.pathname === "/";
+    
+  // State for drawer and user
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const { user, signOut } = useAuth();
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string>("");
+  
+  // 1. SCROLL STATE FOR DYNAMIC HEADER BACKGROUND
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  // 2. EFFECT TO TRACK SCROLL POSITION
+  useEffect(() => {
+    if (!isIndexPage) {
+      // Always solid background if not on the index page
+      setIsScrolled(true); 
+      return;
+    }
+
+    const handleScroll = () => {
+      // Check if the user has scrolled down more than 50 pixels
+      if (window.scrollY > 50) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    handleScroll(); // Check scroll position immediately on mount
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [isIndexPage]); 
+
+  // Define a condition for transparent header and mobile icon-only view
+  const hideContentMobile = isIndexPage && !isScrolled;
+  
+  // Define dynamic CSS classes for the header's background/color transition
+  const headerBaseClass = "sticky top-0 z-50 w-full border-b h-16 transition-all duration-300";
+  
+  const dynamicHeaderClass = isIndexPage && !isScrolled
+    ? "bg-transparent text-white border-transparent" // Transparent on index page and not scrolled
+    : "bg-[#008080] text-white border-border shadow-md"; // Solid teal on scroll or non-index page
+
 
   useEffect(() => {
     const checkRole = async () => {
@@ -52,7 +96,6 @@ export const Header = ({ onSearchClick, showSearchIcon = true }: HeaderProps) =>
     checkRole();
   }, [user]);
 
-  const [userName, setUserName] = useState<string>("");
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -85,7 +128,7 @@ export const Header = ({ onSearchClick, showSearchIcon = true }: HeaderProps) =>
     return "U";
   };
 
-  // Mobile account icon tap handler
+  // Mobile account icon tap handler (not fully used in this header, kept for completeness)
   const [showMobileAccountDialog, setShowMobileAccountDialog] = useState(false);
 
   const handleMobileAccountTap = () => {
@@ -98,15 +141,16 @@ export const Header = ({ onSearchClick, showSearchIcon = true }: HeaderProps) =>
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-[#008080] text-white h-16 dark:bg-[#008080] dark:text-white">
+    <header className={`${headerBaseClass} ${dynamicHeaderClass}`}>
       <div className="container flex h-full items-center justify-between px-4">
         
         {/* Logo and Drawer Trigger (Left Side) */}
         <div className="flex items-center gap-3">
           <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
             <SheetTrigger asChild>
-              <button className="inline-flex items-center justify-center h-10 w-10 rounded-md text-white hover:bg-[#006666] transition-colors" aria-label="Open navigation menu">
-                <Menu className="h-5 w-5" />
+              {/* Menu Icon is ALWAYS visible */}
+              <button className="inline-flex items-center justify-center h-10 w-10 rounded-md hover:bg-white/10 transition-colors" aria-label="Open navigation menu">
+                <Menu className="h-5 w-5 text-white" /> 
               </button>
             </SheetTrigger>
             <SheetContent side="left" className="w-72 p-0 h-screen">
@@ -114,7 +158,12 @@ export const Header = ({ onSearchClick, showSearchIcon = true }: HeaderProps) =>
             </SheetContent>
           </Sheet>
           
-          <Link to="/" className="flex items-center gap-3">
+          {/* LOGO: Hide on small screens only on index page when not scrolled */}
+          <Link 
+            to="/" 
+            className={`items-center gap-3 transition-opacity duration-300 
+                        ${hideContentMobile ? 'opacity-0 pointer-events-none md:opacity-100 md:pointer-events-auto md:flex' : 'flex'}`}
+          >
             <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center text-[#0066cc] font-bold text-lg">
               T
             </div>
@@ -127,7 +176,7 @@ export const Header = ({ onSearchClick, showSearchIcon = true }: HeaderProps) =>
           </Link>
         </div>
 
-        {/* Desktop Navigation (Centered) */}
+        {/* Desktop Navigation (Centered) - HIDE ON SMALL SCREENS */}
         <nav className="hidden lg:flex items-center gap-6">
           <Link to="/" className="flex items-center gap-2 font-bold hover:text-muted-foreground transition-colors">
             <Home className="h-4 w-4" />
@@ -153,7 +202,7 @@ export const Header = ({ onSearchClick, showSearchIcon = true }: HeaderProps) =>
         {/* Account Controls (Right Side) */}
         <div className="flex items-center gap-2">
           
-          {/* Search Icon Button */}
+          {/* Search Icon Button - ALWAYS visible on small screens as required */}
           {showSearchIcon && (
             <button 
               onClick={() => {
@@ -171,24 +220,26 @@ export const Header = ({ onSearchClick, showSearchIcon = true }: HeaderProps) =>
             </button>
           )}
           
-          {/* Mobile: Notification Bell replaces Account Icon */}
-          <div className="md:hidden flex items-center gap-2">
+          {/* Notification Bell - ALWAYS visible on small screens as required */}
+          <div className="flex items-center gap-2">
             <NotificationBell />
           </div>
 
-          {/* Desktop Auth Actions (Right Side) - Notification, Theme, Account */}
-          <div className="hidden md:flex items-center gap-2">
-            <NotificationBell />
+          {/* Desktop Auth Actions (Right Side) - Theme, Account */}
+          {/* HIDE on mobile on index page when not scrolled */}
+          <div className={`hidden md:flex items-center gap-2 transition-opacity duration-300 
+                         ${hideContentMobile ? 'opacity-0 pointer-events-none lg:opacity-100 lg:pointer-events-auto' : 'opacity-100'}`}
+          >
             <ThemeToggle />
             
-            {/* Account Button - Added group and hover styles for consistency */}
+            {/* Account Button */}
             <button 
               onClick={() => user ? navigate('/account') : navigate('/auth')}
               className="rounded-full h-10 w-10 flex items-center justify-center transition-colors 
-                                    bg-white/10 hover:bg-white group" // <--- Applied white hover background
+                                    bg-white/10 hover:bg-white group"
               aria-label="Account"
             >
-              <User className="h-5 w-5 text-white group-hover:text-[#008080]" /> {/* <--- Applied teal icon on hover */}
+              <User className="h-5 w-5 text-white group-hover:text-[#008080]" />
             </button>
           </div>
         </div>
