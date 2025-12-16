@@ -288,12 +288,12 @@ const TripDetail = () => {
 
         {/* Name Overlay: Fading RGBA */}
         <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 z-20 text-white bg-gradient-to-t from-black/80 via-black/50 to-transparent">
-          <h1 className="text-3xl sm:text-2xl font-bold mb-0">{trip.name}</h1>
+          <h1 className="text-3xl sm:text-2xl font-bold mb-0">{trip.name.toUpperCase()}</h1> {/* <-- MODIFIED: .toUpperCase() added */}
         </div>
         
         {/* Dot indicators */}
         {displayImages.length > 1 && (
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 z-30">
+          <div className="absolute bottom-4 right-4 flex gap-2 z-30"> {/* <-- MODIFIED: right-4 added, center classes removed */}
             {displayImages.map((_, idx) => (
               <div 
                 key={idx} 
