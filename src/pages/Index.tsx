@@ -16,7 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { getUserId } from "@/lib/sessionManager";
 import { useGeolocation, calculateDistance } from "@/hooks/useGeolocation";
-import { ListingSkeleton } from "@/components/ui/listing-skeleton";
+import { ListingSkeleton, ListingGridSkeleton, HorizontalScrollSkeleton } from "@/components/ui/listing-skeleton";
 import { useSavedItems } from "@/hooks/useSavedItems";
 import { getCachedHomePageData, setCachedHomePageData } from "@/hooks/useHomePageCache";
 const Index = () => {
@@ -141,30 +141,42 @@ const Index = () => {
   };
   const fetchScrollableRows = async () => {
     setLoadingScrollable(true);
+    const today = new Date().toISOString().split('T')[0];
+    
     try {
-      const [tripsData, hotelsData, campsitesData, eventsData] = await Promise.all([supabase.from("trips").select("*").eq("approval_status", "approved").eq("is_hidden", false).eq("type", "trip").limit(8), supabase.from("hotels").select("*").eq("approval_status", "approved").eq("is_hidden", false).limit(8), supabase.from("adventure_places").select("*").eq("approval_status", "approved").eq("is_hidden", false).limit(8), supabase.from("trips").select("*").eq("approval_status", "approved").eq("is_hidden", false).eq("type", "event").limit(8)]);
-      console.log("Fetched scrollable data:", {
-        trips: {
-          count: tripsData.data?.length || 0,
-          error: tripsData.error,
-          data: tripsData.data
-        },
-        hotels: {
-          count: hotelsData.data?.length || 0,
-          error: hotelsData.error,
-          data: hotelsData.data
-        },
-        campsites: {
-          count: campsitesData.data?.length || 0,
-          error: campsitesData.error,
-          data: campsitesData.data
-        },
-        events: {
-          count: eventsData.data?.length || 0,
-          error: eventsData.error,
-          data: eventsData.data
-        }
-      });
+      const [tripsData, hotelsData, campsitesData, eventsData] = await Promise.all([
+        // Only fetch upcoming trips or flexible date trips
+        supabase.from("trips")
+          .select("*")
+          .eq("approval_status", "approved")
+          .eq("is_hidden", false)
+          .eq("type", "trip")
+          .or(`date.gte.${today},is_flexible_date.eq.true`)
+          .order('date', { ascending: true })
+          .limit(8),
+        supabase.from("hotels")
+          .select("*")
+          .eq("approval_status", "approved")
+          .eq("is_hidden", false)
+          .order('created_at', { ascending: false })
+          .limit(8),
+        supabase.from("adventure_places")
+          .select("*")
+          .eq("approval_status", "approved")
+          .eq("is_hidden", false)
+          .order('created_at', { ascending: false })
+          .limit(8),
+        // Only fetch upcoming events or flexible date events
+        supabase.from("trips")
+          .select("*")
+          .eq("approval_status", "approved")
+          .eq("is_hidden", false)
+          .eq("type", "event")
+          .or(`date.gte.${today},is_flexible_date.eq.true`)
+          .order('date', { ascending: true })
+          .limit(8)
+      ]);
+      
       setScrollableRows({
         trips: tripsData.data || [],
         hotels: hotelsData.data || [],
@@ -176,9 +188,12 @@ const Index = () => {
       // Fetch booking statistics for trips/events
       const allTripIds = [...(tripsData.data || []), ...(eventsData.data || [])].map((trip: any) => trip.id);
       if (allTripIds.length > 0) {
-        const {
-          data: bookingsData
-        } = await supabase.from('bookings').select('item_id, slots_booked').in('item_id', allTripIds).in('status', ['confirmed', 'pending']);
+        const { data: bookingsData } = await supabase
+          .from('bookings')
+          .select('item_id, slots_booked')
+          .in('item_id', allTripIds)
+          .in('status', ['confirmed', 'pending']);
+          
         if (bookingsData) {
           const stats: Record<string, number> = {};
           bookingsData.forEach(booking => {
@@ -244,37 +259,51 @@ const Index = () => {
   };
   const fetchAllData = async (query?: string, offset: number = 0, limit: number = 15) => {
     setLoading(true);
+    const today = new Date().toISOString().split('T')[0];
+    
     const fetchEvents = async () => {
-      let dbQuery = supabase.from("trips").select("*").eq("approval_status", "approved").eq("is_hidden", false).eq("type", "event");
+      let dbQuery = supabase.from("trips")
+        .select("*")
+        .eq("approval_status", "approved")
+        .eq("is_hidden", false)
+        .eq("type", "event")
+        .or(`date.gte.${today},is_flexible_date.eq.true`);
+        
       if (query) {
         const searchPattern = `%${query}%`;
         dbQuery = dbQuery.or(`name.ilike.${searchPattern},location.ilike.${searchPattern},country.ilike.${searchPattern}`);
       }
-      dbQuery = dbQuery.range(offset, offset + limit - 1);
-      const {
-        data
-      } = await dbQuery;
+      dbQuery = dbQuery.order('date', { ascending: true }).range(offset, offset + limit - 1);
+      const { data } = await dbQuery;
       return (data || []).map((item: any) => ({
         ...item,
         type: "EVENT"
       }));
     };
+    
     const fetchTable = async (table: "hotels" | "adventure_places", type: string) => {
-      let dbQuery = supabase.from(table).select("*").eq("approval_status", "approved").eq("is_hidden", false);
+      let dbQuery = supabase.from(table)
+        .select("*")
+        .eq("approval_status", "approved")
+        .eq("is_hidden", false);
+        
       if (query) {
         const searchPattern = `%${query}%`;
         dbQuery = dbQuery.or(`name.ilike.${searchPattern},location.ilike.${searchPattern},country.ilike.${searchPattern}`);
       }
-      dbQuery = dbQuery.range(offset, offset + limit - 1);
-      const {
-        data
-      } = await dbQuery;
+      dbQuery = dbQuery.order('created_at', { ascending: false }).range(offset, offset + limit - 1);
+      const { data } = await dbQuery;
       return (data || []).map((item: any) => ({
         ...item,
         type
       }));
     };
-    const [events, hotels, adventures] = await Promise.all([fetchEvents(), fetchTable("hotels", "HOTEL"), fetchTable("adventure_places", "ADVENTURE PLACE")]);
+    
+    const [events, hotels, adventures] = await Promise.all([
+      fetchEvents(), 
+      fetchTable("hotels", "HOTEL"), 
+      fetchTable("adventure_places", "ADVENTURE PLACE")
+    ]);
 
     // Filter out events and trips from Featured For You section
     let combined = [...hotels, ...adventures];

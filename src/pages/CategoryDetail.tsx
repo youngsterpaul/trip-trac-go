@@ -5,7 +5,7 @@ import { MobileBottomBar } from "@/components/MobileBottomBar";
 import { SearchBarWithSuggestions } from "@/components/SearchBarWithSuggestions";
 import { ListingCard } from "@/components/ListingCard";
 import { FilterBar } from "@/components/FilterBar";
-import { ListingSkeleton } from "@/components/ui/listing-skeleton";
+import { ListingSkeleton, ListingGridSkeleton } from "@/components/ui/listing-skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { getUserId } from "@/lib/sessionManager";
@@ -155,24 +155,32 @@ const CategoryDetail = () => {
   const fetchData = async (offset: number = 0, limit: number = 20) => {
     if (!config) return [];
     const allData: any[] = [];
+    const today = new Date().toISOString().split('T')[0];
+    
     for (const table of config.tables) {
       let query = supabase.from(table as any).select("*").eq("approval_status", "approved").eq("is_hidden", false);
 
-      // Filter by event type if specified
+      // Filter by event type if specified - ONLY show upcoming/flexible dates
       if (config.eventType) {
         query = query.eq("type", config.eventType);
-        // Hide events 30 days after their date has passed
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        query = query.gte("date", thirtyDaysAgo.toISOString().split('T')[0]);
+        // Only show events that haven't passed OR have flexible dates
+        query = query.or(`date.gte.${today},is_flexible_date.eq.true`);
       } else if (category === "trips") {
-        // For trips category, only show trips (not events)
+        // For trips category, only show trips (not events) - ONLY upcoming/flexible
         query = query.eq("type", "trip");
+        query = query.or(`date.gte.${today},is_flexible_date.eq.true`);
       }
+      
+      // Order by date for trips/events to show upcoming first
+      if (table === 'trips') {
+        query = query.order('date', { ascending: true });
+      } else {
+        query = query.order('created_at', { ascending: false });
+      }
+      
       query = query.range(offset, offset + limit - 1);
-      const {
-        data
-      } = await query;
+      const { data } = await query;
+      
       if (data && Array.isArray(data)) {
         allData.push(...data.map((item: any) => ({
           ...item,
@@ -184,9 +192,12 @@ const CategoryDetail = () => {
     // Fetch booking statistics for events/trips
     const tripIds = allData.filter(item => item.table === 'trips').map(item => item.id);
     if (tripIds.length > 0) {
-      const {
-        data: bookingsData
-      } = await supabase.from('bookings').select('item_id, slots_booked').in('item_id', tripIds).in('status', ['confirmed', 'pending']);
+      const { data: bookingsData } = await supabase
+        .from('bookings')
+        .select('item_id, slots_booked')
+        .in('item_id', tripIds)
+        .in('status', ['confirmed', 'pending']);
+        
       if (bookingsData) {
         const stats = new Map<string, number>();
         bookingsData.forEach(booking => {
@@ -200,23 +211,20 @@ const CategoryDetail = () => {
     return allData;
   };
 
-  // Sort items: by distance when location available, otherwise by date/created_at
+  // Sort items: by distance when location available, otherwise by date/created_at/rating
   const getSortedItems = (itemsToSort: any[]) => {
     return [...itemsToSort].sort((a, b) => {
-      // For trips/events, sort by date
       const aDate = a.date ? new Date(a.date) : null;
       const bDate = b.date ? new Date(b.date) : null;
-      const now = new Date();
+      const isTripOrEvent = a.table === 'trips' || b.table === 'trips';
       
-      if (aDate && bDate) {
-        const aIsPast = aDate < now;
-        const bIsPast = bDate < now;
-        if (aIsPast && !bIsPast) return 1;
-        if (!aIsPast && bIsPast) return -1;
+      // For trips/events, always sort by date (upcoming first)
+      if (isTripOrEvent && aDate && bDate) {
         return aDate.getTime() - bDate.getTime();
       }
       
-      // For non-date items, sort by distance if location available
+      // For non-date items (hotels, adventure_places, attractions)
+      // Priority 1: Sort by distance if location available
       if (position && !aDate && !bDate) {
         const aHasCoords = a.latitude && a.longitude;
         const bHasCoords = b.latitude && b.longitude;
@@ -230,8 +238,15 @@ const CategoryDetail = () => {
         if (!aHasCoords && bHasCoords) return 1;
       }
       
+      // Priority 2: If no location, sort by created_at (latest first) as proxy for popularity
+      if (!position && !aDate && !bDate) {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+      
+      // Mixed types: date items first
       if (aDate && !bDate) return -1;
       if (!aDate && bDate) return 1;
+      
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
   };
@@ -314,9 +329,14 @@ const CategoryDetail = () => {
         
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6">
-          {loading ? <>
-              {[...Array(12)].map((_, i) => <ListingSkeleton key={i} />)}
-            </> : filteredItems.length === 0 ? <p className="col-span-full text-center text-muted-foreground py-8">No items found</p> : filteredItems.map(item => {
+          {loading ? (
+            <ListingGridSkeleton count={12} className="col-span-full" />
+          ) : filteredItems.length === 0 ? (
+            /* Show skeleton placeholders instead of empty message for better UX */
+            <div className="col-span-full">
+              <p className="text-center text-muted-foreground py-8">No items available in this category</p>
+            </div>
+          ) : filteredItems.map(item => {
           const isAttraction = item.table === "attractions";
           const isEvent = item.table === "trips" && (item.type === "event" || category === "events");
           const isTripOrEvent = item.table === "trips";
