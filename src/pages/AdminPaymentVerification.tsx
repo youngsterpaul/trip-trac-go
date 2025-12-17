@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
-// import { Footer } from "@/components/Footer"; // REMOVED
-// import { MobileBottomBar } from "@/components/MobileBottomBar"; // REMOVED
+import { MobileBottomBar } from "@/components/MobileBottomBar"; // RESTORED
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,7 +51,6 @@ export default function AdminPaymentVerification() {
     if (!user) return;
 
     try {
-      // Check if user is admin
       const { data: roles } = await supabase
         .from("user_roles")
         .select("role")
@@ -81,7 +79,6 @@ export default function AdminPaymentVerification() {
 
       if (error) throw error;
 
-      // Fetch user emails and names for each bank detail
       const detailsWithUserInfo = await Promise.all(
         (data || []).map(async (detail) => {
           const { data: userData } = await supabase.auth.admin.getUserById(detail.user_id);
@@ -109,7 +106,6 @@ export default function AdminPaymentVerification() {
 
   const handleVerify = async (id: string) => {
     if (!user) return;
-
     setProcessing(id);
     try {
       const { error } = await supabase
@@ -123,20 +119,10 @@ export default function AdminPaymentVerification() {
         .eq("id", id);
 
       if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Bank details verified successfully",
-      });
-
+      toast({ title: "Success", description: "Bank details verified successfully" });
       await fetchBankDetails();
     } catch (error) {
-      console.error("Error verifying bank details:", error);
-      toast({
-        title: "Error",
-        description: "Failed to verify bank details",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to verify bank details", variant: "destructive" });
     } finally {
       setProcessing(null);
     }
@@ -144,16 +130,10 @@ export default function AdminPaymentVerification() {
 
   const handleReject = async (id: string) => {
     if (!rejectionReason.trim()) {
-      toast({
-        title: "Error",
-        description: "Please provide a rejection reason",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Please provide a rejection reason", variant: "destructive" });
       return;
     }
-
     if (!user) return;
-
     setProcessing(id);
     try {
       const { error } = await supabase
@@ -166,22 +146,12 @@ export default function AdminPaymentVerification() {
         .eq("id", id);
 
       if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Bank details rejected",
-      });
-
+      toast({ title: "Success", description: "Bank details rejected" });
       setRejectionReason("");
       setSelectedItem(null);
       await fetchBankDetails();
     } catch (error) {
-      console.error("Error rejecting bank details:", error);
-      toast({
-        title: "Error",
-        description: "Failed to reject bank details",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to reject bank details", variant: "destructive" });
     } finally {
       setProcessing(null);
     }
@@ -190,34 +160,17 @@ export default function AdminPaymentVerification() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "verified":
-        return (
-          <Badge className="bg-green-500 hover:bg-green-600">
-            <CheckCircle className="h-3 w-3 mr-1" />
-            Verified
-          </Badge>
-        );
+        return <Badge className="bg-green-500 hover:bg-green-600"><CheckCircle className="h-3 w-3 mr-1" />Verified</Badge>;
       case "pending":
-        return (
-          <Badge className="bg-yellow-500 hover:bg-yellow-600">
-            <Clock className="h-3 w-3 mr-1" />
-            Pending
-          </Badge>
-        );
+        return <Badge className="bg-yellow-500 hover:bg-yellow-600"><Clock className="h-3 w-3 mr-1" />Pending</Badge>;
       case "rejected":
-        return (
-          <Badge variant="destructive">
-            <XCircle className="h-3 w-3 mr-1" />
-            Rejected
-          </Badge>
-        );
+        return <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" />Rejected</Badge>;
       default:
         return null;
     }
   };
 
-  const filterByStatus = (status: string) => {
-    return bankDetails.filter(detail => detail.verification_status === status);
-  };
+  const filterByStatus = (status: string) => bankDetails.filter(detail => detail.verification_status === status);
 
   const renderBankDetailCard = (detail: BankDetail) => (
     <Card key={detail.id} className="mb-4">
@@ -227,89 +180,43 @@ export default function AdminPaymentVerification() {
           {getStatusBadge(detail.verification_status)}
         </div>
         <div className="space-y-1 mt-2">
-          <p className="text-sm text-muted-foreground">
-            <span className="font-medium">Name:</span> {detail.user_name}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            <span className="font-medium">Email:</span> {detail.user_email}
-          </p>
+          <p className="text-sm text-muted-foreground"><span className="font-medium">Name:</span> {detail.user_name}</p>
+          <p className="text-sm text-muted-foreground"><span className="font-medium">Email:</span> {detail.user_email}</p>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label className="text-muted-foreground">Bank Name</Label>
-            <p className="font-medium">{detail.bank_name}</p>
-          </div>
-          <div>
-            <Label className="text-muted-foreground">Account Number</Label>
-            <p className="font-medium">{detail.account_number}</p>
-          </div>
+          <div><Label className="text-muted-foreground">Bank Name</Label><p className="font-medium">{detail.bank_name}</p></div>
+          <div><Label className="text-muted-foreground">Account Number</Label><p className="font-medium">{detail.account_number}</p></div>
         </div>
-
-        <div>
-          <Label className="text-muted-foreground">Submitted</Label>
-          <p className="text-sm">{new Date(detail.created_at).toLocaleString()}</p>
-        </div>
-
+        <div><Label className="text-muted-foreground">Submitted</Label><p className="text-sm">{new Date(detail.created_at).toLocaleString()}</p></div>
         {detail.rejection_reason && (
           <div className="p-3 bg-destructive/10 border border-destructive rounded-lg">
             <Label className="text-destructive">Rejection Reason</Label>
             <p className="text-sm text-destructive/80">{detail.rejection_reason}</p>
           </div>
         )}
-
         {detail.verification_status === "pending" && (
           <div className="space-y-3">
             {selectedItem === detail.id && (
-              <div>
-                <Label htmlFor="rejectionReason">Rejection Reason</Label>
-                <Textarea
-                  id="rejectionReason"
-                  value={rejectionReason}
-                  onChange={(e) => setRejectionReason(e.target.value)}
-                  placeholder="Enter reason for rejection..."
-                  rows={3}
-                />
-              </div>
+              <Textarea
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                placeholder="Enter reason for rejection..."
+                rows={3}
+              />
             )}
-            
             <div className="flex gap-2">
-              <Button
-                onClick={() => handleVerify(detail.id)}
-                disabled={processing === detail.id}
-                className="flex-1"
-              >
+              <Button onClick={() => handleVerify(detail.id)} disabled={processing === detail.id} className="flex-1">
                 {processing === detail.id ? "Processing..." : "Verify"}
               </Button>
               {selectedItem === detail.id ? (
                 <>
-                  <Button
-                    onClick={() => handleReject(detail.id)}
-                    disabled={processing === detail.id}
-                    variant="destructive"
-                    className="flex-1"
-                  >
-                    Confirm Reject
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      setSelectedItem(null);
-                      setRejectionReason("");
-                    }}
-                    variant="outline"
-                  >
-                    Cancel
-                  </Button>
+                  <Button onClick={() => handleReject(detail.id)} disabled={processing === detail.id} variant="destructive" className="flex-1">Confirm Reject</Button>
+                  <Button onClick={() => { setSelectedItem(null); setRejectionReason(""); }} variant="outline">Cancel</Button>
                 </>
               ) : (
-                <Button
-                  onClick={() => setSelectedItem(detail.id)}
-                  variant="destructive"
-                  className="flex-1"
-                >
-                  Reject
-                </Button>
+                <Button onClick={() => setSelectedItem(detail.id)} variant="destructive" className="flex-1">Reject</Button>
               )}
             </div>
           </div>
@@ -322,16 +229,13 @@ export default function AdminPaymentVerification() {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
-        <main className="flex-1 container mx-auto px-4 py-8">
+        <main className="flex-1 container mx-auto px-4 py-8 pb-24">
           <Skeleton className="h-12 w-64 mb-8" />
           <div className="max-w-4xl mx-auto space-y-6">
-            {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-64 w-full" />
-            ))}
+            {[1, 2, 3].map((i) => <Skeleton key={i} className="h-64 w-full" />)}
           </div>
         </main>
-        {/* Footer was here */}
-        {/* MobileBottomBar was here */}
+        <MobileBottomBar />
       </div>
     );
   }
@@ -339,41 +243,24 @@ export default function AdminPaymentVerification() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-1 container mx-auto px-4 py-8">
+      <main className="flex-1 container mx-auto px-4 py-8 pb-24">
         <div className="max-w-4xl mx-auto">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/account")}
-            className="mb-6"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Account
+          <Button variant="ghost" onClick={() => navigate("/account")} className="mb-6">
+            <ArrowLeft className="h-4 w-4 mr-2" /> Back to Account
           </Button>
 
-          <h1 className="text-3xl font-bold mb-8 text-foreground">
-            Payment Verification
-          </h1>
+          <h1 className="text-3xl font-bold mb-8 text-foreground">Payment Verification</h1>
 
           <Tabs defaultValue="pending" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="pending">
-                Pending ({filterByStatus("pending").length})
-              </TabsTrigger>
-              <TabsTrigger value="verified">
-                Verified ({filterByStatus("verified").length})
-              </TabsTrigger>
-              <TabsTrigger value="rejected">
-                Rejected ({filterByStatus("rejected").length})
-              </TabsTrigger>
+              <TabsTrigger value="pending">Pending ({filterByStatus("pending").length})</TabsTrigger>
+              <TabsTrigger value="verified">Verified ({filterByStatus("verified").length})</TabsTrigger>
+              <TabsTrigger value="rejected">Rejected ({filterByStatus("rejected").length})</TabsTrigger>
             </TabsList>
 
             <TabsContent value="pending" className="mt-6">
               {filterByStatus("pending").length === 0 ? (
-                <Card>
-                  <CardContent className="py-12 text-center">
-                    <p className="text-muted-foreground">No pending verifications</p>
-                  </CardContent>
-                </Card>
+                <Card><CardContent className="py-12 text-center text-muted-foreground">No pending verifications</CardContent></Card>
               ) : (
                 filterByStatus("pending").map(renderBankDetailCard)
               )}
@@ -381,11 +268,7 @@ export default function AdminPaymentVerification() {
 
             <TabsContent value="verified" className="mt-6">
               {filterByStatus("verified").length === 0 ? (
-                <Card>
-                  <CardContent className="py-12 text-center">
-                    <p className="text-muted-foreground">No verified bank details</p>
-                  </CardContent>
-                </Card>
+                <Card><CardContent className="py-12 text-center text-muted-foreground">No verified bank details</CardContent></Card>
               ) : (
                 filterByStatus("verified").map(renderBankDetailCard)
               )}
@@ -393,11 +276,7 @@ export default function AdminPaymentVerification() {
 
             <TabsContent value="rejected" className="mt-6">
               {filterByStatus("rejected").length === 0 ? (
-                <Card>
-                  <CardContent className="py-12 text-center">
-                    <p className="text-muted-foreground">No rejected bank details</p>
-                  </CardContent>
-                </Card>
+                <Card><CardContent className="py-12 text-center text-muted-foreground">No rejected bank details</CardContent></Card>
               ) : (
                 filterByStatus("rejected").map(renderBankDetailCard)
               )}
@@ -405,8 +284,7 @@ export default function AdminPaymentVerification() {
           </Tabs>
         </div>
       </main>
-      {/* Footer was here */}
-      {/* MobileBottomBar was here */}
+      <MobileBottomBar />
     </div>
   );
 }
