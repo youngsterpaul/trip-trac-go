@@ -552,7 +552,7 @@ const Index = () => {
                          w-16 h-16 rounded-2xl shadow-lg
                          md:w-full md:h-40 lg:h-48 md:rounded-[24px] md:relative overflow-hidden"
               style={{
-                backgroundColor: COLORS.TEAL,
+                backgroundColor: '#008080',
                 backgroundImage: `url(${cat.bgImage})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center'
@@ -569,7 +569,7 @@ const Index = () => {
             <div className="mt-3 text-center">
               <span 
                 className="font-black uppercase tracking-widest text-[10px] md:text-sm lg:text-base leading-tight block transition-colors group-hover:text-[#FF7F50]"
-                style={{ color: COLORS.TEAL }}
+                style={{ color: '#008080' }}
                 role="heading" 
                 aria-level={3}
               >
