@@ -179,26 +179,6 @@ const EventDetail = () => {
                 </div>
               </div>
             )}
-
-            {/* STYLED REVIEW CARD */}
-            <div className="bg-white rounded-[28px] p-7 shadow-sm border border-slate-100">
-              <div className="flex justify-between items-center mb-8">
-                <div>
-                  <h2 className="text-xl font-black uppercase tracking-tight" style={{ color: COLORS.TEAL }}>Guest Reviews</h2>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Verified Community Feedback</p>
-                </div>
-                {event.average_rating > 0 && (
-                  <div className="flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-2xl border border-slate-100">
-                    <Star className="h-4 w-4 fill-[#FF7F50] text-[#FF7F50]" />
-                    <span className="text-lg font-black" style={{ color: COLORS.TEAL }}>{event.average_rating.toFixed(1)}</span>
-                  </div>
-                )}
-              </div>
-              
-              <div className="min-h-[100px]">
-                <ReviewSection itemId={event.id} itemType="event" />
-              </div>
-            </div>
           </div>
 
           {/* Booking Sidebar Column */}
@@ -253,6 +233,25 @@ const EventDetail = () => {
               </div>
             </div>
           </div>
+            {/* STYLED REVIEW CARD */}
+            <div className="bg-white rounded-[28px] p-7 shadow-sm border border-slate-100">
+              <div className="flex justify-between items-center mb-8">
+                <div>
+                  <h2 className="text-xl font-black uppercase tracking-tight" style={{ color: COLORS.TEAL }}>Guest Ratings</h2>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Verified Community Feedback</p>
+                </div>
+                {event.average_rating > 0 && (
+                  <div className="flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-2xl border border-slate-100">
+                    <Star className="h-4 w-4 fill-[#FF7F50] text-[#FF7F50]" />
+                    <span className="text-lg font-black" style={{ color: COLORS.TEAL }}>{event.average_rating.toFixed(1)}</span>
+                  </div>
+                )}
+              </div>
+              
+              <div className="min-h-[100px]">
+                <ReviewSection itemId={event.id} itemType="event" />
+              </div>
+            </div>
         </div>
 
         <div className="mt-16">
