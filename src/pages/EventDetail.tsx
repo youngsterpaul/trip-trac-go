@@ -118,14 +118,13 @@ const EventDetail = () => {
     <div className="min-h-screen bg-[#F8F9FA] pb-24">
       <Header className="hidden md:block" />
 
-      {/* Hero Image Section with Concentrated RGBA Background */}
-      <div className="relative w-full overflow-hidden h-[50vh] md:h-[65vh]">
-        {/* Nav Overlays */}
-        <div className="absolute top-4 left-4 right-4 z-30 flex justify-between items-center">
-          <Button onClick={() => navigate(-1)} className="rounded-full bg-black/30 backdrop-blur-md text-white border-none w-10 h-10 p-0 hover:bg-black/50 transition-colors">
+      {/* Hero Image Section */}
+      <div className="relative w-full overflow-hidden h-[50vh] md:h-[60vh]">
+        <div className="absolute top-4 left-4 right-4 z-50 flex justify-between">
+          <Button onClick={() => navigate(-1)} className="rounded-full bg-black/30 backdrop-blur-md text-white border-none w-10 h-10 p-0 hover:bg-black/50">
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <Button onClick={handleSave} className={`rounded-full backdrop-blur-md border-none w-10 h-10 p-0 shadow-lg transition-all ${isSaved ? "bg-red-500" : "bg-black/30 hover:bg-black/50"}`}>
+          <Button onClick={handleSave} className={`rounded-full backdrop-blur-md border-none w-10 h-10 p-0 shadow-lg transition-colors ${isSaved ? "bg-red-500" : "bg-black/30 hover:bg-black/50"}`}>
             <Heart className={`h-5 w-5 text-white ${isSaved ? "fill-white" : ""}`} />
           </Button>
         </div>
@@ -136,39 +135,58 @@ const EventDetail = () => {
               <CarouselItem key={idx} className="h-full">
                 <div className="relative h-full w-full">
                   <img src={img} alt={event.name} className="w-full h-full object-cover" />
-                  
-                  {/* Concentrated Overlay: Darkest in center, fades to transparent at edges */}
-                  <div 
-                    className="absolute inset-0 flex flex-col items-center justify-center text-center px-6"
-                    style={{
-                      background: `radial-gradient(circle, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 100%)`
-                    }}
-                  >
-                    <Badge className="bg-[#FF7F50] hover:bg-[#FF7F50] border-none px-4 py-1.5 mb-4 uppercase font-black tracking-widest text-[11px] shadow-xl">
-                      Adventure Place
-                    </Badge>
-                    
-                    <h1 className="text-4xl md:text-7xl font-black uppercase tracking-tighter leading-none drop-shadow-2xl text-white mb-6 max-w-4xl">
-                      {event.name}
-                    </h1>
-
-                    <div className="flex items-center gap-2 px-6 py-3 bg-white/10 backdrop-blur-xl rounded-full border border-white/20 shadow-2xl">
-                      <MapPin className="h-5 w-5 text-[#FF7F50]" />
-                      <span className="text-sm md:text-base font-bold uppercase tracking-widest text-white">
-                        {event.location}
-                      </span>
-                    </div>
-                  </div>
+                  {/* Base Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10" />
                 </div>
               </CarouselItem>
             ))}
           </CarouselContent>
         </Carousel>
+
+        {/* Floating Adventure & Location Info Section */}
+        <div className="absolute bottom-10 left-0 z-40 w-full md:w-3/4 lg:w-1/2 p-8 pointer-events-none">
+          {/* Radial concentrated background - Fades out towards the edges */}
+          <div 
+            className="absolute inset-0 z-0 opacity-80"
+            style={{
+              background: `radial-gradient(circle at 20% 50%, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 85%)`,
+              filter: 'blur(15px)',
+              marginLeft: '-20px'
+            }}
+          />
+          
+          <div className="relative z-10 space-y-4 pointer-events-auto">
+            <Button 
+              className="bg-[#FF7F50] hover:bg-[#FF7F50] border-none px-4 py-1.5 h-auto uppercase font-black tracking-[0.15em] text-[10px] rounded-full shadow-lg"
+            >
+              Adventure Place
+            </Button>
+            
+            <div>
+              <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter leading-none text-white drop-shadow-2xl mb-3">
+                {event.name}
+              </h1>
+              
+              <div className="flex items-center gap-3 cursor-pointer group w-fit" onClick={openInMaps}>
+                <div className="bg-white/20 backdrop-blur-md p-2 rounded-xl group-hover:bg-[#FF7F50] transition-all duration-300">
+                  <MapPin className="h-5 w-5 text-white" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold text-[#FF7F50] uppercase tracking-widest">Location</span>
+                  <span className="text-sm font-black text-white uppercase tracking-wider group-hover:text-[#FF7F50] transition-colors">
+                    {event.location}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <main className="container px-4 max-w-6xl mx-auto -mt-10 relative z-40">
+      <main className="container px-4 max-w-6xl mx-auto -mt-10 relative z-50">
         <div className="grid lg:grid-cols-[1.7fr,1fr] gap-6">
           
+          {/* Main Content Column */}
           <div className="space-y-6">
             {/* About Card */}
             <div className="bg-white rounded-[28px] p-7 shadow-sm border border-slate-100">
