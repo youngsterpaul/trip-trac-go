@@ -41,17 +41,21 @@ export const Header = ({ onSearchClick, showSearchIcon = true, className, hideIc
     fetchUserProfile();
   }, [user]);
 
-  // Styling logic
+  // Updated Styling logic:
+  // 1. Transparent on mobile for index, otherwise fixed/sticky.
   const mobileHeaderClasses = isIndexPage 
     ? "fixed top-0 left-0 right-0 bg-transparent" 
     : `sticky top-0 left-0 right-0 border-b border-white/10 shadow-lg`;
 
-  const headerBgStyle = !isIndexPage ? { backgroundColor: COLORS.TEAL } : {};
-
   return (
     <header 
       className={`z-[100] transition-all duration-300 md:h-20 flex items-center ${mobileHeaderClasses} ${className || ''}`}
-      style={headerBgStyle}
+      style={{ 
+        // Logic: If index page AND desktop (md), use TEAL. If not index page, use TEAL.
+        backgroundColor: isIndexPage 
+          ? (window.innerWidth >= 768 ? COLORS.TEAL : 'transparent') 
+          : COLORS.TEAL 
+      }}
     >
       <div className="container mx-auto px-4 flex items-center justify-between h-full">
         
@@ -71,14 +75,15 @@ export const Header = ({ onSearchClick, showSearchIcon = true, className, hideIc
             </SheetContent>
           </Sheet>
           
-          <Link to="/" className="flex items-center gap-3 group">
+          {/* Logo Logic: Hidden on small screens if isIndexPage */}
+          <Link to="/" className={`flex items-center gap-3 group ${isIndexPage ? 'hidden md:flex' : 'flex'}`}>
             <div 
               className="h-10 w-10 rounded-xl flex items-center justify-center font-black text-xl shadow-lg transition-transform group-hover:rotate-12"
               style={{ backgroundColor: 'white', color: COLORS.TEAL }}
             >
               T
             </div>
-            <div className={`${isIndexPage ? 'hidden md:block' : 'block'}`}>
+            <div>
               <span className="font-black text-lg uppercase tracking-tighter text-white block leading-none">
                 TripTrac
               </span>
@@ -89,7 +94,7 @@ export const Header = ({ onSearchClick, showSearchIcon = true, className, hideIc
           </Link>
         </div>
 
-        {/* Desktop Navigation: Styled like the "About" headers */}
+        {/* Desktop Navigation */}
         <nav className="hidden lg:flex items-center gap-8">
           {[
             { to: "/", icon: <Home className="h-4 w-4" />, label: "Home" },
