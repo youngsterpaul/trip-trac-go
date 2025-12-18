@@ -131,12 +131,12 @@ const AdventurePlaceDetail = () => {
       <Header className="hidden md:block" />
 
       {/* Hero Image Section */}
-      <div className="relative w-full overflow-hidden h-[45vh] md:h-[55vh]">
-        <div className="absolute top-4 left-4 right-4 z-30 flex justify-between">
-          <Button onClick={() => navigate(-1)} className="rounded-full bg-black/30 backdrop-blur-md text-white border-none w-10 h-10 p-0">
+      <div className="relative w-full overflow-hidden h-[50vh] md:h-[60vh]">
+        <div className="absolute top-4 left-4 right-4 z-50 flex justify-between">
+          <Button onClick={() => navigate(-1)} className="rounded-full bg-black/30 backdrop-blur-md text-white border-none w-10 h-10 p-0 hover:bg-black/50">
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <Button onClick={handleSave} className={`rounded-full backdrop-blur-md border-none w-10 h-10 p-0 shadow-lg ${isSaved ? "bg-red-500" : "bg-black/30"}`}>
+          <Button onClick={handleSave} className={`rounded-full backdrop-blur-md border-none w-10 h-10 p-0 shadow-lg transition-colors ${isSaved ? "bg-red-500" : "bg-black/30 hover:bg-black/50"}`}>
             <Heart className={`h-5 w-5 text-white ${isSaved ? "fill-white" : ""}`} />
           </Button>
         </div>
@@ -147,31 +147,61 @@ const AdventurePlaceDetail = () => {
               <CarouselItem key={idx} className="h-full">
                 <div className="relative h-full w-full">
                   <img src={img} alt={place.name} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10" />
                 </div>
               </CarouselItem>
             ))}
           </CarouselContent>
         </Carousel>
 
-        <div className="absolute bottom-12 left-6 right-6 text-white">
-          <Badge className="bg-[#008080] hover:bg-[#008080] border-none px-3 py-1 mb-3 uppercase font-black tracking-widest text-[10px]">Adventure Place</Badge>
-          <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tight leading-none drop-shadow-xl mb-2">
-            {place.name}
-          </h1>
-          <div className="flex items-center gap-2 opacity-90">
-            <MapPin className="h-4 w-4" style={{ color: COLORS.TEAL }} />
-            <span className="text-sm font-bold uppercase tracking-wider">{place.location}, {place.country}</span>
-            {distance && (
-              <span className="ml-2 text-[10px] font-black bg-white/20 backdrop-blur-sm px-2 py-0.5 rounded-full uppercase">
-                {(distance).toFixed(1)}km away
-              </span>
-            )}
+        {/* Floating Adventure & Location Info Section */}
+        <div className="absolute bottom-10 left-0 z-40 w-full md:w-3/4 lg:w-1/2 p-8 pointer-events-none">
+          {/* Radial concentrated background - Fades out towards the edges */}
+          <div 
+            className="absolute inset-0 z-0 opacity-80"
+            style={{
+              background: `radial-gradient(circle at 20% 50%, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 85%)`,
+              filter: 'blur(15px)',
+              marginLeft: '-20px'
+            }}
+          />
+          
+          <div className="relative z-10 space-y-4 pointer-events-auto">
+            <Button 
+              className="bg-[#008080] hover:bg-[#008080] border-none px-4 py-1.5 h-auto uppercase font-black tracking-[0.15em] text-[10px] rounded-full shadow-lg text-white"
+            >
+              Adventure Place
+            </Button>
+            
+            <div>
+              <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter leading-none text-white drop-shadow-2xl mb-3">
+                {place.name}
+              </h1>
+              
+              <div className="flex flex-wrap items-center gap-3 cursor-pointer group w-fit" onClick={openInMaps}>
+                <div className="bg-white/20 backdrop-blur-md p-2 rounded-xl group-hover:bg-[#008080] transition-all duration-300">
+                  <MapPin className="h-5 w-5 text-white" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold text-[#008080] uppercase tracking-widest">Location</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-black text-white uppercase tracking-wider group-hover:text-[#008080] transition-colors">
+                      {place.location}, {place.country}
+                    </span>
+                    {distance && (
+                      <Badge className="bg-[#008080]/80 text-white text-[9px] px-2 py-0 h-4 font-black border-none">
+                        {(distance).toFixed(1)}KM AWAY
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <main className="container px-4 max-w-6xl mx-auto -mt-10 relative z-40">
+      <main className="container px-4 max-w-6xl mx-auto -mt-10 relative z-50">
         <div className="grid lg:grid-cols-[1.7fr,1fr] gap-6">
           
           <div className="space-y-6">
@@ -241,7 +271,7 @@ const AdventurePlaceDetail = () => {
               </div>
             )}
 
-            {/* AMENITIES SECTION (Updated & Improved) */}
+            {/* AMENITIES SECTION */}
             {place.amenities && (Array.isArray(place.amenities) ? place.amenities.length > 0 : place.amenities.split(',').length > 0) && (
               <div className="bg-white rounded-[28px] p-7 shadow-sm border border-slate-100">
                 <div className="flex items-center gap-3 mb-6">
