@@ -537,39 +537,26 @@ const Index = () => {
             <main className="w-full">
 {!isSearchFocused && (
   <div className="w-full px-4 md:px-6 lg:px-8 py-4 md:py-6">
-    {/* Grid for md and lg, Flex-row with overflow for smallest screens */}
-    <div className="flex flex-row overflow-x-auto no-scrollbar md:grid md:grid-cols-4 gap-4 md:gap-4 w-full">
+    {/* Flex-row with no gap on mobile; Grid with gap on md+ */}
+    <div className="flex flex-row overflow-x-auto no-scrollbar md:grid md:grid-cols-4 lg:grid-cols-6 md:gap-6 w-full">
       {categories.map(cat => (
         <div 
           key={cat.title} 
           onClick={() => navigate(cat.path)} 
-          className="relative flex-shrink-0 flex flex-col items-center cursor-pointer group 
-                     md:h-40 lg:h-48 md:block" // Reset block behavior for larger screens
+          className="flex-shrink-0 flex flex-col items-center cursor-pointer group min-w-[80px] md:min-w-0"
         >
-          {/* ICON CONTAINER: Circle background on mobile, Background image on md+ */}
-          <div 
-            className="flex items-center justify-center transition-all
-                       w-16 h-16 rounded-full bg-[#008080] mb-2 
-                       md:absolute md:inset-0 md:w-full md:h-full md:rounded-none md:mb-0"
-            style={{
-              backgroundImage: window.innerWidth >= 768 ? `url(${cat.bgImage})` : 'none',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center'
-            }}
-          >
-            {/* Overlay for medium screens and above */}
-            <div className="hidden md:block absolute inset-0 bg-black/50 group-hover:bg-black/40 transition-all" />
-
-            {/* Icon: White on mobile circle, White on dark overlay for md+ */}
-            <cat.icon className="relative z-10 h-8 w-8 text-white md:h-12 md:w-12 lg:h-16 lg:w-16 md:mb-3" />
+          {/* ICON CIRCLE: Teal on all screens, size increases on larger screens */}
+          <div className="flex items-center justify-center transition-transform group-hover:scale-105 w-14 h-14 md:w-20 md:w-20 lg:w-24 lg:h-24 rounded-full bg-[#008080] mb-2 shadow-sm">
+            <cat.icon className="h-7 w-7 md:h-10 md:w-10 lg:h-12 lg:w-12 text-white" />
           </div>
 
-          {/* TEXT: Below circle on mobile, centered on image for md+ */}
-          <span className="font-bold text-gray-800 text-xs md:text-white md:text-base lg:text-lg leading-tight md:absolute md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 z-20 text-center w-full px-2" role="heading" aria-level={3}>
+          {/* TEXT LABEL: Always below the icon */}
+          <span className="font-bold text-gray-800 text-[10px] md:text-sm lg:text-base text-center leading-tight px-1 uppercase tracking-wider">
             {cat.title}
           </span>
           
-          <p className="hidden md:block md:absolute md:bottom-4 text-white/80 text-sm text-center z-20 w-full px-4">
+          {/* Optional description only on large screens */}
+          <p className="hidden lg:block text-gray-500 text-xs text-center mt-1">
             {cat.description}
           </p>
         </div>
