@@ -100,12 +100,12 @@ export default function Payment() {
           let total = 0;
           for (const booking of bookings) {
             let isCreator = false;
-            const tableMap: Record<string, "trips" | "hotels" | "adventure_places"> = { trip: "trips", hotel: "hotels", adventure: "adventure_places" };
+            const tableMap: any = { trip: "trips", hotel: "hotels", adventure: "adventure_places" };
             const tableName = tableMap[booking.booking_type];
             
             if (tableName) {
               const { data: item } = await supabase.from(tableName).select("created_by").eq("id", booking.item_id).single();
-              isCreator = (item as any)?.created_by === user.id;
+              isCreator = item?.created_by === user.id;
             }
 
             if (isCreator) total += Number(booking.total_amount);

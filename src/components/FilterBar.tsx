@@ -47,11 +47,11 @@ export const FilterBar = ({ type, onApplyFilters }: FilterBarProps) => {
       };
       
       const { data } = await supabase
-        .from(tableMap[type] as "trips" | "hotels" | "adventure_places")
+        .from(tableMap[type])
         .select("location, place, country")
         .eq("approval_status", "approved");
 
-      (data || []).forEach((item: any) => {
+      (data || []).forEach(item => {
         if (item.location) uniqueLocations.add(item.location);
         if (item.place) uniqueLocations.add(item.place);
         if (item.country) uniqueLocations.add(item.country);

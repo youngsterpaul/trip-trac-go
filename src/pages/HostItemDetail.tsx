@@ -50,13 +50,13 @@ const HostItemDetail = () => {
       else if (type === "adventure") tableName = "adventure_places";
 
       const { data: itemData, error: itemError } = await supabase
-        .from(tableName as "trips" | "hotels" | "adventure_places")
+        .from(tableName)
         .select("*")
         .eq("id", id)
         .single();
 
       if (itemError) throw itemError;
-      if ((itemData as any).created_by !== user.id) {
+      if (itemData.created_by !== user.id) {
         toast({ title: "Access Denied", variant: "destructive" });
         navigate("/become-host");
         return;
