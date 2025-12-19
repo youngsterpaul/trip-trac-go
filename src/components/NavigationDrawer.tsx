@@ -1,4 +1,4 @@
-import { Home, Ticket, Heart, Phone, Info, LogIn, LogOut, User, FileText, Shield } from "lucide-react";
+import { Home, Ticket, Heart, Phone, Info, LogIn, LogOut, User, FileText, Shield, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
@@ -8,9 +8,8 @@ interface NavigationDrawerProps {
   onClose: () => void;
 }
 
-// Component to render a thin separator line
 const Separator = () => (
-  <hr className="my-1.5 border-gray-200/50 dark:border-gray-700/30" />
+  <hr className="my-1 border-slate-100 dark:border-gray-800/50" />
 );
 
 export const NavigationDrawer = ({ onClose }: NavigationDrawerProps) => {
@@ -20,185 +19,119 @@ export const NavigationDrawer = ({ onClose }: NavigationDrawerProps) => {
   useEffect(() => {
     const fetchUserData = async () => {
       if (!user) return;
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("name")
-        .eq("id", user.id)
-        .single();
-
-      if (profile && profile.name) {
-        setUserName(profile.name);
-      }
+      const { data: profile } = await supabase.from("profiles").select("name").eq("id", user.id).single();
+      if (profile?.name) setUserName(profile.name);
     };
-
     fetchUserData();
   }, [user]);
 
-  const handleProtectedNavigation = async (path: string) => {
-    if (!user) {
-      window.location.href = "/auth";
-      onClose();
-      return;
-    }
-
-    window.location.href = path;
+  const handleProtectedNavigation = (path: string) => {
+    window.location.href = user ? path : "/auth";
     onClose();
   };
 
-  const bottomNavItems = [
-    { icon: Phone, label: "Contact", path: "/contact", protected: false },
-    { icon: Info, label: "About", path: "/about", protected: false },
-  ];
-
-  const legalItems = [
-    { icon: FileText, label: "Terms of Service", path: "/terms-of-service" },
-    { icon: Shield, label: "Privacy Policy", path: "/privacy-policy" },
-  ];
-
-  const topContentItems = [
-    { icon: Home, label: "Home", path: "/", protected: false },
-    { icon: Ticket, label: "My Bookings", path: "/bookings", protected: true },
-    { icon: Heart, label: "Wishlist", path: "/saved", protected: true },
-  ];
-
-  const handleLogout = () => {
-    signOut();
-    onClose();
-  };
-
-  const AuthDisplay = user ? (
-    <li className="mt-4 pt-2 border-t border-gray-200 dark:border-gray-800">
-      <Link
-        to="/profile"
-        onClick={onClose}
-        className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 group"
-      >
-        <User className="h-4 w-4 text-black dark:text-white" />
-        <span className="text-sm font-medium truncate text-black dark:text-white">
-          {userName || "My Profile"}
-        </span>
-      </Link>
-      <Separator /> 
+  const NavItem = ({ icon: Icon, label, path, isProtected = false }: any) => (
+    <li>
       <button
-        onClick={handleLogout}
-        className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-all duration-200 group"
+        onClick={() => isProtected ? handleProtectedNavigation(path) : (window.location.href = path, onClose())}
+        className="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-gray-800 transition-all group"
       >
-        <LogOut className="h-4 w-4 text-red-600 dark:text-red-400" />
-        <span className="text-sm font-medium text-red-600 dark:text-red-400">Logout</span>
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-slate-100 dark:bg-gray-800 group-hover:bg-[#008080] transition-colors">
+            <Icon className="h-4 w-4 text-slate-600 dark:text-slate-300 group-hover:text-white" />
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-600 dark:text-slate-300">
+            {label}
+          </span>
+        </div>
+        <ChevronRight className="h-3 w-3 text-slate-300 group-hover:text-[#008080] transition-transform group-hover:translate-x-1" />
       </button>
-      <Separator /> 
-    </li>
-  ) : (
-    <li className="mt-4 pt-2 border-t border-gray-200 dark:border-gray-800">
-      <Link
-        to="/auth"
-        onClick={onClose}
-        className="w-full flex items-center gap-3 px-4 py-2 rounded-lg bg-teal-600 dark:bg-teal-800 text-white hover:bg-teal-700 dark:hover:bg-teal-700 transition-all duration-200 group"
-      >
-        <LogIn className="h-4 w-4 text-white" />
-        <span className="text-sm font-medium text-white">Login / Register</span>
-      </Link>
-      <Separator /> 
+      <Separator />
     </li>
   );
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="p-4 border-b bg-[#008080] text-white border-[#006666]">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="h-8 w-8 rounded-lg bg-[#006666] flex items-center justify-center font-bold text-lg text-white">
-            T
+    <div className="flex flex-col h-full bg-white dark:bg-gray-950">
+      {/* Brand Header */}
+      <div className="p-6 bg-[#008080] text-white">
+        <div className="flex items-center gap-4">
+          <div className="h-10 w-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-lg">
+            <span className="font-black text-xl">T</span>
           </div>
           <div>
-            <span className="font-bold text-base block text-white">
+            <span className="font-black text-lg uppercase tracking-tighter leading-none block">
               TripTrac
             </span>
-            <p className="text-xs text-[#80c0c0]">Your journey starts now.</p>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-white/60 mt-1">
+              Premium Experiences
+            </p>
           </div>
         </div>
       </div>
 
-      <nav className="flex-1 p-4 pt-6 overflow-y-auto bg-white dark:bg-gray-950 scrollbar-hide">
-        <ul className="space-y-0.5">
-          {/* 1. TOP SECTION */}
-          <li>
-            <ul className="space-y-0.5">
-              {topContentItems.map((item) => (
-                <li key={item.path}>
-                  {item.label === "Home" ? (
-                    <Link
-                      to={item.path}
-                      onClick={onClose}
-                      className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 group"
-                    >
-                      <item.icon className="h-4 w-4 text-black dark:text-white" />
-                      <span className="text-sm font-medium text-black dark:text-white">
-                        {item.label}
-                      </span>
-                    </Link>
-                  ) : (
-                    <button
-                      onClick={() => handleProtectedNavigation(item.path)}
-                      className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 group"
-                    >
-                      <item.icon className="h-4 w-4 text-black dark:text-white" />
-                      <span className="text-sm font-medium text-black dark:text-white">
-                        {item.label}
-                      </span>
-                    </button>
-                  )}
-                  <Separator />
-                </li>
-              ))}
-            </ul>
-          </li>
+      <nav className="flex-1 p-4 overflow-y-auto scrollbar-hide">
+        {/* User Profile Card / Auth Section */}
+        <div className="mb-6">
+          {user ? (
+            <div className="p-4 rounded-[24px] bg-slate-50 dark:bg-gray-900 border border-slate-100 dark:border-gray-800">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-10 w-10 rounded-full bg-[#008080] flex items-center justify-center text-white font-black">
+                  {userName?.charAt(0) || "U"}
+                </div>
+                <div className="flex flex-col overflow-hidden">
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Welcome back</span>
+                  <span className="text-sm font-black uppercase tracking-tight truncate dark:text-white">
+                    {userName || "Explorer"}
+                  </span>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <Link 
+                  to="/profile" onClick={onClose}
+                  className="flex items-center justify-center gap-2 py-2 rounded-lg bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 text-[9px] font-black uppercase tracking-widest hover:border-[#008080] transition-colors"
+                >
+                  <User className="h-3 w-3" /> Profile
+                </Link>
+                <button 
+                  onClick={() => { signOut(); onClose(); }}
+                  className="flex items-center justify-center gap-2 py-2 rounded-lg bg-red-50 text-red-600 text-[9px] font-black uppercase tracking-widest hover:bg-red-100 transition-colors"
+                >
+                  <LogOut className="h-3 w-3" /> Logout
+                </button>
+              </div>
+            </div>
+          ) : (
+            <Link
+              to="/auth" onClick={onClose}
+              className="flex items-center justify-center w-full py-4 rounded-[20px] bg-[#008080] text-white shadow-lg shadow-[#008080]/20 active:scale-95 transition-all"
+            >
+              <LogIn className="h-4 w-4 mr-2" />
+              <span className="text-[11px] font-black uppercase tracking-[0.2em]">Login / Register</span>
+            </Link>
+          )}
+        </div>
 
-          {/* 2. COMPANY SECTION */}
-          <li className="pt-2"> 
-            <ul className="space-y-0.5">
-              {bottomNavItems.map((item) => (
-                <li key={item.path}>
-                  <Link
-                    to={item.path}
-                    onClick={onClose}
-                    className="flex items-center gap-3 px-4 py-2 rounded-lg text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 group"
-                  >
-                    <item.icon className="h-4 w-4 text-black dark:text-white" />
-                    <span className="text-sm font-medium text-black dark:text-white">
-                      {item.label}
-                    </span>
-                  </Link>
-                  <Separator />
-                </li>
-              ))}
-            </ul>
-          </li>
-
-          {/* 3. LEGAL SECTION */}
-          <li className="pt-2">
-            <ul className="space-y-0.5">
-              {legalItems.map((item) => (
-                <li key={item.path}>
-                  <Link
-                    to={item.path}
-                    onClick={onClose}
-                    className="flex items-center gap-3 px-4 py-2 rounded-lg text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 group"
-                  >
-                    <item.icon className="h-4 w-4 text-black dark:text-white" />
-                    <span className="text-sm font-medium text-black dark:text-white">
-                      {item.label}
-                    </span>
-                  </Link>
-                  <Separator />
-                </li>
-              ))}
-            </ul>
-          </li>
-
-          {AuthDisplay}
+        <ul className="space-y-1">
+          <p className="px-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Main Menu</p>
+          <NavItem icon={Home} label="Home" path="/" />
+          <NavItem icon={Ticket} label="My Bookings" path="/bookings" isProtected />
+          <NavItem icon={Heart} label="Wishlist" path="/saved" isProtected />
+          
+          <div className="h-4" />
+          <p className="px-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Support & Legal</p>
+          <NavItem icon={Phone} label="Contact" path="/contact" />
+          <NavItem icon={Info} label="About" path="/about" />
+          <NavItem icon={FileText} label="Terms" path="/terms-of-service" />
+          <NavItem icon={Shield} label="Privacy" path="/privacy-policy" />
         </ul>
       </nav>
+      
+      {/* Footer Label */}
+      <div className="p-6 border-t border-slate-50 dark:border-gray-900 text-center">
+        <span className="text-[9px] font-bold text-slate-300 uppercase tracking-[0.3em]">
+          TripTrac v2.0
+        </span>
+      </div>
     </div>
   );
 };
