@@ -260,7 +260,9 @@ const TripDetail = () => {
             <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter leading-none text-white drop-shadow-2xl mb-3">{trip.name}</h1>
           <div className="flex items-center gap-3 group w-fit cursor-pointer" onClick={openInMaps}>
                <MapPin className="h-5 w-5 text-white" />
-               <span className="text-sm font-black text-white uppercase tracking-wider px-3 py-1 rounded-full bg-black/30 backdrop-blur-sm">{trip.location}, {trip.country}</span>
+               <span className="text-sm font-black text-white uppercase tracking-wider px-3 py-1 rounded-full bg-black/30 backdrop-blur-sm">
+                 {[trip.place, trip.location, trip.country].filter(Boolean).join(', ')}
+               </span>
           </div>
           </div>
         </div>

@@ -760,7 +760,7 @@ const EditListing = () => {
             <p className="text-xs text-slate-400 mt-1">Cannot be changed</p>
           </div>
 
-          {/* Contact Email */}
+          {/* Contact Email - Editable without verification */}
           <div className="bg-white rounded-xl border border-slate-100 p-4 shadow-sm">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
@@ -774,6 +774,7 @@ const EditListing = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                placeholder="Contact email"
                 className="border-[#008080]/30 focus:border-[#008080]"
               />
             ) : (

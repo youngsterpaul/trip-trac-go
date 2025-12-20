@@ -265,7 +265,9 @@ const AdventurePlaceDetail = () => {
             <h1 className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-white leading-[0.9]">{place.name}</h1>
             <div className="flex items-center gap-2 mt-3" onClick={() => window.open(place?.map_link || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${place?.name}, ${place?.location}`)}`, "_blank")}>
               <MapPin className="h-4 w-4 text-white" />
-              <span className="text-sm font-bold text-white uppercase tracking-wider px-3 py-1 rounded-full bg-black/40 backdrop-blur-sm cursor-pointer hover:bg-black/60 transition-colors">{place.location}, {place.country}</span>
+              <span className="text-sm font-bold text-white uppercase tracking-wider px-3 py-1 rounded-full bg-black/40 backdrop-blur-sm cursor-pointer hover:bg-black/60 transition-colors">
+                {[place.place, place.location, place.country].filter(Boolean).join(', ')}
+              </span>
             </div>
           </div>
         </div>

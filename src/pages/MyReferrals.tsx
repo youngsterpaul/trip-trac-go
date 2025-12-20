@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Users, ShoppingCart, DollarSign, Wallet, TrendingUp, Award } from "lucide-react";
+import { ArrowLeft, Users, DollarSign, Wallet, TrendingUp, Award, Percent, MinusCircle } from "lucide-react";
 
 const COLORS = {
   TEAL: "#008080",
@@ -28,7 +28,10 @@ export default function MyReferrals() {
     totalCommission: 0,
     hostEarnings: 0,
     bookingEarnings: 0,
-    availableBalance: 0,
+    grossBalance: 0,
+    serviceFeeDeducted: 0,
+    withdrawableBalance: 0,
+    avgServiceFeeRate: 0,
   });
 
   useEffect(() => {
@@ -39,6 +42,7 @@ export default function MyReferrals() {
 
     const fetchStats = async () => {
       try {
+        // Fetch referral tracking data
         const { data: referrals, error: referralsError } = await supabase
           .from("referral_tracking")
           .select("*")
@@ -50,12 +54,19 @@ export default function MyReferrals() {
           referrals?.map((r) => r.referred_user_id).filter(Boolean) || []
         );
 
+        // Fetch commission data
         const { data: commissions, error: commissionsError } = await supabase
           .from("referral_commissions")
           .select("*")
           .eq("referrer_id", user.id);
 
         if (commissionsError) throw commissionsError;
+
+        // Fetch referral settings for service fee info
+        const { data: settings } = await supabase
+          .from("referral_settings")
+          .select("*")
+          .single();
 
         const hostEarnings = commissions?.filter(c => c.commission_type === 'host')
           .reduce((sum, c) => sum + Number(c.commission_amount), 0) || 0;
@@ -64,8 +75,26 @@ export default function MyReferrals() {
           .reduce((sum, c) => sum + Number(c.commission_amount), 0) || 0;
 
         const totalCommission = hostEarnings + bookingEarnings;
-        const availableBalance = commissions?.filter(c => c.status === 'paid')
+        
+        // Calculate gross balance from all paid commissions
+        const grossBalance = commissions?.filter(c => c.status === 'paid')
           .reduce((sum, c) => sum + Number(c.commission_amount), 0) || 0;
+
+        // Calculate total booking amounts for service fee calculation display
+        const totalBookingAmount = commissions?.filter(c => c.status === 'paid')
+          .reduce((sum, c) => sum + Number(c.booking_amount), 0) || 0;
+
+        // Average service fee rate from settings (for display purposes)
+        const avgServiceFeeRate = settings?.platform_referral_commission_rate || 5.0;
+        
+        // Service fee is already factored into commission calculation, but we show breakdown
+        // The commission IS what the user earns (after platform takes its cut)
+        // So withdrawable = gross balance (the commission amount already reflects net earnings)
+        const withdrawableBalance = grossBalance;
+        
+        // For display: show estimated platform fee that was deducted from booking total
+        // This is informational - commission_amount already reflects net amount to user
+        const estimatedServiceFee = totalBookingAmount * (avgServiceFeeRate / 100) - grossBalance;
 
         setStats({
           totalReferred: uniqueReferred.size,
@@ -73,7 +102,10 @@ export default function MyReferrals() {
           totalCommission,
           hostEarnings,
           bookingEarnings,
-          availableBalance,
+          grossBalance,
+          serviceFeeDeducted: Math.max(0, estimatedServiceFee),
+          withdrawableBalance,
+          avgServiceFeeRate,
         });
 
         setLoading(false);
@@ -94,7 +126,7 @@ export default function MyReferrals() {
           <Skeleton className="h-10 w-40 rounded-full" />
           <Skeleton className="h-20 w-3/4 rounded-3xl" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => (
+            {[1, 2, 3, 4, 5, 6].map((i) => (
               <Skeleton key={i} className="h-40 rounded-[32px]" />
             ))}
           </div>
@@ -131,24 +163,25 @@ export default function MyReferrals() {
         </div>
 
         {/* Stats Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
           
-          {/* Available Balance */}
+          {/* Withdrawable Balance - Main Card */}
           <StatCard 
             icon={<Wallet className="h-6 w-6" />}
-            label="Available Balance"
-            value={`KSh ${stats.availableBalance.toLocaleString()}`}
+            label="Withdrawable Balance"
+            value={`KSh ${stats.withdrawableBalance.toLocaleString()}`}
             subLabel="Ready for Payout"
             color={COLORS.RED}
             isCash
+            large
           />
 
           {/* Host Earnings */}
           <StatCard 
             icon={<Users className="h-6 w-6" />}
-            label="Host Referrals"
+            label="From Hosts"
             value={`KSh ${stats.hostEarnings.toLocaleString()}`}
-            subLabel="From Referred Hosts"
+            subLabel="Host Referral Earnings"
             color={COLORS.TEAL}
             isCash
           />
@@ -156,11 +189,20 @@ export default function MyReferrals() {
           {/* Booking Commissions */}
           <StatCard 
             icon={<TrendingUp className="h-6 w-6" />}
-            label="Booking Commissions"
+            label="From Bookings"
             value={`KSh ${stats.bookingEarnings.toLocaleString()}`}
-            subLabel="From User Bookings"
+            subLabel="Booking Commission Earnings"
             color={COLORS.CORAL}
             isCash
+          />
+
+          {/* Service Fee Rate Info */}
+          <StatCard 
+            icon={<Percent className="h-6 w-6" />}
+            label="Commission Rate"
+            value={`${stats.avgServiceFeeRate}%`}
+            subLabel="Of Service Fee Earned"
+            color={COLORS.KHAKI_DARK}
           />
 
           {/* Total Referred */}
@@ -169,7 +211,16 @@ export default function MyReferrals() {
             label="Community Size"
             value={stats.totalReferred}
             subLabel="Unique Referrals"
-            color={COLORS.KHAKI_DARK}
+            color={COLORS.TEAL}
+          />
+
+          {/* Total Bookings */}
+          <StatCard 
+            icon={<DollarSign className="h-6 w-6" />}
+            label="Total Bookings"
+            value={stats.totalBookings}
+            subLabel="Converted Referrals"
+            color={COLORS.CORAL}
           />
         </div>
 
@@ -182,7 +233,7 @@ export default function MyReferrals() {
             <div className="space-y-4 text-center md:text-left">
               <h2 className="text-3xl font-black uppercase tracking-tighter">Share the Adventure</h2>
               <p className="text-teal-50/80 max-w-md text-sm font-medium leading-relaxed">
-                Invite your friends to explore world-class experiences. You earn commission on every booking they make through your unique link.
+                Invite your friends to explore world-class experiences. You earn {stats.avgServiceFeeRate}% commission on every booking they make through your unique link.
               </p>
               <Button 
                 className="bg-white text-[#008080] hover:bg-slate-100 rounded-2xl px-8 py-6 h-auto font-black uppercase tracking-widest text-xs"
@@ -205,9 +256,9 @@ export default function MyReferrals() {
   );
 }
 
-// Sub-component for individual stat cards to match EventDetail UI
-const StatCard = ({ icon, label, value, subLabel, color, isCash = false }: any) => (
-  <div className="bg-white rounded-[32px] p-8 shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition-all">
+// Sub-component for individual stat cards
+const StatCard = ({ icon, label, value, subLabel, color, isCash = false, large = false }: any) => (
+  <div className={`bg-white rounded-[32px] p-8 shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition-all ${large ? 'lg:col-span-1' : ''}`}>
     <div className="flex justify-between items-start mb-6">
       <div 
         className="p-3 rounded-2xl shadow-inner"
@@ -223,7 +274,7 @@ const StatCard = ({ icon, label, value, subLabel, color, isCash = false }: any) 
     <div>
       <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">{label}</p>
       <div className="flex items-baseline gap-2">
-        <span className="text-4xl font-black tracking-tighter" style={{ color: isCash ? COLORS.RED : "#1e293b" }}>
+        <span className={`${large ? 'text-4xl' : 'text-3xl'} font-black tracking-tighter`} style={{ color: isCash ? COLORS.RED : "#1e293b" }}>
           {value}
         </span>
       </div>
@@ -235,7 +286,7 @@ const StatCard = ({ icon, label, value, subLabel, color, isCash = false }: any) 
   </div>
 );
 
-// Reuse the Badge component if needed, or define a simple one
+// Reuse the Badge component
 const Badge = ({ children, className, variant, style }: any) => (
   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${className}`} style={style}>
     {children}

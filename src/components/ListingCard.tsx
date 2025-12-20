@@ -160,7 +160,7 @@ const ListingCardComponent = ({
         <div className="flex items-center gap-1.5 mb-3">
             <MapPin className="h-3.5 w-3.5" style={{ color: COLORS.CORAL }} />
             <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider line-clamp-1">
-                {location}
+                {location}{country ? `, ${country}` : ''}
             </p>
         </div>
 

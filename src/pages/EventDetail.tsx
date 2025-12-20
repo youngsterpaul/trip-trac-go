@@ -174,7 +174,9 @@ const EventDetail = () => {
                  <div className="bg-black/30 backdrop-blur-md p-2 rounded-xl group-hover:bg-[#FF7F50] transition-all duration-300"><MapPin className="h-5 w-5 text-white" /></div>
                  <div className="flex flex-col">
                    <span className="text-[10px] font-bold text-[#FF7F50] uppercase tracking-widest px-2 py-0.5 bg-black/30 rounded-full backdrop-blur-sm">Location</span>
-                   <span className="text-sm font-black text-white uppercase tracking-wider group-hover:text-[#008080] transition-colors px-3 py-1 bg-black/30 rounded-full backdrop-blur-sm mt-1">{event.location}</span>
+                   <span className="text-sm font-black text-white uppercase tracking-wider group-hover:text-[#008080] transition-colors px-3 py-1 bg-black/30 rounded-full backdrop-blur-sm mt-1">
+                     {[event.place, event.location, event.country].filter(Boolean).join(', ')}
+                   </span>
                  </div>
                </div>
             </div>
