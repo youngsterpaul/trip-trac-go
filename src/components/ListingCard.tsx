@@ -1,4 +1,4 @@
-import { useState, memo } from "react";
+import { useState, memo, useCallback, useMemo } from "react";
 import { MapPin, Heart, Star, Calendar, Ticket } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +14,7 @@ const COLORS = {
   KHAKI_DARK: "#857F3E",
   RED: "#FF0000",
   SOFT_GRAY: "#F8F9FA"
-};
+} as const;
 
 interface ListingCardProps {
   id: string;
@@ -63,31 +63,41 @@ const ListingCardComponent = ({
 
   const shouldLoadImage = priority || isIntersecting;
   
-  // Logic: Treat SPORT exactly like EVENT
-  const isEventOrSport = type === "EVENT" || type === "SPORT";
-  const isTrip = type === "TRIP";
+  // Memoized calculations
+  const isEventOrSport = useMemo(() => type === "EVENT" || type === "SPORT", [type]);
+  const isTrip = useMemo(() => type === "TRIP", [type]);
+  const tracksAvailability = useMemo(() => isEventOrSport || isTrip, [isEventOrSport, isTrip]);
   
-  // These categories track inventory/slots
-  const tracksAvailability = isEventOrSport || isTrip;
+  const remainingTickets = useMemo(() => availableTickets - bookedTickets, [availableTickets, bookedTickets]);
+  const isSoldOut = useMemo(() => tracksAvailability && availableTickets > 0 && remainingTickets <= 0, [tracksAvailability, availableTickets, remainingTickets]);
+  const fewSlotsRemaining = useMemo(() => tracksAvailability && remainingTickets > 0 && remainingTickets <= 10, [tracksAvailability, remainingTickets]);
+  const isNotAvailable = useMemo(() => isOutdated || isSoldOut, [isOutdated, isSoldOut]);
+  
+  const optimizedImageUrl = useMemo(() => optimizeSupabaseImage(imageUrl, { width: 400, height: 300, quality: 80 }), [imageUrl]);
+  const displayType = useMemo(() => isEventOrSport ? "Event & Sports" : type.replace('_', ' '), [isEventOrSport, type]);
+  const formattedDistance = useMemo(() => distance?.toFixed(2), [distance]);
+  const locationString = useMemo(() => [place, location, country].filter(Boolean).join(', '), [place, location, country]);
 
-  const handleCardClick = () => {
+  // Memoized callbacks
+  const handleCardClick = useCallback(() => {
     const typeMap: Record<string, string> = {
       "TRIP": "trip", "EVENT": "event", "SPORT": "event", "HOTEL": "hotel",
       "ADVENTURE PLACE": "adventure", "ACCOMMODATION": "accommodation", "ATTRACTION": "attraction"
     };
     navigate(createDetailPath(typeMap[type], id, name, location));
-  };
+  }, [navigate, type, id, name, location]);
 
-  // Ticket Availability Logic
-  const remainingTickets = availableTickets - bookedTickets;
-  const isSoldOut = tracksAvailability && availableTickets > 0 && remainingTickets <= 0;
-  const fewSlotsRemaining = tracksAvailability && remainingTickets > 0 && remainingTickets <= 10;
-  const isNotAvailable = isOutdated || isSoldOut;
+  const handleSaveClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSave?.(id, type);
+  }, [onSave, id, type]);
 
-  const optimizedImageUrl = optimizeSupabaseImage(imageUrl, { width: 400, height: 300, quality: 80 });
+  const handleImageLoad = useCallback(() => setImageLoaded(true), []);
 
-  // Display label logic
-  const displayType = isEventOrSport ? "Event & Sports" : type.replace('_', ' ');
+  const showDistanceBadge = useMemo(() => 
+    (type === 'HOTEL' || type === 'ADVENTURE PLACE') && distance !== undefined, 
+    [type, distance]
+  );
 
   return (
     <Card 
@@ -105,7 +115,7 @@ const ListingCardComponent = ({
           <img 
             src={optimizedImageUrl} 
             alt={name} 
-            onLoad={() => setImageLoaded(true)} 
+            onLoad={handleImageLoad} 
             className={cn(
                 "absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110", 
                 imageLoaded ? "opacity-100" : "opacity-0",
@@ -131,9 +141,19 @@ const ListingCardComponent = ({
           {displayType}
         </Badge>
 
+        {/* Distance Badge - Bottom Right over image */}
+        {showDistanceBadge && (
+          <Badge 
+            className="absolute bottom-3 right-3 z-10 px-2 py-1 border-none shadow-lg text-[9px] font-black"
+            style={{ background: COLORS.CORAL, color: 'white' }}
+          >
+            {formattedDistance} km
+          </Badge>
+        )}
+
         {onSave && (
           <button 
-            onClick={(e) => { e.stopPropagation(); onSave(id, type); }} 
+            onClick={handleSaveClick} 
             className={cn(
                 "absolute top-3 right-3 z-20 h-8 w-8 flex items-center justify-center rounded-full backdrop-blur-md transition-all", 
                 isSaved ? "bg-red-500" : "bg-black/20 hover:bg-black/40"
@@ -158,18 +178,11 @@ const ListingCardComponent = ({
           )}
         </div>
         
-        <div className="flex items-center justify-between gap-1.5 mb-3">
-            <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                <MapPin className="h-3.5 w-3.5 flex-shrink-0" style={{ color: COLORS.CORAL }} />
-                <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider line-clamp-1">
-                    {[place, location, country].filter(Boolean).join(', ')}
-                </p>
-            </div>
-            {(type === 'HOTEL' || type === 'ADVENTURE PLACE') && distance !== undefined && (
-                <span className="text-[9px] font-black text-white px-1.5 py-0.5 rounded-full flex-shrink-0" style={{ background: COLORS.CORAL }}>
-                    {distance.toFixed(2)} km
-                </span>
-            )}
+        <div className="flex items-center gap-1.5 mb-3">
+            <MapPin className="h-3.5 w-3.5 flex-shrink-0" style={{ color: COLORS.CORAL }} />
+            <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider line-clamp-1">
+                {locationString}
+            </p>
         </div>
 
         {/* Activities / Tags */}

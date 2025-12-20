@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
@@ -7,10 +8,10 @@ interface ListingSkeletonProps {
   className?: string;
 }
 
-export function ListingSkeleton({ compact = false, className }: ListingSkeletonProps) {
+const ListingSkeletonComponent = ({ compact = false, className }: ListingSkeletonProps) => {
   return (
     <Card className={cn(
-      "overflow-hidden transition-all duration-300 border-slate-100 bg-white flex flex-col",
+      "overflow-hidden border-slate-100 bg-white flex flex-col",
       "rounded-[24px]",
       compact ? "h-auto" : "h-full",
       className
@@ -21,6 +22,9 @@ export function ListingSkeleton({ compact = false, className }: ListingSkeletonP
         
         {/* Floating Category Badge Placeholder */}
         <Skeleton className="absolute top-3 left-3 h-4 w-14 rounded-full" />
+
+        {/* Distance Badge Placeholder - Bottom Right */}
+        <Skeleton className="absolute bottom-3 right-3 h-5 w-12 rounded-full" />
 
         {/* Heart Button Placeholder */}
         <div className="absolute top-3 right-3 z-20 h-8 w-8">
@@ -72,34 +76,37 @@ export function ListingSkeleton({ compact = false, className }: ListingSkeletonP
       </div>
     </Card>
   );
-}
+};
+
+// Memoize to prevent unnecessary re-renders
+export const ListingSkeleton = memo(ListingSkeletonComponent);
 
 // Grid skeleton for displaying multiple loading cards
-export function ListingGridSkeleton({ count = 8, className }: { count?: number; className?: string }) {
+export const ListingGridSkeleton = memo(({ count = 8, className }: { count?: number; className?: string }) => {
   return (
     <div className={cn(
       "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-5",
       className
     )}>
-      {[...Array(count)].map((_, i) => (
+      {Array.from({ length: count }).map((_, i) => (
         <ListingSkeleton key={i} />
       ))}
     </div>
   );
-}
+});
 
 // Horizontal scroll skeleton
-export function HorizontalScrollSkeleton({ count = 5 }: { count?: number }) {
+export const HorizontalScrollSkeleton = memo(({ count = 5 }: { count?: number }) => {
   return (
     <div className="flex gap-3 md:gap-4 overflow-x-auto pb-2 scrollbar-hide pl-1 pr-8 md:pl-2 md:pr-12">
-      {[...Array(count)].map((_, i) => (
+      {Array.from({ length: count }).map((_, i) => (
         <div key={i} className="flex-shrink-0 w-[45vw] md:w-56">
           <ListingSkeleton />
         </div>
       ))}
     </div>
   );
-}
+});
 
 // Page detail skeleton
 export function DetailPageSkeleton() {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, lazy, Suspense, useMemo } from "react";
+import { useState, useEffect, useRef, lazy, Suspense, useMemo, useCallback, memo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { MobileBottomBar } from "@/components/MobileBottomBar";
@@ -20,6 +20,10 @@ import { ListingSkeleton, ListingGridSkeleton, HorizontalScrollSkeleton } from "
 import { useSavedItems } from "@/hooks/useSavedItems";
 import { getCachedHomePageData, setCachedHomePageData } from "@/hooks/useHomePageCache";
 import { useRatings, sortByRating, RatingData } from "@/hooks/useRatings";
+
+// Memoized listing card wrapper for performance
+const MemoizedListingCard = memo(ListingCard);
+
 const Index = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
@@ -143,7 +147,7 @@ const Index = () => {
 
   // Minimum swipe distance (in px) to trigger navigation
   const minSwipeDistance = 50;
-  const scrollSection = (ref: React.RefObject<HTMLDivElement>, direction: 'left' | 'right') => {
+  const scrollSection = useCallback((ref: React.RefObject<HTMLDivElement>, direction: 'left' | 'right') => {
     if (ref.current) {
       const scrollAmount = 300;
       const newScrollLeft = direction === 'left' ? ref.current.scrollLeft - scrollAmount : ref.current.scrollLeft + scrollAmount;
@@ -152,22 +156,26 @@ const Index = () => {
         behavior: 'smooth'
       });
     }
-  };
-  const handleScroll = (sectionName: string) => (e: React.UIEvent<HTMLDivElement>) => {
+  }, []);
+
+  const handleScroll = useCallback((sectionName: string) => (e: React.UIEvent<HTMLDivElement>) => {
     const target = e.target as HTMLDivElement;
     setScrollPositions(prev => ({
       ...prev,
       [sectionName]: target.scrollLeft
     }));
-  };
-  const onTouchStart = (e: React.TouchEvent) => {
+  }, []);
+
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
-  };
-  const onTouchMove = (e: React.TouchEvent) => {
+  }, []);
+
+  const onTouchMove = useCallback((e: React.TouchEvent) => {
     setTouchEnd(e.targetTouches[0].clientX);
-  };
-  const onTouchEnd = (ref: React.RefObject<HTMLDivElement>) => {
+  }, []);
+
+  const onTouchEnd = useCallback((ref: React.RefObject<HTMLDivElement>) => {
     if (!touchStart || !touchEnd) return;
     const distance = touchStart - touchEnd;
     const isLeftSwipe = distance > minSwipeDistance;
@@ -178,7 +186,7 @@ const Index = () => {
     if (isRightSwipe) {
       scrollSection(ref, 'left');
     }
-  };
+  }, [touchStart, touchEnd, minSwipeDistance, scrollSection]);
   const fetchScrollableRows = async () => {
     setLoadingScrollable(true);
     const today = new Date().toISOString().split('T')[0];

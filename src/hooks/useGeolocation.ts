@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 
 interface GeolocationPosition {
   latitude: number;
@@ -10,6 +10,7 @@ export const useGeolocation = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [requested, setRequested] = useState(false);
+  const watchIdRef = useRef<number | null>(null);
 
   const requestLocation = useCallback(() => {
     if (requested) return;
@@ -23,6 +24,7 @@ export const useGeolocation = () => {
       return;
     }
 
+    // Get initial position
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setPosition({
@@ -32,17 +34,41 @@ export const useGeolocation = () => {
         setLoading(false);
       },
       (err) => {
-        console.warn("Geolocation error:", err.message);
         setError(err.message);
         setLoading(false);
       },
       {
         enableHighAccuracy: false,
         timeout: 5000,
-        maximumAge: 300000, // 5 minutes
+        maximumAge: 300000,
+      }
+    );
+
+    // Watch for live position updates
+    watchIdRef.current = navigator.geolocation.watchPosition(
+      (pos) => {
+        setPosition({
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+        });
+      },
+      () => {},
+      {
+        enableHighAccuracy: false,
+        timeout: 10000,
+        maximumAge: 60000, // 1 minute cache for updates
       }
     );
   }, [requested]);
+
+  // Cleanup watch on unmount
+  useEffect(() => {
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
+    };
+  }, []);
 
   return { position, error, loading, requestLocation };
 };
