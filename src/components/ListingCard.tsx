@@ -48,11 +48,9 @@ interface ListingCardProps {
 
 const ListingCardComponent = ({
   id, type, name, imageUrl, location, country, price, date,
-  isFlexibleDate = false, isOutdated = false,
-  onSave, isSaved = false, activities, hidePrice = false,
-  availableTickets = 0, bookedTickets = 0, priority = false,
-  minimalDisplay = false, hideEmptySpace = false,
-  compact = false, avgRating, reviewCount, distance, place
+  isOutdated = false, onSave, isSaved = false, activities, 
+  hidePrice = false, availableTickets = 0, bookedTickets = 0, 
+  priority = false, compact = false, avgRating, distance, place
 }: ListingCardProps) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const navigate = useNavigate();
@@ -63,22 +61,24 @@ const ListingCardComponent = ({
 
   const shouldLoadImage = priority || isIntersecting;
   
-  // Memoized calculations
+  // Type logic
   const isEventOrSport = useMemo(() => type === "EVENT" || type === "SPORT", [type]);
   const isTrip = useMemo(() => type === "TRIP", [type]);
   const tracksAvailability = useMemo(() => isEventOrSport || isTrip, [isEventOrSport, isTrip]);
   
+  // Availability logic
   const remainingTickets = useMemo(() => availableTickets - bookedTickets, [availableTickets, bookedTickets]);
   const isSoldOut = useMemo(() => tracksAvailability && availableTickets > 0 && remainingTickets <= 0, [tracksAvailability, availableTickets, remainingTickets]);
   const fewSlotsRemaining = useMemo(() => tracksAvailability && remainingTickets > 0 && remainingTickets <= 10, [tracksAvailability, remainingTickets]);
-  const isNotAvailable = useMemo(() => isOutdated || isSoldOut, [isOutdated, isSoldOut]);
+  
+  // Unified "Unavailable" state for visual overlays
+  const isUnavailable = useMemo(() => isOutdated || isSoldOut, [isOutdated, isSoldOut]);
   
   const optimizedImageUrl = useMemo(() => optimizeSupabaseImage(imageUrl, { width: 400, height: 300, quality: 80 }), [imageUrl]);
   const displayType = useMemo(() => isEventOrSport ? "Event & Sports" : type.replace('_', ' '), [isEventOrSport, type]);
   const formattedDistance = useMemo(() => distance?.toFixed(2), [distance]);
   const locationString = useMemo(() => [place, location, country].filter(Boolean).join(', '), [place, location, country]);
 
-  // Memoized callbacks
   const handleCardClick = useCallback(() => {
     const typeMap: Record<string, string> = {
       "TRIP": "trip", "EVENT": "event", "SPORT": "event", "HOTEL": "hotel",
@@ -106,10 +106,10 @@ const ListingCardComponent = ({
         "group overflow-hidden transition-all duration-300 hover:shadow-2xl cursor-pointer border-slate-200 bg-slate-50 flex flex-col",
         "rounded-[24px]",
         compact ? "h-auto" : "h-full",
-        isNotAvailable && "opacity-80"
+        isUnavailable && "opacity-90"
       )}
     >
-      {/* Image Container */}
+      {/* Image Section */}
       <div ref={imageContainerRef} className="relative overflow-hidden m-2 rounded-[20px] bg-slate-100" style={{ paddingBottom: '70%' }}>
         {shouldLoadImage && (
           <img 
@@ -119,29 +119,28 @@ const ListingCardComponent = ({
             className={cn(
                 "absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110", 
                 imageLoaded ? "opacity-100" : "opacity-0",
-                isNotAvailable && "grayscale-[0.5]"
+                isUnavailable && "grayscale-[0.6]" 
             )} 
           />
         )}
 
-        {/* Not Available / Sold Out Overlay */}
-        {isNotAvailable && (
-          <div className="absolute inset-0 z-20 bg-black/40 flex items-center justify-center">
-            <Badge className="bg-white text-black font-black border-none px-3 py-1 text-[10px] uppercase">
-                {isOutdated ? 'Not Available' : 'Sold Out'}
+        {/* SOLD OUT / NOT AVAILABLE OVERLAY */}
+        {isUnavailable && (
+          <div className="absolute inset-0 z-20 bg-black/40 flex items-center justify-center backdrop-blur-[1px]">
+            <Badge className="bg-white text-black font-black border-none px-4 py-1.5 text-[11px] uppercase shadow-2xl">
+                {isSoldOut ? 'Sold Out' : 'Not Available'}
             </Badge>
           </div>
         )}
         
-        {/* Floating Category Badge */}
+        {/* Category Badge */}
         <Badge 
-          className="absolute top-3 left-3 z-10 px-1.5 py-0.5 border-none shadow-md text-[7.5px] font-black uppercase tracking-tight leading-none"
-          style={{ background: isNotAvailable ? '#64748b' : COLORS.TEAL, color: 'white' }}
+          className="absolute top-3 left-3 z-10 px-1.5 py-0.5 border-none shadow-md text-[7.5px] font-black uppercase tracking-tight"
+          style={{ background: isUnavailable ? '#64748b' : COLORS.TEAL, color: 'white' }}
         >
           {displayType}
         </Badge>
 
-        {/* Distance Badge - Bottom Right over image */}
         {showDistanceBadge && (
           <Badge 
             className="absolute bottom-3 right-3 z-10 px-2 py-1 border-none shadow-lg text-[9px] font-black"
@@ -167,11 +166,12 @@ const ListingCardComponent = ({
       {/* Content Section */}
       <div className="p-5 flex flex-col flex-1"> 
         <div className="flex justify-between items-start mb-2">
-          <h3 className="font-black text-sm md:text-lg leading-tight uppercase tracking-tighter line-clamp-2" style={{ color: COLORS.TEAL }}>
+          <h3 className="font-black text-sm md:text-lg leading-tight uppercase tracking-tighter line-clamp-2" 
+              style={{ color: isUnavailable ? '#64748b' : COLORS.TEAL }}>
             {name}
           </h3>
           {avgRating && (
-            <div className="flex items-center gap-1 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
+            <div className="flex items-center gap-1 bg-white px-2 py-1 rounded-lg border border-slate-100 shadow-sm">
               <Star className="h-3 w-3 fill-[#FF7F50] text-[#FF7F50]" />
               <span className="text-[11px] font-black" style={{ color: COLORS.TEAL }}>{avgRating.toFixed(1)}</span>
             </div>
@@ -179,29 +179,32 @@ const ListingCardComponent = ({
         </div>
         
         <div className="flex items-center gap-1.5 mb-3">
-            <MapPin className="h-3.5 w-3.5 flex-shrink-0" style={{ color: COLORS.CORAL }} />
+            <MapPin className="h-3.5 w-3.5 flex-shrink-0" style={{ color: isUnavailable ? '#94a3b8' : COLORS.CORAL }} />
             <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider line-clamp-1">
                 {locationString}
             </p>
         </div>
 
-        {/* Activities / Tags */}
         {activities && activities.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-4">
             {activities.slice(0, 3).map((act, i) => (
-              <span key={i} className="text-[9px] font-black bg-[#F0E68C]/20 text-[#857F3E] px-2 py-0.5 rounded-md uppercase tracking-tighter">
+              <span key={i} className={cn(
+                "text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-tighter",
+                isUnavailable ? "bg-slate-200 text-slate-400" : "bg-[#F0E68C]/20 text-[#857F3E]"
+              )}>
                 {typeof act === 'string' ? act : act.name}
               </span>
             ))}
           </div>
         )}
         
-        <div className="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between">
+        {/* Bottom Metadata */}
+        <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
             <div className="flex flex-col">
                 {!hidePrice && price !== undefined && (
                   <>
                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Starts at</span>
-                    <span className={cn("text-base font-black", isNotAvailable ? "text-slate-400 line-through" : "text-[#FF0000]")}>
+                    <span className={cn("text-base font-black", isUnavailable ? "text-slate-300 line-through" : "text-[#FF0000]")}>
                         KSh {price.toLocaleString()}
                     </span>
                   </>
@@ -218,36 +221,22 @@ const ListingCardComponent = ({
                   </div>
                 )}
                 
-                {/* Past Event Indicator */}
-                {isOutdated && tracksAvailability && (
-                  <div className="flex items-center gap-1 mt-1 bg-slate-100 px-2 py-0.5 rounded-md">
-                    <span className="text-[9px] font-black text-slate-500 uppercase">
-                      Event Passed
+                <div className="mt-1">
+                  {isOutdated ? (
+                    <span className="text-[9px] font-black text-slate-400 uppercase">Event Passed</span>
+                  ) : isSoldOut ? (
+                    <span className="text-[9px] font-black text-red-500/80 uppercase">Sold Out</span>
+                  ) : fewSlotsRemaining ? (
+                    <span className="text-[9px] font-black text-red-500 uppercase animate-pulse flex items-center gap-1">
+                        <Ticket className="h-2.5 w-2.5" />
+                        Only {remainingTickets} left!
                     </span>
-                  </div>
-                )}
-
-                {/* TICKET AVAILABILITY LOGIC FOR EVENT/SPORT/TRIP - only show if not past */}
-                {tracksAvailability && !isOutdated && (
-                    <div className="mt-1">
-                        {isSoldOut ? (
-                            <span className="text-[9px] font-black text-slate-400 uppercase">
-                                No Slots Available
-                            </span>
-                        ) : fewSlotsRemaining ? (
-                            <div className="flex flex-col items-end">
-                                <span className="text-[9px] font-black text-red-500 uppercase animate-pulse flex items-center gap-1">
-                                    <Ticket className="h-2.5 w-2.5" />
-                                    Only {remainingTickets} left!
-                                </span>
-                            </div>
-                        ) : availableTickets > 0 && (
-                            <span className="text-[9px] font-black text-teal-600/70 uppercase">
-                                {remainingTickets} Slots available
-                            </span>
-                        )}
-                    </div>
-                )}
+                  ) : (tracksAvailability && availableTickets > 0) && (
+                    <span className="text-[9px] font-black text-teal-600/70 uppercase">
+                        {remainingTickets} Slots available
+                    </span>
+                  )}
+                </div>
             </div>
         </div>
       </div>
@@ -255,5 +244,4 @@ const ListingCardComponent = ({
   );
 };
 
-// Memoize component to prevent unnecessary re-renders
 export const ListingCard = memo(ListingCardComponent);
