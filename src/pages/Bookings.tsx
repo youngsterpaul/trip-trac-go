@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Header } from "@/components/Header";
 import { MobileBottomBar } from "@/components/MobileBottomBar";
 import { useAuth } from "@/contexts/AuthContext";
@@ -7,11 +7,11 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, DollarSign, Users, CalendarClock, ChevronDown, ChevronUp, WifiOff, MapPin, CheckCircle2, XCircle } from "lucide-react";
+import { Calendar, DollarSign, Users, CalendarClock, ChevronDown, ChevronUp, WifiOff, MapPin, CheckCircle2, XCircle, History } from "lucide-react";
 import { RescheduleBookingDialog } from "@/components/booking/RescheduleBookingDialog";
 import { BookingDownloadButton } from "@/components/booking/BookingDownloadButton";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, isToday, isYesterday, parseISO } from "date-fns";
 import { useOfflineBookings } from "@/hooks/useOfflineBookings";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -103,7 +103,6 @@ const Bookings = () => {
         })));
       }
 
-      // Batch fetch item details
       if (confirmedBookings && confirmedBookings.length > 0) {
         await fetchItemDetailsBatch(confirmedBookings);
       }
@@ -116,13 +115,10 @@ const Bookings = () => {
 
   const fetchItemDetailsBatch = async (bookings: Booking[]) => {
     const details: Record<string, ItemDetails> = {};
-    
-    // Group by type for batch fetching
     const tripIds = bookings.filter(b => b.booking_type === "trip" || b.booking_type === "event").map(b => b.item_id);
     const hotelIds = bookings.filter(b => b.booking_type === "hotel").map(b => b.item_id);
     const adventureIds = bookings.filter(b => b.booking_type === "adventure" || b.booking_type === "adventure_place").map(b => b.item_id);
     
-    // Fetch all in parallel
     const [tripsData, hotelsData, adventuresData] = await Promise.all([
       tripIds.length > 0 ? supabase.from("trips").select("id,name").in("id", tripIds) : { data: [] },
       hotelIds.length > 0 ? supabase.from("hotels").select("id,name").in("id", hotelIds) : { data: [] },
@@ -135,6 +131,28 @@ const Bookings = () => {
     
     setItemDetails(details);
   };
+
+  // Grouping Logic
+  const groupedBookings = useMemo(() => {
+    const groups: Record<string, Booking[]> = {
+      Today: [],
+      Yesterday: [],
+      Earlier: []
+    };
+
+    bookings.forEach(booking => {
+      const createdAt = parseISO(booking.created_at);
+      if (isToday(createdAt)) {
+        groups.Today.push(booking);
+      } else if (isYesterday(createdAt)) {
+        groups.Yesterday.push(booking);
+      } else {
+        groups.Earlier.push(booking);
+      }
+    });
+
+    return groups;
+  }, [bookings]);
 
   const canReschedule = (booking: Booking) => {
     if (!['paid', 'completed'].includes(booking.payment_status)) return false;
@@ -229,145 +247,164 @@ const Bookings = () => {
             <h2 className="text-xl font-black uppercase tracking-tight text-slate-400">No active bookings</h2>
           </div>
         ) : (
-          <div className="space-y-6">
-            {bookings.map(booking => {
-              const isExpanded = expandedBookings.has(booking.id);
-              const details = booking.booking_details as Record<string, any> | null;
+          <div className="space-y-12">
+            {Object.entries(groupedBookings).map(([groupName, groupBookings]) => {
+              if (groupBookings.length === 0) return null;
               
               return (
-                <Card key={booking.id} className="overflow-hidden bg-white rounded-[28px] border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-                  <Collapsible open={isExpanded} onOpenChange={() => toggleExpanded(booking.id)}>
-                    <div className="p-6 md:p-8">
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                        <div className="space-y-4">
-                          <div className="flex items-center gap-2">
-                            <Badge className="bg-[#008080]/10 text-[#008080] border-none font-black uppercase text-[9px] tracking-widest px-3 py-1">
-                              {booking.booking_type}
-                            </Badge>
-                            <Badge className="bg-green-500/10 text-green-600 border-none font-black uppercase text-[9px] tracking-widest px-3 py-1">
-                              Confirmed
-                            </Badge>
-                          </div>
+                <div key={groupName} className="space-y-6">
+                  <div className="flex items-center gap-3 px-2">
+                    <History className="h-4 w-4 text-slate-400" />
+                    <h2 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">
+                      {groupName} Bookings
+                    </h2>
+                    <div className="h-px bg-slate-100 flex-1" />
+                  </div>
 
-                          <h3 className="text-2xl font-black uppercase tracking-tight leading-tight text-slate-800">
-                            {getItemName(booking)}
-                          </h3>
-                          
-                          <div className="flex flex-wrap gap-4">
-                            {booking.visit_date && (
-                              <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
-                                <Calendar className="h-3.5 w-3.5" style={{ color: COLORS.CORAL }} />
-                                <span className="text-[10px] font-black text-slate-600 uppercase">
-                                  {format(new Date(booking.visit_date), 'dd MMM yyyy')}
-                                </span>
+                  <div className="space-y-6">
+                    {groupBookings.map(booking => {
+                      const isExpanded = expandedBookings.has(booking.id);
+                      const details = booking.booking_details as Record<string, any> | null;
+                      
+                      return (
+                        <Card key={booking.id} className="overflow-hidden bg-white rounded-[28px] border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                          <Collapsible open={isExpanded} onOpenChange={() => toggleExpanded(booking.id)}>
+                            <div className="p-6 md:p-8">
+                              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                <div className="space-y-4">
+                                  <div className="flex items-center gap-2">
+                                    <Badge className="bg-[#008080]/10 text-[#008080] border-none font-black uppercase text-[9px] tracking-widest px-3 py-1">
+                                      {booking.booking_type}
+                                    </Badge>
+                                    <Badge className="bg-green-500/10 text-green-600 border-none font-black uppercase text-[9px] tracking-widest px-3 py-1">
+                                      Confirmed
+                                    </Badge>
+                                    <span className="text-[9px] font-bold text-slate-300 uppercase">
+                                      {format(parseISO(booking.created_at), 'HH:mm')}
+                                    </span>
+                                  </div>
+
+                                  <h3 className="text-2xl font-black uppercase tracking-tight leading-tight text-slate-800">
+                                    {getItemName(booking)}
+                                  </h3>
+                                  
+                                  <div className="flex flex-wrap gap-4">
+                                    {booking.visit_date && (
+                                      <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
+                                        <Calendar className="h-3.5 w-3.5" style={{ color: COLORS.CORAL }} />
+                                        <span className="text-[10px] font-black text-slate-600 uppercase">
+                                          Visit: {format(new Date(booking.visit_date), 'dd MMM yyyy')}
+                                        </span>
+                                      </div>
+                                    )}
+                                    <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
+                                      <Users className="h-3.5 w-3.5" style={{ color: COLORS.CORAL }} />
+                                      <span className="text-[10px] font-black text-slate-600 uppercase">
+                                        {booking.slots_booked || 1} Guests
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="flex flex-col items-start md:items-end gap-4">
+                                  <div className="text-right">
+                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Paid on {format(parseISO(booking.created_at), 'MMM dd')}</p>
+                                    <div className="flex items-center gap-1">
+                                      <span className="text-3xl font-black" style={{ color: COLORS.RED }}>KSh {booking.total_amount.toLocaleString()}</span>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="flex flex-wrap gap-2">
+                                    <BookingDownloadButton booking={{
+                                      bookingId: booking.id,
+                                      guestName: booking.guest_name || 'Guest',
+                                      guestEmail: booking.guest_email || '',
+                                      itemName: getItemName(booking),
+                                      bookingType: booking.booking_type,
+                                      visitDate: booking.visit_date || booking.created_at,
+                                      totalAmount: booking.total_amount,
+                                      slotsBooked: booking.slots_booked || 1,
+                                      adults: details?.adults,
+                                      children: details?.children,
+                                      paymentStatus: booking.payment_status,
+                                    }} />
+
+                                    {canReschedule(booking) && (
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        onClick={() => setRescheduleBooking(booking)}
+                                        className="rounded-xl border-slate-200 text-[10px] font-black uppercase tracking-widest hover:bg-slate-50"
+                                      >
+                                        <CalendarClock className="h-3.5 w-3.5 mr-2" />
+                                        Reschedule
+                                      </Button>
+                                    )}
+
+                                    {canCancel(booking) && (
+                                      <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        onClick={() => { setBookingToCancel(booking); setShowCancelDialog(true); }}
+                                        className="rounded-xl text-red-500 hover:text-red-600 hover:bg-red-50 text-[10px] font-black uppercase tracking-widest"
+                                      >
+                                        <XCircle className="h-3.5 w-3.5 mr-2" />
+                                        Cancel
+                                      </Button>
+                                    )}
+                                  </div>
+                                </div>
                               </div>
-                            )}
-                            <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
-                              <Users className="h-3.5 w-3.5" style={{ color: COLORS.CORAL }} />
-                              <span className="text-[10px] font-black text-slate-600 uppercase">
-                                {booking.slots_booked || 1} Guests
-                              </span>
                             </div>
-                          </div>
-                        </div>
 
-                        <div className="flex flex-col items-start md:items-end gap-4">
-                          <div className="text-right">
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Total Paid</p>
-                            <div className="flex items-center gap-1">
-                              <span className="text-3xl font-black" style={{ color: COLORS.RED }}>KSh {booking.total_amount.toLocaleString()}</span>
-                            </div>
-                          </div>
-                          
-                          <div className="flex flex-wrap gap-2">
-                            <BookingDownloadButton booking={{
-                              bookingId: booking.id,
-                              guestName: booking.guest_name || 'Guest',
-                              guestEmail: booking.guest_email || '',
-                              itemName: getItemName(booking),
-                              bookingType: booking.booking_type,
-                              visitDate: booking.visit_date || booking.created_at,
-                              totalAmount: booking.total_amount,
-                              slotsBooked: booking.slots_booked || 1,
-                              adults: details?.adults,
-                              children: details?.children,
-                              paymentStatus: booking.payment_status,
-                            }} />
-
-                            {canReschedule(booking) && (
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                onClick={() => setRescheduleBooking(booking)}
-                                className="rounded-xl border-slate-200 text-[10px] font-black uppercase tracking-widest hover:bg-slate-50"
-                              >
-                                <CalendarClock className="h-3.5 w-3.5 mr-2" />
-                                Reschedule
+                            <CollapsibleTrigger asChild>
+                              <Button variant="ghost" className="w-full rounded-none border-t border-slate-50 h-12 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+                                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                  {isExpanded ? <><ChevronUp className="h-3 w-3" /> Hide Details</> : <><ChevronDown className="h-3 w-3" /> View Summary</>}
+                                </div>
                               </Button>
-                            )}
+                            </CollapsibleTrigger>
 
-                            {canCancel(booking) && (
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                onClick={() => { setBookingToCancel(booking); setShowCancelDialog(true); }}
-                                className="rounded-xl text-red-500 hover:text-red-600 hover:bg-red-50 text-[10px] font-black uppercase tracking-widest"
-                              >
-                                <XCircle className="h-3.5 w-3.5 mr-2" />
-                                Cancel
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                            <CollapsibleContent>
+                              <div className="p-8 pt-6 border-t border-slate-50 bg-[#F8F9FA]/50">
+                                <div className="grid md:grid-cols-2 gap-8">
+                                  <div className="space-y-4">
+                                    <h4 className="text-[10px] font-black text-[#008080] uppercase tracking-widest flex items-center gap-2">
+                                      <CheckCircle2 className="h-3 w-3" /> Guest Details
+                                    </h4>
+                                    <div className="space-y-3">
+                                      <InfoRow label="Name" value={booking.guest_name} />
+                                      <InfoRow label="Email" value={booking.guest_email} />
+                                      <InfoRow label="Phone" value={booking.guest_phone} />
+                                    </div>
+                                  </div>
 
-                    <CollapsibleTrigger asChild>
-                      <Button variant="ghost" className="w-full rounded-none border-t border-slate-50 h-12 bg-slate-50/30 hover:bg-slate-50 transition-colors">
-                        <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                          {isExpanded ? <><ChevronUp className="h-3 w-3" /> Hide Details</> : <><ChevronDown className="h-3 w-3" /> View Summary</>}
-                        </div>
-                      </Button>
-                    </CollapsibleTrigger>
-
-                    <CollapsibleContent>
-                      <div className="p-8 pt-6 border-t border-slate-50 bg-[#F8F9FA]/50">
-                        <div className="grid md:grid-cols-2 gap-8">
-                          {/* Guest Info */}
-                          <div className="space-y-4">
-                            <h4 className="text-[10px] font-black text-[#008080] uppercase tracking-widest flex items-center gap-2">
-                              <CheckCircle2 className="h-3 w-3" /> Guest Details
-                            </h4>
-                            <div className="space-y-3">
-                              <InfoRow label="Name" value={booking.guest_name} />
-                              <InfoRow label="Email" value={booking.guest_email} />
-                              <InfoRow label="Phone" value={booking.guest_phone} />
-                            </div>
-                          </div>
-
-                          {/* Breakdown */}
-                          <div className="space-y-4">
-                            <h4 className="text-[10px] font-black text-[#008080] uppercase tracking-widest flex items-center gap-2">
-                              <CheckCircle2 className="h-3 w-3" /> Booking Info
-                            </h4>
-                            <div className="space-y-3">
-                              <InfoRow label="Adults" value={details?.adults} />
-                              {details?.children > 0 && <InfoRow label="Children" value={details?.children} />}
-                              <InfoRow label="Booking ID" value={booking.id} isMono />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </CollapsibleContent>
-                  </Collapsible>
-                </Card>
+                                  <div className="space-y-4">
+                                    <h4 className="text-[10px] font-black text-[#008080] uppercase tracking-widest flex items-center gap-2">
+                                      <CheckCircle2 className="h-3 w-3" /> Booking Info
+                                    </h4>
+                                    <div className="space-y-3">
+                                      <InfoRow label="Adults" value={details?.adults} />
+                                      {details?.children > 0 && <InfoRow label="Children" value={details?.children} />}
+                                      <InfoRow label="Booking Date" value={format(parseISO(booking.created_at), 'PPP p')} />
+                                      <InfoRow label="Booking ID" value={booking.id} isMono />
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </CollapsibleContent>
+                          </Collapsible>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </div>
               );
             })}
           </div>
         )}
       </main>
 
-      {/* Dialogs */}
       {rescheduleBooking && (
         <RescheduleBookingDialog 
           booking={rescheduleBooking} 
