@@ -7,11 +7,11 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, DollarSign, Users, CalendarClock, ChevronDown, ChevronUp, WifiOff, MapPin, CheckCircle2, XCircle, Clock } from "lucide-react";
+import { Calendar, DollarSign, Users, CalendarClock, ChevronDown, ChevronUp, WifiOff, MapPin, CheckCircle2, XCircle } from "lucide-react";
 import { RescheduleBookingDialog } from "@/components/booking/RescheduleBookingDialog";
 import { BookingDownloadButton } from "@/components/booking/BookingDownloadButton";
 import { toast } from "sonner";
-import { format, isToday, isYesterday } from "date-fns";
+import { format } from "date-fns";
 import { useOfflineBookings } from "@/hooks/useOfflineBookings";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -92,7 +92,7 @@ const Bookings = () => {
         .eq("user_id", user?.id)
         .in("payment_status", ["paid", "completed"])
         .not("status", "eq", "cancelled")
-        .order("created_at", { ascending: false }); // Primary sorting by creation date
+        .order("created_at", { ascending: false });
       
       if (bookingsError) throw bookingsError;
       setBookings(confirmedBookings || []);
@@ -103,6 +103,7 @@ const Bookings = () => {
         })));
       }
 
+      // Batch fetch item details
       if (confirmedBookings && confirmedBookings.length > 0) {
         await fetchItemDetailsBatch(confirmedBookings);
       }
@@ -115,10 +116,13 @@ const Bookings = () => {
 
   const fetchItemDetailsBatch = async (bookings: Booking[]) => {
     const details: Record<string, ItemDetails> = {};
+    
+    // Group by type for batch fetching
     const tripIds = bookings.filter(b => b.booking_type === "trip" || b.booking_type === "event").map(b => b.item_id);
     const hotelIds = bookings.filter(b => b.booking_type === "hotel").map(b => b.item_id);
     const adventureIds = bookings.filter(b => b.booking_type === "adventure" || b.booking_type === "adventure_place").map(b => b.item_id);
     
+    // Fetch all in parallel
     const [tripsData, hotelsData, adventuresData] = await Promise.all([
       tripIds.length > 0 ? supabase.from("trips").select("id,name").in("id", tripIds) : { data: [] },
       hotelIds.length > 0 ? supabase.from("hotels").select("id,name").in("id", hotelIds) : { data: [] },
@@ -130,13 +134,6 @@ const Bookings = () => {
     (adventuresData.data || []).forEach((a: any) => { details[a.id] = { name: a.name, type: "adventure" }; });
     
     setItemDetails(details);
-  };
-
-  const getFriendlyDate = (dateString: string) => {
-    const date = new Date(dateString);
-    if (isToday(date)) return "Today";
-    if (isYesterday(date)) return "Yesterday";
-    return format(date, "dd MMM yyyy");
   };
 
   const canReschedule = (booking: Booking) => {
@@ -214,7 +211,7 @@ const Bookings = () => {
           <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter leading-none text-slate-900 drop-shadow-sm">
             My Bookings
           </h1>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">Sorted by latest transactions</p>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">Verified Reservations & History</p>
         </header>
         
         {!isOnline && (
@@ -247,12 +244,9 @@ const Bookings = () => {
                             <Badge className="bg-[#008080]/10 text-[#008080] border-none font-black uppercase text-[9px] tracking-widest px-3 py-1">
                               {booking.booking_type}
                             </Badge>
-                            <div className="flex items-center gap-1.5 px-3 py-1 bg-slate-100 rounded-full">
-                              <Clock className="h-3 w-3 text-slate-500" />
-                              <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider">
-                                Booked {getFriendlyDate(booking.created_at)}
-                              </span>
-                            </div>
+                            <Badge className="bg-green-500/10 text-green-600 border-none font-black uppercase text-[9px] tracking-widest px-3 py-1">
+                              Confirmed
+                            </Badge>
                           </div>
 
                           <h3 className="text-2xl font-black uppercase tracking-tight leading-tight text-slate-800">
@@ -264,7 +258,7 @@ const Bookings = () => {
                               <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
                                 <Calendar className="h-3.5 w-3.5" style={{ color: COLORS.CORAL }} />
                                 <span className="text-[10px] font-black text-slate-600 uppercase">
-                                  Visit: {format(new Date(booking.visit_date), 'dd MMM yyyy')}
+                                  {format(new Date(booking.visit_date), 'dd MMM yyyy')}
                                 </span>
                               </div>
                             )}
@@ -339,6 +333,7 @@ const Bookings = () => {
                     <CollapsibleContent>
                       <div className="p-8 pt-6 border-t border-slate-50 bg-[#F8F9FA]/50">
                         <div className="grid md:grid-cols-2 gap-8">
+                          {/* Guest Info */}
                           <div className="space-y-4">
                             <h4 className="text-[10px] font-black text-[#008080] uppercase tracking-widest flex items-center gap-2">
                               <CheckCircle2 className="h-3 w-3" /> Guest Details
@@ -350,12 +345,12 @@ const Bookings = () => {
                             </div>
                           </div>
 
+                          {/* Breakdown */}
                           <div className="space-y-4">
                             <h4 className="text-[10px] font-black text-[#008080] uppercase tracking-widest flex items-center gap-2">
                               <CheckCircle2 className="h-3 w-3" /> Booking Info
                             </h4>
                             <div className="space-y-3">
-                              <InfoRow label="Transaction Date" value={format(new Date(booking.created_at), 'PPPp')} />
                               <InfoRow label="Adults" value={details?.adults} />
                               {details?.children > 0 && <InfoRow label="Children" value={details?.children} />}
                               <InfoRow label="Booking ID" value={booking.id} isMono />
@@ -372,6 +367,7 @@ const Bookings = () => {
         )}
       </main>
 
+      {/* Dialogs */}
       {rescheduleBooking && (
         <RescheduleBookingDialog 
           booking={rescheduleBooking} 
