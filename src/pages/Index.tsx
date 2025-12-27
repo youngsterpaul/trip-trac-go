@@ -976,6 +976,66 @@ const Index = () => {
                         </div>
                     </section>
 
+                    {/* Nearest to Me Section - Shows when location is available */}
+                    {position && sortedNearbyPlaces.length > 0 && (
+                        <section className="mb-2 md:mb-6">
+                            <hr className="border-t border-gray-200 my-1 md:my-4" />
+                            <div className="mb-1.5 md:mb-3 flex items-center justify-between bg-gradient-to-r from-blue-500/10 to-transparent py-2 px-3 rounded-lg border-l-4 border-blue-500">
+                                <div className="flex items-center gap-2">
+                                    <MapPin className="h-4 w-4 md:h-5 md:w-5 text-blue-500" />
+                                    <h2 className="text-[0.9rem] sm:text-2xl font-bold whitespace-nowrap overflow-hidden text-ellipsis min-w-max text-blue-500">
+                                        Nearest to You
+                                    </h2>
+                                </div>
+                            </div>
+                            <div className="relative">
+                                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide md:gap-4 pl-1 pr-8 md:pl-2 md:pr-12 scroll-smooth">
+                                    {loadingNearby ? (
+                                        <div className="flex gap-1.5 md:gap-2">
+                                            {[...Array(5)].map((_, i) => (
+                                                <div key={i} className="flex-shrink-0 w-[45vw] md:w-56">
+                                                    <ListingSkeleton />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        sortedNearbyPlaces.slice(0, 8).map((item, index) => {
+                                            const itemAny = item as any;
+                                            const itemDistance = itemAny.latitude && itemAny.longitude && position
+                                                ? calculateDistance(position.latitude, position.longitude, itemAny.latitude, itemAny.longitude)
+                                                : undefined;
+                                            const ratingData = ratings.get(item.id);
+                                            return (
+                                                <div key={item.id} className="flex-shrink-0 w-[45vw] md:w-56">
+                                                    <MemoizedListingCard
+                                                        id={item.id}
+                                                        type={itemAny.type || itemAny.table === 'hotels' ? 'HOTEL' : 'ADVENTURE PLACE'}
+                                                        name={item.name}
+                                                        imageUrl={itemAny.image_url}
+                                                        location={itemAny.location}
+                                                        country={itemAny.country}
+                                                        price={itemAny.entry_fee || 0}
+                                                        date=""
+                                                        onSave={handleSave}
+                                                        isSaved={savedItems.has(item.id)}
+                                                        hidePrice={true}
+                                                        showBadge={true}
+                                                        priority={index === 0}
+                                                        activities={itemAny.activities}
+                                                        distance={itemDistance}
+                                                        avgRating={ratingData?.avgRating}
+                                                        reviewCount={ratingData?.reviewCount}
+                                                        place={itemAny.place}
+                                                    />
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+                            </div>
+                        </section>
+                    )}
+
                 </div>
             </main>
 

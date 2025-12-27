@@ -88,7 +88,30 @@ export const MultiStepBooking = ({
         totalCapacity
     );
     
-    const totalSteps = skipFacilitiesAndActivities ? (user ? 3 : 4) : 4;
+    // Separate facilities and activities into sequential steps to reduce cognitive load
+    const hasFacilities = facilities.filter(f => f.price > 0).length > 0;
+    const hasActivities = activities.filter(a => a.price > 0).length > 0;
+    
+    // Calculate total steps:
+    // Step 1: Date selection (unless skipped)
+    // Step 2: Number of guests
+    // Step 3: Facilities (if has facilities and not skipping)
+    // Step 4: Activities (if has activities and not skipping)
+    // Final step: Summary/Payment (adds +1 if guest user for contact details)
+    const baseSteps = skipDateSelection ? 1 : 2; // guests step is always there
+    const facilityStep = !skipFacilitiesAndActivities && hasFacilities ? 1 : 0;
+    const activityStep = !skipFacilitiesAndActivities && hasActivities ? 1 : 0;
+    const guestInfoStep = !user ? 1 : 0; // guest users need contact details
+    const totalSteps = baseSteps + facilityStep + activityStep + 1; // +1 for summary/payment
+    
+    // Calculate which step number corresponds to what
+    const dateStepNum = skipDateSelection ? 0 : 1;
+    const guestsStepNum = skipDateSelection ? 1 : 2;
+    const facilitiesStepNum = !skipFacilitiesAndActivities && hasFacilities ? guestsStepNum + 1 : 0;
+    const activitiesStepNum = !skipFacilitiesAndActivities && hasActivities 
+        ? (facilitiesStepNum > 0 ? facilitiesStepNum + 1 : guestsStepNum + 1) 
+        : 0;
+    const summaryStepNum = totalSteps;
     
     const [currentStep, setCurrentStep] = useState(skipDateSelection ? 2 : 1);
     const [formData, setFormData] = useState<BookingFormData>({
@@ -167,15 +190,13 @@ export const MultiStepBooking = ({
     };
 
     const handleNext = () => {
-        if (currentStep === 1 && !formData.visit_date && !skipDateSelection) return;
-        if (currentStep === 2 && formData.num_adults === 0 && formData.num_children === 0) return;
+        // Date step validation
+        if (currentStep === dateStepNum && !formData.visit_date && !skipDateSelection) return;
+        // Guests step validation
+        if (currentStep === guestsStepNum && formData.num_adults === 0 && formData.num_children === 0) return;
         
-        if (currentStep === 3 && !skipFacilitiesAndActivities && formData.selectedFacilities.length > 0 && !areFacilityDatesValid()) {
-            return;
-        }
-        
-        if (currentStep === 2 && skipFacilitiesAndActivities) {
-            setCurrentStep(totalSteps);
+        // Facilities step validation
+        if (currentStep === facilitiesStepNum && facilitiesStepNum > 0 && formData.selectedFacilities.length > 0 && !areFacilityDatesValid()) {
             return;
         }
         
@@ -183,12 +204,7 @@ export const MultiStepBooking = ({
     };
 
     const handlePrevious = () => {
-        if (skipFacilitiesAndActivities && currentStep === totalSteps) {
-            setCurrentStep(2);
-            return;
-        }
-        
-        const minStep = skipDateSelection ? 2 : 1;
+        const minStep = skipDateSelection ? guestsStepNum : dateStepNum;
         setCurrentStep(Math.max(currentStep - 1, minStep));
     };
 
@@ -379,7 +395,7 @@ export const MultiStepBooking = ({
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
                 {/* Step 1: Visit Date */}
-                {currentStep === 1 && !skipDateSelection && (
+                {currentStep === dateStepNum && !skipDateSelection && (
                     <div className="space-y-4">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-xl" style={{ backgroundColor: `${primaryColor}15` }}>
@@ -406,7 +422,7 @@ export const MultiStepBooking = ({
                 )}
 
                 {/* Step 2: Number of People */}
-                {currentStep === 2 && (
+                {currentStep === guestsStepNum && (
                     <div className="space-y-4">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-xl" style={{ backgroundColor: `${primaryColor}15` }}>
@@ -458,136 +474,137 @@ export const MultiStepBooking = ({
                     </div>
                 )}
 
-                {/* Step 3: Facilities & Activities */}
-                {currentStep === 3 && !skipFacilitiesAndActivities && (
+                {/* Step 3: Facilities (Separate step) */}
+                {currentStep === facilitiesStepNum && facilitiesStepNum > 0 && (
+                    <div className="space-y-6">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-xl" style={{ backgroundColor: `${primaryColor}15` }}>
+                                <CheckCircle2 className="h-5 w-5" style={{ color: primaryColor }} />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-black uppercase tracking-tight" style={{ color: primaryColor }}>Select Facilities</h3>
+                                <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Choose facility rentals (optional)</p>
+                            </div>
+                        </div>
+                        
+                        <div className="space-y-3">
+                            {facilities.filter(f => f.price > 0).map((facility) => {
+                                const selected = formData.selectedFacilities.find(f => f.name === facility.name);
+                                const isDateInvalid = selected && (
+                                    !selected.startDate || 
+                                    !selected.endDate || 
+                                    new Date(selected.endDate).getTime() < new Date(selected.startDate).getTime()
+                                );
+
+                                return (
+                                    <div key={facility.name} className="p-4 rounded-2xl border border-slate-100 bg-white">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <Checkbox
+                                                    id={`facility-${facility.name}`}
+                                                    checked={!!selected}
+                                                    onCheckedChange={() => toggleFacility(facility)}
+                                                    className="rounded-lg"
+                                                />
+                                                <Label htmlFor={`facility-${facility.name}`} className="text-sm font-black uppercase tracking-tight cursor-pointer">
+                                                    {facility.name}
+                                                </Label>
+                                            </div>
+                                            <span className="text-xs font-black px-3 py-1 rounded-full" style={{ backgroundColor: `${primaryColor}15`, color: primaryColor }}>
+                                                KES {facility.price.toLocaleString()}/day
+                                            </span>
+                                        </div>
+                                        {selected && (
+                                            <div className="mt-4 pt-4 border-t border-slate-100">
+                                                <p className="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Rental Period</p>
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <div>
+                                                        <Label className="text-[10px] font-black uppercase tracking-wider text-slate-400">Start Date</Label>
+                                                        <Input
+                                                            type="date"
+                                                            value={selected.startDate || ""}
+                                                            onChange={(e) => updateFacilityDates(facility.name, 'startDate', e.target.value)}
+                                                            min={formData.visit_date || new Date().toISOString().split('T')[0]}
+                                                            className="mt-1 rounded-xl h-10 text-sm"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <Label className="text-[10px] font-black uppercase tracking-wider text-slate-400">End Date</Label>
+                                                        <Input
+                                                            type="date"
+                                                            value={selected.endDate || ""}
+                                                            onChange={(e) => updateFacilityDates(facility.name, 'endDate', e.target.value)}
+                                                            min={selected.startDate || formData.visit_date || new Date().toISOString().split('T')[0]} 
+                                                            className="mt-1 rounded-xl h-10 text-sm"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                {isDateInvalid && (
+                                                    <p className="text-xs text-red-500 mt-2 font-medium">Please select valid dates.</p>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        
+                        <p className="text-xs text-slate-400 text-center">You can skip this step if you don't need any facilities</p>
+                    </div>
+                )}
+
+                {/* Step 4: Activities (Separate step) */}
+                {currentStep === activitiesStepNum && activitiesStepNum > 0 && (
                     <div className="space-y-6">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-xl" style={{ backgroundColor: `${accentColor}15` }}>
                                 <CheckCircle2 className="h-5 w-5" style={{ color: accentColor }} />
                             </div>
                             <div>
-                                <h3 className="text-lg font-black uppercase tracking-tight" style={{ color: primaryColor }}>Additional Services</h3>
-                                <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Optional add-ons</p>
+                                <h3 className="text-lg font-black uppercase tracking-tight" style={{ color: primaryColor }}>Select Activities</h3>
+                                <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Choose activities to participate in (optional)</p>
                             </div>
                         </div>
                         
-                        {/* Filter facilities with price > 0 */}
-                        {facilities.filter(f => f.price > 0).length > 0 && (
-                            <div className="space-y-3">
-                                <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">Facilities</h4>
-                                <div className="space-y-3">
-                                    {facilities.filter(f => f.price > 0).map((facility) => {
-                                        const selected = formData.selectedFacilities.find(f => f.name === facility.name);
-                                        const isDateInvalid = selected && (
-                                            !selected.startDate || 
-                                            !selected.endDate || 
-                                            new Date(selected.endDate).getTime() < new Date(selected.startDate).getTime()
-                                        );
-
-                                        return (
-                                            <div key={facility.name} className="p-4 rounded-2xl border border-slate-100 bg-white">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-3">
-                                                        <Checkbox
-                                                            id={`facility-${facility.name}`}
-                                                            checked={!!selected}
-                                                            onCheckedChange={() => toggleFacility(facility)}
-                                                            className="rounded-lg"
-                                                        />
-                                                        <Label htmlFor={`facility-${facility.name}`} className="text-sm font-black uppercase tracking-tight cursor-pointer">
-                                                            {facility.name}
-                                                        </Label>
-                                                    </div>
-                                                    <span className="text-xs font-black px-3 py-1 rounded-full" style={{ backgroundColor: `${primaryColor}15`, color: primaryColor }}>
-                                                        KES {facility.price.toLocaleString()}/day
-                                                    </span>
-                                                </div>
-                                                {selected && (
-                                                    <div className="mt-4 pt-4 border-t border-slate-100">
-                                                        <p className="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Rental Period</p>
-                                                        <div className="grid grid-cols-2 gap-3">
-                                                            <div>
-                                                                <Label className="text-[10px] font-black uppercase tracking-wider text-slate-400">Start Date</Label>
-                                                                <Input
-                                                                    type="date"
-                                                                    value={selected.startDate || ""}
-                                                                    onChange={(e) => updateFacilityDates(facility.name, 'startDate', e.target.value)}
-                                                                    min={formData.visit_date || new Date().toISOString().split('T')[0]}
-                                                                    className="mt-1 rounded-xl h-10 text-sm"
-                                                                />
-                                                            </div>
-                                                            <div>
-                                                                <Label className="text-[10px] font-black uppercase tracking-wider text-slate-400">End Date</Label>
-                                                                <Input
-                                                                    type="date"
-                                                                    value={selected.endDate || ""}
-                                                                    onChange={(e) => updateFacilityDates(facility.name, 'endDate', e.target.value)}
-                                                                    min={selected.startDate || formData.visit_date || new Date().toISOString().split('T')[0]} 
-                                                                    className="mt-1 rounded-xl h-10 text-sm"
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                        {isDateInvalid && (
-                                                            <p className="text-xs text-red-500 mt-2 font-medium">Please select valid dates.</p>
-                                                        )}
-                                                    </div>
-                                                )}
+                        <div className="space-y-3">
+                            {activities.filter(a => a.price > 0).map((activity) => {
+                                const selected = formData.selectedActivities.find(a => a.name === activity.name);
+                                return (
+                                    <div key={activity.name} className="p-4 rounded-2xl border border-slate-100 bg-white">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <Checkbox
+                                                    id={`activity-${activity.name}`}
+                                                    checked={!!selected}
+                                                    onCheckedChange={() => toggleActivity(activity)}
+                                                    className="rounded-lg"
+                                                />
+                                                <Label htmlFor={`activity-${activity.name}`} className="text-sm font-black uppercase tracking-tight cursor-pointer">
+                                                    {activity.name}
+                                                </Label>
                                             </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Filter activities with price > 0 */}
-                        {activities.filter(a => a.price > 0).length > 0 && (
-                            <div className="space-y-3">
-                                <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">Activities</h4>
-                                <div className="space-y-3">
-                                    {activities.filter(a => a.price > 0).map((activity) => {
-                                        const selected = formData.selectedActivities.find(a => a.name === activity.name);
-                                        return (
-                                            <div key={activity.name} className="p-4 rounded-2xl border border-slate-100 bg-white">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-3">
-                                                        <Checkbox
-                                                            id={`activity-${activity.name}`}
-                                                            checked={!!selected}
-                                                            onCheckedChange={() => toggleActivity(activity)}
-                                                            className="rounded-lg"
-                                                        />
-                                                        <Label htmlFor={`activity-${activity.name}`} className="text-sm font-black uppercase tracking-tight cursor-pointer">
-                                                            {activity.name}
-                                                        </Label>
-                                                    </div>
-                                                    <span className="text-xs font-black px-3 py-1 rounded-full" style={{ backgroundColor: `${accentColor}15`, color: accentColor }}>
-                                                        KES {activity.price.toLocaleString()}/person
-                                                    </span>
-                                                </div>
-                                                {selected && (
-                                                    <div className="mt-4 pt-4 border-t border-slate-100">
-                                                        <Label className="text-[10px] font-black uppercase tracking-wider text-slate-400">Number of People</Label>
-                                                        <Input
-                                                            type="number"
-                                                            min="1"
-                                                            value={selected.numberOfPeople}
-                                                            onChange={(e) => updateActivityPeople(activity.name, parseInt(e.target.value) || 1)}
-                                                            className="mt-1 rounded-xl h-10 text-sm w-24"
-                                                        />
-                                                    </div>
-                                                )}
+                                            <span className="text-xs font-black px-3 py-1 rounded-full" style={{ backgroundColor: `${accentColor}15`, color: accentColor }}>
+                                                KES {activity.price.toLocaleString()}/person
+                                            </span>
+                                        </div>
+                                        {selected && (
+                                            <div className="mt-4 pt-4 border-t border-slate-100">
+                                                <Label className="text-[10px] font-black uppercase tracking-wider text-slate-400">Number of People</Label>
+                                                <Input
+                                                    type="number"
+                                                    min="1"
+                                                    value={selected.numberOfPeople}
+                                                    onChange={(e) => updateActivityPeople(activity.name, parseInt(e.target.value) || 1)}
+                                                    className="mt-1 rounded-xl h-10 text-sm w-24"
+                                                />
                                             </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        )}
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
                         
-                        {(facilities.filter(f => f.price > 0).length === 0 && activities.filter(a => a.price > 0).length === 0) && (
-                            <div className="p-6 rounded-2xl bg-slate-50 text-center">
-                                <p className="text-slate-500 font-medium">No additional services available.</p>
-                            </div>
-                        )}
+                        <p className="text-xs text-slate-400 text-center">You can skip this step if you don't want any activities</p>
                     </div>
                 )}
 
@@ -732,7 +749,7 @@ export const MultiStepBooking = ({
             {/* Fixed Footer */}
             <div className="flex-shrink-0 p-6 pt-4 border-t border-slate-100 bg-white">
                 <div className="flex gap-3">
-                    {currentStep > (skipDateSelection ? 2 : 1) && (
+                    {currentStep > (skipDateSelection ? guestsStepNum : dateStepNum) && (
                         <Button 
                             type="button" 
                             variant="outline" 
@@ -750,9 +767,9 @@ export const MultiStepBooking = ({
                             className="flex-1 h-14 rounded-2xl font-black uppercase tracking-[0.15em] text-white border-none"
                             style={{ backgroundColor: primaryColor }}
                             disabled={
-                                (currentStep === 1 && !formData.visit_date && !skipDateSelection) ||
-                                (currentStep === 2 && formData.num_adults === 0 && formData.num_children === 0) ||
-                                (currentStep === 3 && !skipFacilitiesAndActivities && formData.selectedFacilities.length > 0 && !areFacilityDatesValid())
+                                (currentStep === dateStepNum && !formData.visit_date && !skipDateSelection) ||
+                                (currentStep === guestsStepNum && formData.num_adults === 0 && formData.num_children === 0) ||
+                                (currentStep === facilitiesStepNum && facilitiesStepNum > 0 && formData.selectedFacilities.length > 0 && !areFacilityDatesValid())
                             }
                         >
                             Continue
