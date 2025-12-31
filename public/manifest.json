@@ -8,13 +8,13 @@
       "type": "image/x-icon"
     },
     {
-      "src": "logo.png",
+      "src": "fulllogo.png",
       "type": "image/svg+xml",
       "sizes": "512x512",
       "purpose": "any"
     },
     {
-      "src": "logo.png", 
+      "src": "fulllogo.png", 
       "type": "image/svg+xml",
       "sizes": "512x512",
       "purpose": "maskable"
