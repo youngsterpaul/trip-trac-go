@@ -9,19 +9,19 @@
     },
     {
       "src": "fulllogo.png",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "sizes": "512x512",
       "purpose": "any"
     },
     {
       "src": "fulllogo.png", 
-      "type": "image/svg+xml",
+      "type": "image/png",
       "sizes": "512x512",
       "purpose": "maskable"
     }
   ],
   "start_url": "/",
   "display": "standalone",
-  "theme_color": "#ffffff",
+  "theme_color": "#008080",
   "background_color": "#ffffff"
 }
