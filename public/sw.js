@@ -1,7 +1,7 @@
 // 1. UPDATE THESE VERSIONS to force an app-wide update
-const STATIC_CACHE = 'realtravo-static-v8'; 
-const IMAGE_CACHE = 'realtravo-images-v8';
-const DATA_CACHE = 'realtravo-data-v8';
+const STATIC_CACHE = 'realtravo-static-v9'; 
+const IMAGE_CACHE = 'realtravo-images-v9';
+const DATA_CACHE = 'realtravo-data-v9';
 
 // 2. FILES TO DOWNLOAD IMMEDIATELY (The App Shell + All Routes from App.tsx)
 const PRECACHE_ASSETS = [
@@ -10,6 +10,16 @@ const PRECACHE_ASSETS = [
   '/manifest.json',
   '/fulllogo.png',
   '/favicon.ico',
+  
+  // Local Images (Category backgrounds & Hero)
+  '/images/category-campsite.jpg',
+  '/images/category-hotels.jpg',
+  '/images/category-trips.jpg',
+  '/images/category-events.jpg',
+  '/images/hero-background.jpg',
+  
+  // Audio Assets (Notification sounds)
+  '/audio/notification.mp3',
   
   // Public & Discovery
   '/auth',
@@ -69,7 +79,7 @@ const IMAGE_PATTERNS = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(STATIC_CACHE).then((cache) => {
-      console.log('Realtravo: Precaching updated routes...');
+      console.log('Realtravo: Precaching updated routes and assets...');
       return cache.addAll(PRECACHE_ASSETS);
     })
   );

@@ -153,7 +153,7 @@ const BecomeHost = () => {
           <HostCategoryCard 
             title="Tours & Events"
             subtitle="Trips, Sports & Events"
-            image="https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800"
+            image="/images/category-trips.jpg"
             icon={<Plane className="h-8 w-8" />}
             count={myContent.filter(i => i.type === 'trip').length}
             onManage={() => navigate("/host/trips")}
@@ -165,7 +165,7 @@ const BecomeHost = () => {
           <HostCategoryCard 
             title="Stays"
             subtitle="Hotels & Accommodation"
-            image="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800"
+            image="/images/category-hotels.jpg"
             icon={<Building className="h-8 w-8" />}
             count={myContent.filter(i => i.type === 'hotel').length}
             onManage={() => navigate("/host/hotels")}
@@ -177,7 +177,7 @@ const BecomeHost = () => {
           <HostCategoryCard 
             title="Experiences"
             subtitle="Outdoor & Adventure"
-            image="https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=800"
+            image="/images/category-campsite.jpg"
             icon={<Tent className="h-8 w-8" />}
             count={myContent.filter(i => i.type === 'adventure').length}
             onManage={() => navigate("/host/experiences")}

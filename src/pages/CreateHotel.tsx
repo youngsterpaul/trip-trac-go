@@ -227,7 +227,7 @@ const CreateHotel = () => {
       {/* Hero Header */}
       <div className="relative w-full h-[25vh] md:h-[35vh] bg-slate-900 overflow-hidden">
         <img 
-          src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200" 
+          src="/images/category-hotels.jpg" 
           className="w-full h-full object-cover opacity-50" 
           alt="Hotel Header"
         />

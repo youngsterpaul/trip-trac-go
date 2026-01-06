@@ -577,48 +577,71 @@ export const ManualBookingForm = ({
           {selectedFacilities.length > 0 && (
             <div className="space-y-3">
               <p className="text-[10px] font-bold text-slate-400 uppercase">Selected facilities:</p>
-              {selectedFacilities.map((facility, index) => (
-                <div key={index} className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="font-bold text-sm text-slate-700">{facility.name}</span>
-                      <span className="ml-2 text-xs text-[#008080] font-bold">KES {facility.price.toLocaleString()}/day</span>
+              {selectedFacilities.map((facility, index) => {
+                // Calculate duration in days
+                const durationDays = facility.startDate && facility.endDate
+                  ? Math.max(1, Math.ceil((new Date(facility.endDate).getTime() - new Date(facility.startDate).getTime()) / (1000 * 60 * 60 * 24)))
+                  : 0;
+                const facilitySubtotal = durationDays * facility.price;
+
+                return (
+                  <div key={index} className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="font-bold text-sm text-slate-700">{facility.name}</span>
+                        <span className="ml-2 text-xs text-[#008080] font-bold">KES {facility.price.toLocaleString()}/day</span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeFacility(index)}
+                        className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeFacility(index)}
-                      className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-[10px] font-black uppercase tracking-wider text-slate-400">Start Date *</Label>
+                        <Input
+                          type="date"
+                          value={facility.startDate}
+                          onChange={(e) => updateFacility(index, 'startDate', e.target.value)}
+                          min={new Date().toISOString().split('T')[0]}
+                          className="mt-1 rounded-xl"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-[10px] font-black uppercase tracking-wider text-slate-400">End Date *</Label>
+                        <Input
+                          type="date"
+                          value={facility.endDate}
+                          onChange={(e) => updateFacility(index, 'endDate', e.target.value)}
+                          min={facility.startDate || new Date().toISOString().split('T')[0]}
+                          className="mt-1 rounded-xl"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Duration Display */}
+                    {durationDays > 0 && (
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-[#008080]/10 border border-[#008080]/20">
+                        <div className="flex items-center gap-2">
+                          <CalendarIcon className="h-4 w-4 text-[#008080]" />
+                          <span className="text-xs font-bold text-[#008080]">
+                            {durationDays} {durationDays === 1 ? 'Day' : 'Days'} Booked
+                          </span>
+                        </div>
+                        <span className="text-sm font-black text-[#008080]">
+                          KES {facilitySubtotal.toLocaleString()}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div>
-                      <Label className="text-[10px] font-black uppercase tracking-wider text-slate-400">Start Date *</Label>
-                      <Input
-                        type="date"
-                        value={facility.startDate}
-                        onChange={(e) => updateFacility(index, 'startDate', e.target.value)}
-                        min={new Date().toISOString().split('T')[0]}
-                        className="mt-1 rounded-xl"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-[10px] font-black uppercase tracking-wider text-slate-400">End Date *</Label>
-                      <Input
-                        type="date"
-                        value={facility.endDate}
-                        onChange={(e) => updateFacility(index, 'endDate', e.target.value)}
-                        min={facility.startDate || new Date().toISOString().split('T')[0]}
-                        className="mt-1 rounded-xl"
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
               
               {selectedFacilities.some(f => f.startDate && f.endDate) && (
                 <AvailabilityIndicator
