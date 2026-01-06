@@ -64,44 +64,39 @@ const safeJsonParse = (text: string) => {
 async function getOAuthToken(consumerKey: string, consumerSecret: string) {
   const auth = btoa(`${consumerKey}:${consumerSecret}`);
 
-  const candidates = [
-    Deno.env.get("MPESA_BASE_URL"),
-    "https://api.safaricom.co.ke",
-    "https://sandbox.safaricom.co.ke",
-  ].filter(Boolean) as string[];
+  // Use MPESA_ENV to determine environment, default to sandbox for safety
+  const mpesaEnv = Deno.env.get("MPESA_ENV") || "sandbox";
+  const baseUrl = mpesaEnv === "production" 
+    ? "https://api.safaricom.co.ke" 
+    : "https://sandbox.safaricom.co.ke";
 
-  let last: { baseUrl: string; status?: number; body?: string } | null = null;
+  console.log("Using M-Pesa environment:", { mpesaEnv, baseUrl });
 
-  for (const baseUrl of candidates) {
-    try {
-      const tokenResponse = await fetch(`${baseUrl}/oauth/v1/generate?grant_type=client_credentials`, {
-        headers: {
-          Authorization: `Basic ${auth}`,
-        },
-      });
+  try {
+    const tokenResponse = await fetch(`${baseUrl}/oauth/v1/generate?grant_type=client_credentials`, {
+      headers: {
+        Authorization: `Basic ${auth}`,
+      },
+    });
 
-      const bodyText = await tokenResponse.text();
-      last = { baseUrl, status: tokenResponse.status, body: bodyText.slice(0, 800) };
+    const bodyText = await tokenResponse.text();
 
-      if (!tokenResponse.ok) {
-        console.error("OAuth token fetch failed:", last);
-        continue;
-      }
-
-      const parsed = safeJsonParse(bodyText);
-      if (!parsed.ok || !parsed.json?.access_token) {
-        console.error("OAuth token response missing access_token:", { baseUrl, body: bodyText.slice(0, 800) });
-        continue;
-      }
-
-      return { ok: true as const, baseUrl, accessToken: parsed.json.access_token as string };
-    } catch (e) {
-      console.error("OAuth token fetch exception:", baseUrl, e);
-      last = { baseUrl, body: String(e).slice(0, 800) };
+    if (!tokenResponse.ok) {
+      console.error("OAuth token fetch failed:", { baseUrl, status: tokenResponse.status, body: bodyText.slice(0, 800) });
+      return { ok: false as const, last: { baseUrl, status: tokenResponse.status, body: bodyText.slice(0, 800) } };
     }
-  }
 
-  return { ok: false as const, last };
+    const parsed = safeJsonParse(bodyText);
+    if (!parsed.ok || !parsed.json?.access_token) {
+      console.error("OAuth token response missing access_token:", { baseUrl, body: bodyText.slice(0, 800) });
+      return { ok: false as const, last: { baseUrl, body: bodyText.slice(0, 800) } };
+    }
+
+    return { ok: true as const, baseUrl, accessToken: parsed.json.access_token as string };
+  } catch (e) {
+    console.error("OAuth token fetch exception:", baseUrl, e);
+    return { ok: false as const, last: { baseUrl, body: String(e).slice(0, 800) } };
+  }
 }
 
 serve(async (req) => {
