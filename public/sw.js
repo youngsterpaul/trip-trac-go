@@ -11,12 +11,12 @@ const PRECACHE_ASSETS = [
   '/fulllogo.png',
   '/favicon.ico',
   
-  // Local Images
-  '/images/category-campsite.jpg',
-  '/images/category-hotels.jpg',
-  '/images/category-trips.jpg',
-  '/images/category-events.jpg',
-  '/images/hero-background.jpg',
+  // Local Images (WebP for better performance)
+  '/images/category-campsite.webp',
+  '/images/category-hotels.webp',
+  '/images/category-trips.webp',
+  '/images/category-events.webp',
+  '/images/hero-background.webp',
   
   // Audio
   '/audio/notification.mp3',

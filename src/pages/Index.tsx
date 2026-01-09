@@ -513,25 +513,25 @@ const Index = () => {
     icon: Tent,
     title: "Campsite & Experience",
     path: "/category/campsite",
-    bgImage: "/images/category-campsite.jpg",
+    bgImage: "/images/category-campsite.webp",
     description: "Adventure camping spots"
   }, {
     icon: Hotel,
     title: "Hotels & accommodation",
     path: "/category/hotels",
-    bgImage: "/images/category-hotels.jpg",
+    bgImage: "/images/category-hotels.webp",
     description: "Find comfortable stays"
   }, {
     icon: Calendar,
     title: "Trips & tours",
     path: "/category/trips",
-    bgImage: "/images/category-trips.jpg",
+    bgImage: "/images/category-trips.webp",
     description: "Explore guided tours and day trips"
   }, {
     icon: Compass,
     title: "Sports & events",
     path: "/category/events",
-    bgImage: "/images/category-events.jpg",
+    bgImage: "/images/category-events.webp",
     description: "Discover exciting events"
   }];
 
@@ -611,7 +611,7 @@ const Index = () => {
       ref={searchRef}
       className="relative w-full h-[55vh] md:h-[45vh] lg:h-[50vh] md:mt-16" 
       style={{
-        backgroundImage: `url(/images/hero-background.jpg)`, 
+        backgroundImage: `url(/images/hero-background.webp)`, 
         backgroundSize: 'cover',
         backgroundPosition: 'center'
       }}

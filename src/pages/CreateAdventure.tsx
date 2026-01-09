@@ -238,7 +238,7 @@ const CreateAdventure = () => {
       
       {/* Hero Header */}
       <div className="relative h-[30vh] w-full overflow-hidden bg-slate-900">
-        <img src="/images/category-campsite.jpg" 
+        <img src="/images/category-campsite.webp" 
           className="absolute inset-0 w-full h-full object-cover opacity-60" alt="Header"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#F8F9FA] via-transparent to-transparent" />

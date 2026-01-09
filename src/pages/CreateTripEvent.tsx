@@ -272,7 +272,7 @@ const CreateTripEvent = () => {
       
       <main className="container px-4 py-8 max-w-4xl mx-auto">
         <div className="relative rounded-[40px] overflow-hidden mb-8 shadow-2xl h-[200px] md:h-[280px]">
-          <img src="/images/category-trips.jpg" className="w-full h-full object-cover" alt="Header" />
+          <img src="/images/category-trips.webp" className="w-full h-full object-cover" alt="Header" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-8">
             <Button onClick={() => navigate(-1)} className="absolute top-6 left-6 rounded-full bg-white/20 backdrop-blur-md border-none w-10 h-10 p-0 text-white">
               <ArrowLeft className="h-5 w-5" />
