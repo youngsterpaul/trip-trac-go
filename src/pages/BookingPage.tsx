@@ -5,7 +5,8 @@ import { useToast } from "@/hooks/use-toast";
 import { MultiStepBooking, BookingFormData } from "@/components/booking/MultiStepBooking";
 import { useBookingSubmit } from "@/hooks/useBookingSubmit";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Search, Ticket } from "lucide-react"; // Added Search and Ticket icons
+import { Input } from "@/components/ui/input"; // Assuming you have an Input component
 
 const COLORS = {
   TEAL: "#008080",
@@ -24,10 +25,15 @@ const BookingPage = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   
+  // Search state for non-logged in users
+  const [searchId, setSearchId] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+
   const { submitBooking } = useBookingSubmit();
 
   useEffect(() => {
     if (id && type) fetchItem();
+    else setLoading(false); // If no ID, we are just in "lookup" mode
     window.scrollTo(0, 0);
   }, [id, type]);
 
@@ -74,6 +80,39 @@ const BookingPage = () => {
     }
   };
 
+  // Function to search for an existing booking
+  const handleSearchBooking = async () => {
+    if (!searchId.trim()) return;
+    setIsSearching(true);
+    
+    try {
+      const { data, error } = await supabase
+        .from("bookings")
+        .select("*")
+        .eq("id", searchId.trim())
+        .single();
+
+      if (error || !data) throw new Error("Booking not found");
+
+      toast({
+        title: "Booking Found!",
+        description: `Booking for ${data.item_name} is ${data.status}`,
+      });
+      
+      // Optionally redirect to a dedicated ticket view page
+      // navigate(`/my-bookings/${data.id}`); 
+      
+    } catch (error: any) {
+      toast({
+        title: "Search Failed",
+        description: "Could not find a booking with that ID.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
   const getBookingType = (): BookingType => {
     if (type === "trip") return "trip";
     if (type === "event") return "event";
@@ -93,8 +132,8 @@ const BookingPage = () => {
       if (type === "trip" || type === "event") {
         totalAmount = (formData.num_adults * item.price) + (formData.num_children * (item.price_child || 0));
       } else if (type === "adventure_place" || type === "adventure") {
-        const entryFee = item.entry_fee || 0;
-        totalAmount = (formData.num_adults + formData.num_children) * entryFee;
+        const entry_fee = item.entry_fee || 0;
+        totalAmount = (formData.num_adults + formData.num_children) * entry_fee;
         formData.selectedActivities?.forEach(a => totalAmount += a.price * a.numberOfPeople);
         formData.selectedFacilities?.forEach(f => {
           if (f.startDate && f.endDate) {
@@ -146,9 +185,8 @@ const BookingPage = () => {
     );
   }
 
-  if (!item) return null;
-
   const getMultiStepProps = () => {
+    if (!item) return {};
     const baseProps = {
       onSubmit: handleBookingSubmit,
       isProcessing,
@@ -224,18 +262,56 @@ const BookingPage = () => {
           </Button>
           <div className="flex-1 min-w-0">
             <h1 className="text-lg font-black uppercase tracking-tight truncate" style={{ color: COLORS.TEAL }}>
-              Book {item.name}
+              {item ? `Book ${item.name}` : "Booking Lookup"}
             </h1>
-            <p className="text-xs text-slate-500 truncate">{item.location}, {item.country}</p>
+            {item && <p className="text-xs text-slate-500 truncate">{item.location}, {item.country}</p>}
           </div>
         </div>
       </div>
 
-      {/* Full Page Booking Form */}
-      <div className="container max-w-2xl mx-auto px-4 py-6 pb-24">
-        <div className="bg-white rounded-[32px] shadow-xl border border-slate-100 overflow-hidden">
-          <MultiStepBooking {...getMultiStepProps()} />
+      <div className="container max-w-2xl mx-auto px-4 py-6 pb-24 space-y-6">
+        {/* Search Section for Non-Logged In Users */}
+        <div className="bg-white p-6 rounded-[24px] shadow-sm border border-slate-100">
+          <div className="flex items-center gap-2 mb-4">
+            <Ticket className="h-5 w-5" style={{ color: COLORS.CORAL }} />
+            <h2 className="font-bold text-slate-800">Find Your Booking</h2>
+          </div>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Input 
+                placeholder="Enter Booking ID (e.g. BK-12345)" 
+                className="pl-10 rounded-xl border-slate-200"
+                value={searchId}
+                onChange={(e) => setSearchId(e.target.value)}
+              />
+            </div>
+            <Button 
+              onClick={handleSearchBooking}
+              disabled={isSearching || !searchId}
+              style={{ backgroundColor: COLORS.TEAL }}
+              className="rounded-xl"
+            >
+              {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : "Search"}
+            </Button>
+          </div>
+          <p className="text-[10px] text-slate-400 mt-2">
+            Check your email for the Booking ID sent after confirmation.
+          </p>
         </div>
+
+        {/* Full Page Booking Form */}
+        {item ? (
+          <div className="bg-white rounded-[32px] shadow-xl border border-slate-100 overflow-hidden">
+            <MultiStepBooking {...getMultiStepProps() as any} />
+          </div>
+        ) : (
+          !loading && (
+            <div className="text-center py-12">
+              <p className="text-slate-400 text-sm">Please select an item to book or enter a booking ID to track an existing order.</p>
+            </div>
+          )
+        )}
       </div>
     </div>
   );
